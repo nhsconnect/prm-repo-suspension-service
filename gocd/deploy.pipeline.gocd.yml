@@ -1,0 +1,90 @@
+format_version: 4
+common:
+  deploy_job: &deploy_job
+    resources:
+      - docker
+    tasks:
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks tf_plan create
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks tf_apply
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks wait_ecs
+  common_stages: &common_stages
+    - promote_docker_image:
+        resources:
+          - docker
+        clean_workspace: true
+        tasks:
+          - exec:
+              command: /bin/bash
+              arguments:
+                - -c
+                - ./tasks promote_docker_image
+    - deploy:
+        clean_workspace: true
+        jobs:
+          deploy: *deploy_job
+pipelines:
+  'prm-repo-suspension-service.dev':
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-repo-suspension-service
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_dev
+    environment_variables:
+      NHS_ENVIRONMENT: dev
+    stages: *common_stages
+
+  'prm-repo-suspension-service.test':
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-repo-suspension-service
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_test
+      dev_env:
+        pipeline: prm-repo-suspension-service.dev
+        stage: deploy
+    environment_variables:
+      NHS_ENVIRONMENT: test
+    stages: *common_stages
+
+  'prm-repo-suspension-service.pre-prod':
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-repo-suspension-service
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_pre_prod
+      test_env:
+        pipeline: prm-repo-suspension-service.test
+        stage: deploy
+    environment_variables:
+      NHS_ENVIRONMENT: pre-prod
+    stages: *common_stages

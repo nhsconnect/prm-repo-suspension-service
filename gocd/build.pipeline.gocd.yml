@@ -1,0 +1,84 @@
+format_version: 4
+pipelines:
+  'prm-repo-suspension-service':
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+    stages:
+      - build:
+          clean_workspace: true
+          jobs:
+            test_unit:
+              resources:
+                - docker
+              artifacts:
+                - build:
+                    source: build
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks test_unit
+            test_integration:
+              environment_variables:
+                PIPELINE_INTEGRATION_TEST: true
+              resources:
+                - docker
+              artifacts:
+                - build:
+                    source: build
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks test_integration
+            test_coverage:
+              artifacts:
+                - build:
+                    source: build/reports/jacoco
+              tabs:
+                coverage: jacoco/test/html/index.html
+              resources:
+                - docker
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks test_coverage
+            code_quality:
+              artifacts:
+                - build:
+                    source: build/reports/spotbugs
+              tabs:
+                MainCodeQa: spotbugs/main/spotbugs.html
+                TestCodeQa: spotbugs/test/spotbugs.html
+                ITestCodeQa: spotbugs/integration/spotbugs.html
+              resources:
+                - docker
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks code_quality
+      - docker:
+          clean_workspace: true
+          jobs:
+            build:
+              resources:
+                - docker
+              tasks:
+                - fetch:
+                    stage: build
+                    job: test_unit
+                    source: build
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks build_docker
