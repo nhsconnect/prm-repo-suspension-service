@@ -137,7 +137,7 @@ case "${command}" in
       dojo "./tasks _test_unit"
       ;;
   _test_integration)
-      gradle --info integration
+      gradle --info integrationTest
       ;;
   test_integration)
       dojo -c Dojofile-itest "./tasks _test_integration"
@@ -149,13 +149,13 @@ case "${command}" in
       dojo -c Dojofile-itest "./tasks _test_coverage"
       ;;
   _code_quality)
-      gradle check -x test -x integration
+      gradle check -x test -x integrationTest
       ;;
   code_quality)
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _test_all)
-      gradle test integration jacocoTestCoverageVerification check
+      gradle test integrationTest jacocoTestCoverageVerification check
       ;;
   test_all)
       dojo -c Dojofile-itest "./tasks _test_all"
