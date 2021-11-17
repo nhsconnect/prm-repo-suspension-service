@@ -57,7 +57,7 @@ pipelines:
               tabs:
                 MainCodeQa: spotbugs/main/spotbugs.html
                 TestCodeQa: spotbugs/test/spotbugs.html
-                ITestCodeQa: spotbugs/integrationTest/spotbugs.html
+                ITestCodeQa: spotbugs/integration/spotbugs.html
               resources:
                 - docker
               tasks:

@@ -43,34 +43,30 @@ test {
 }
 
 sourceSets {
-    integrationTest {
+    integration {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
-        if (System.getenv('PIPELINE_INTEGRATION_TEST') != null) {
-            java.srcDirs('./src/integrationtest/java')
-            resources.srcDirs('./src/integrationtest/resources')
-        }
     }
 }
 
 configurations {
-    integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntime.extendsFrom testRuntime
+    integrationImplementation.extendsFrom testImplementation
+    integrationRuntime.extendsFrom testRuntime
 }
 
 tasks.withType(Test) {
     useJUnitPlatform()
 }
 
-task integrationTest(type: Test) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
+task integration(type: Test) {
+    testClassesDirs = sourceSets.integration.output.classesDirs
+    classpath = sourceSets.integration.runtimeClasspath
     mustRunAfter tasks.test
 }
 
 jacocoTestReport {
     dependsOn test // tests are required to run before generating the report
-    shouldRunAfter integrationTest
+    shouldRunAfter integration
 }
 
 jacocoTestCoverageVerification {
@@ -112,11 +108,11 @@ spotbugsTest {
     }
 }
 
-spotbugsIntegrationTest {
+spotbugsIntegration {
     reports {
         html {
             enabled = true
-            destination = file("$buildDir/reports/spotbugs/integrationTest/spotbugs.html")
+            destination = file("$buildDir/reports/spotbugs/integration/spotbugs.html")
             stylesheet = 'fancy-hist.xsl'
         }
     }
@@ -127,4 +123,4 @@ dependencyCheck {
     suppressionFile = './dependency-checks-suppression.xml'
 }
 
-check.dependsOn integrationTest
+check.dependsOn integration
