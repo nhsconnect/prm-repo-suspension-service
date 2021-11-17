@@ -5,7 +5,7 @@ locals {
 }
 
 resource "aws_ecs_service" "ecs-service" {
-  name            = "${var.environment}-${var.component_name}-service"
+  name            = "${var.environment}-${var.component_name}"
   cluster         = local.ecs_cluster_id
   task_definition = aws_ecs_task_definition.task.arn
   desired_count   = var.service_desired_count
