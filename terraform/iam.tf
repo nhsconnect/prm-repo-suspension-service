@@ -22,7 +22,7 @@ resource "aws_iam_role" "component-ecs-role" {
 
   tags = {
     Environment = var.environment
-    CreatedBy = var.repo_name
+    CreatedBy   = var.repo_name
   }
 }
 
@@ -70,9 +70,12 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
       "cloudwatch:GetMetricData"
     ]
 
-    resources = [
-     "arn:aws:cloudwatch:${var.region}:${local.account_id}:metric-stream/SuspensionService:*"
-    ]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["SuspensionService"]
+      variable = "cloudwatch:namespace"
+    }
   }
 }
 
