@@ -41,6 +41,10 @@ function get_aws_account_id {
     AWS_ACCOUNT_ID=$(dojo -c Dojofile-infra "aws sts get-caller-identity | jq -r .Account")
 }
 
+function configure_envs {
+  export AWS_REGION=${AWS_DEFAULT_REGION}
+}
+
 #######################
 # Terraform Functions #
 #######################
@@ -117,6 +121,7 @@ function build_docker_image() {
 command="$1"
 case "${command}" in
   build_docker)
+      configure_envs
       dojo -c Dojofile-itest "./tasks _build"
       configure_docker_repository_uri
       build_docker_image
@@ -140,12 +145,14 @@ case "${command}" in
       gradle --info integration
       ;;
   test_integration)
+      configure_envs
       dojo -c Dojofile-itest "./tasks _test_integration"
       ;;
   _test_coverage)
       gradle jacocoTestCoverageVerification
       ;;
   test_coverage)
+      configure_envs
       dojo -c Dojofile-itest "./tasks _test_coverage"
       ;;
   _code_quality)
@@ -158,9 +165,11 @@ case "${command}" in
       gradle test integration jacocoTestCoverageVerification check
       ;;
   test_all)
+      configure_envs
       dojo -c Dojofile-itest "./tasks _test_all"
       ;;
   run_local)
+      configure_envs
       ./gradlew bootRun
       ;;
   _dep)

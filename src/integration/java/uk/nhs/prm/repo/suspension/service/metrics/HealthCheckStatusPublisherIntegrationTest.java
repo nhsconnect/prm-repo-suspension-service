@@ -32,7 +32,7 @@ import static org.awaitility.Awaitility.await;
 @SpringBootTest()
 @ActiveProfiles("test")
 @SpringJUnitConfig(TestScheduledConfig.class)
-@TestPropertySource(properties = {"environment = ci"})
+@TestPropertySource(properties = {"environment = integration_test"})
 @ExtendWith(MockitoExtension.class)
 public class HealthCheckStatusPublisherIntegrationTest {
 
@@ -51,7 +51,7 @@ public class HealthCheckStatusPublisherIntegrationTest {
             assertThat(metrics).isNotEmpty();
 
             final MetricDataResult[] metricData = new MetricDataResult[1];
-            metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "ci")));
+            metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "integration_test")));
             assertThat(metricData[0].values()).isNotEmpty();
             assertThat(metricData[0].values().get(0)).isEqualTo(HEALTHY_HEALTH_VALUE);
         });
