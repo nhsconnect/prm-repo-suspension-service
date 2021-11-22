@@ -71,12 +71,13 @@ public class LocalStackAwsConfig {
 
     @PostConstruct
     public void setupTestQueuesAndTopics() {
-        amazonSQSAsync.createQueue(suspensionsQueueName);
+        CreateQueueResult suspensionsQueue = amazonSQSAsync.createQueue(suspensionsQueueName);
         CreateQueueResult notSuspendedQueue = amazonSQSAsync.createQueue(notSuspendedQueueName);
         CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
 
         createSnsTestReceiverSubscription(topic, getQueueArn(notSuspendedQueue.getQueueUrl()));
     }
+
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queueArn) {
         final Map<String, String> attributes = new HashMap<>();

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.suspension.service.config.Tracer;
 
 import javax.jms.JMSException;
 
@@ -15,22 +16,22 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 public class SuspensionsEventListenerTest {
 
-//        @Mock
-//        private NemsEventService nemsEventService;
-//        @Mock
-//        private Tracer tracer;
-//
-//        @InjectMocks
-//        private NemsEventListener nemsEventListener;
-//
-//        @Test
-//        void shouldCallNemsEventServiceWithReceivedMessage() throws JMSException {
-//            String payload = "payload";
-//            SQSTextMessage message = spy(new SQSTextMessage(payload));
-//
-//            nemsEventListener.onMessage(message);
-//            verify(nemsEventService).processNemsEvent(payload);
-//            verify(message).acknowledge();
-//        }
+        @Mock
+        private SuspensionsEventService suspensionsEventService;
+        @Mock
+        private Tracer tracer;
+
+        @InjectMocks
+        private SuspensionsEventListener suspensionsEventListener;
+
+        @Test
+        void shouldCallNemsEventServiceWithReceivedMessage() throws JMSException {
+            String payload = "payload";
+            SQSTextMessage message = spy(new SQSTextMessage(payload));
+
+            suspensionsEventListener.onMessage(message);
+            verify(suspensionsEventService).processSuspensionsEvent(payload);
+            verify(message).acknowledge();
+        }
 
     }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class SuspensionsEventService {
-    private SuspensionsEventPublisher suspensionsEventPublisher;
+    private final SuspensionsEventPublisher suspensionsEventPublisher;
 
     public void processSuspensionsEvent(String notSuspendedMessage) {
         suspensionsEventPublisher.sendMessage(notSuspendedMessage);
