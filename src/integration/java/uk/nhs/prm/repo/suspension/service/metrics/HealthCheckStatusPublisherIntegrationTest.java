@@ -9,15 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.cloudwatch.model.GetMetricDataRequest;
-import software.amazon.awssdk.services.cloudwatch.model.ListMetricsRequest;
-import software.amazon.awssdk.services.cloudwatch.model.ListMetricsResponse;
-import software.amazon.awssdk.services.cloudwatch.model.Metric;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDataQuery;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDataResult;
-import software.amazon.awssdk.services.cloudwatch.model.MetricStat;
-import software.amazon.awssdk.services.cloudwatch.model.RecentlyActive;
-import software.amazon.awssdk.services.cloudwatch.model.StatusCode;
+import software.amazon.awssdk.services.cloudwatch.model.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
