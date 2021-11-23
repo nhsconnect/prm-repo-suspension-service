@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest()
@@ -32,35 +31,38 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.suspensionsQueueName}")
     private String suspensionsQueueName;
 
+    @Value("${aws.notSuspendedQueueName}")
+    private String notSuspendedQueueName;
+
     @Value("${aws.notSuspendedSnsTopicArn}")
     private String suspensionsSNSTopicArn;
 
-    private String sampleMessage = "{\n" +
-            "        \"eventType\":\"suspension\",\n" +
-            "        \"nhsNumber\":\"123456789\",\n" +
-            "        \"lastUpdated\":\"22-11-2021\",\n" +
-            "        \"previousOdsCode\":\"ODS123\"\n" +
-            "}";
-//
-//    @Test
-//    void shouldSendMessageToNotSuspendedSNSTopic(){
-//        String queueUrl = amazonSQSAsync.getQueueUrl(suspensionsQueueName).getQueueUrl();
-//        amazonSQSAsync.sendMessage(queueUrl, sampleMessage);
-//
-//        Message[] receivedMessageHolder = new Message[1];
-//        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-//            System.out.println("checking sqs queue: " + queueUrl);
-//            ReceiveMessageRequest requestForMessagesWithAttributesAsHavingToExplicitlyAskForThemIsApparentlyTheMostObviousBehaviour = new ReceiveMessageRequest().withQueueUrl(queueUrl).withMessageAttributeNames("traceId");
-//            List<Message> messages = amazonSQSAsync.receiveMessage(requestForMessagesWithAttributesAsHavingToExplicitlyAskForThemIsApparentlyTheMostObviousBehaviour).getMessages();
-//            System.out.println("messages: " + messages.size());
-//            assertThat(messages).hasSize(1);
-//            receivedMessageHolder[0] = messages.get(0);
-//            System.out.println("message: " + messages.get(0).getBody());
-//            System.out.println("message attributes: " + messages.get(0).getMessageAttributes());
-//            System.out.println("message attributes empty: " + messages.get(0).getMessageAttributes().isEmpty());
-//        });
-//        assertFalse(receivedMessageHolder[0].getMessageAttributes().isEmpty());
-//        assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
-//        assertTrue(receivedMessageHolder[0].getBody().contains(sampleMessage));
-//    }
+    private String sampleMessage = "{\\\"lastUpdated\\\":\\\"2017-11-01T15:00:33+00:00\\\",\\\"previousOdsCode\\\":\\\"B85612\\\",\\\"eventType\\\":\\\"SUSPENSION\\\",\\\"nhsNumber\\\":\\\"9912003888\\\"}\",\"environment\":\"local\"}";
+
+    @Test
+    void shouldSendMessageToNotSuspendedSNSTopic(){
+        String queueUrl = amazonSQSAsync.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        String notSuspendedQueueUrl = amazonSQSAsync.getQueueUrl(notSuspendedQueueName).getQueueUrl();
+        System.out.println("queue url is: " + queueUrl);
+        amazonSQSAsync.sendMessage(queueUrl, sampleMessage);
+
+        Message[] receivedMessageHolder = new Message[1];
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            System.out.println("checking sqs queue: " + notSuspendedQueueUrl);
+
+            ReceiveMessageRequest requestForMessagesWithAttributesAsHavingToExplicitlyAskForThemIsApparentlyTheMostObviousBehaviour
+                    = new ReceiveMessageRequest().withQueueUrl(notSuspendedQueueUrl);
+            List<Message> messages = amazonSQSAsync.receiveMessage(requestForMessagesWithAttributesAsHavingToExplicitlyAskForThemIsApparentlyTheMostObviousBehaviour).getMessages();
+            System.out.println("messages: " + messages.size());
+            assertThat(messages).hasSize(1);
+            receivedMessageHolder[0] = messages.get(0);
+            System.out.println("message: " + messages.get(0).getBody());
+            System.out.println("message attributes: " + messages.get(0).getMessageAttributes());
+            System.out.println("message attributes empty: " + messages.get(0).getMessageAttributes().isEmpty());
+
+            assertTrue(receivedMessageHolder[0].getBody().contains("lastUpdated"));
+            assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
+        });
+
+    }
 }

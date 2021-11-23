@@ -25,6 +25,11 @@ public class SqsConfig {
     @Value("${aws.suspensionsQueueName}")
     private String suspensionsQueueName;
 
+    @Value("${aws.notSuspendedQueueName}")
+    private String notSuspendedQueueName;
+
+
+
     private final SuspensionsEventService suspensionsEventService;
     private final Tracer tracer;
 
@@ -40,10 +45,26 @@ public class SqsConfig {
     }
 
     @Bean
-    public Session createListeners(SQSConnection connection) throws JMSException, InterruptedException {
+    public Session createSuspensionsListeners(SQSConnection connection) throws JMSException, InterruptedException {
         Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-        log.info("nems event queue name : {}", suspensionsQueueName);
+        log.info("suspensions event queue name : {}", suspensionsQueueName);
         MessageConsumer consumer = session.createConsumer(session.createQueue(suspensionsQueueName));
+
+        consumer.setMessageListener(new SuspensionsEventListener(suspensionsEventService, tracer));
+
+        connection.start();
+
+        // TODO: check if we can get rid of this
+        Thread.sleep(1000);
+
+        return session;
+    }
+
+    @Bean
+    public Session createNotSuspendedListeners(SQSConnection connection) throws JMSException, InterruptedException {
+        Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+        log.info("not suspended event queue name : {}", notSuspendedQueueName);
+        MessageConsumer consumer = session.createConsumer(session.createQueue(notSuspendedQueueName));
 
         consumer.setMessageListener(new SuspensionsEventListener(suspensionsEventService, tracer));
 

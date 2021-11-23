@@ -71,7 +71,7 @@ public class LocalStackAwsConfig {
 
     @PostConstruct
     public void setupTestQueuesAndTopics() {
-        CreateQueueResult suspensionsQueue = amazonSQSAsync.createQueue(suspensionsQueueName);
+        amazonSQSAsync.createQueue(suspensionsQueueName);
         CreateQueueResult notSuspendedQueue = amazonSQSAsync.createQueue(notSuspendedQueueName);
         CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
 
