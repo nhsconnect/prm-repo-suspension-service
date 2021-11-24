@@ -18,11 +18,10 @@ public class SuspensionsEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        String traceId = tracer.createTraceId();
-        tracer.setTraceId(traceId);
-        String payload = null;
+
         try {
-            payload = ((TextMessage) message).getText();
+            tracer.setTraceId(message.getStringProperty("traceId"));
+            String payload = ((TextMessage) message).getText();
             suspensionsEventService.processSuspensionsEvent(payload);
             message.acknowledge();
         } catch (JMSException e) {
