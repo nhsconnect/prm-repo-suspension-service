@@ -25,19 +25,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
 public class SuspensionsIntegrationTest {
 
-    @Autowired
-    private AmazonSQSAsync amazonSQSAsync;
+//    @Autowired
+//    private AmazonSQSAsync amazonSQSAsync;
+//
+//    @Value("${aws.suspensionsQueueName}")
+//    private String suspensionsQueueName;
+//
+//    @Value("${aws.notSuspendedQueueName}")
+//    private String notSuspendedQueueName;
+//
+//    @Value("${aws.notSuspendedSnsTopicArn}")
+//    private String suspensionsSNSTopicArn;
 
-    @Value("${aws.suspensionsQueueName}")
-    private String suspensionsQueueName;
-
-    @Value("${aws.notSuspendedQueueName}")
-    private String notSuspendedQueueName;
-
-    @Value("${aws.notSuspendedSnsTopicArn}")
-    private String suspensionsSNSTopicArn;
-
-    private String sampleMessage = "{\\\"lastUpdated\\\":\\\"2017-11-01T15:00:33+00:00\\\",\\\"previousOdsCode\\\":\\\"B85612\\\",\\\"eventType\\\":\\\"SUSPENSION\\\",\\\"nhsNumber\\\":\\\"9912003888\\\"}\",\"environment\":\"local\"}";
+//    private String sampleMessage = "{\\\"lastUpdated\\\":\\\"2017-11-01T15:00:33+00:00\\\",\\\"previousOdsCode\\\":\\\"B85612\\\",\\\"eventType\\\":\\\"SUSPENSION\\\",\\\"nhsNumber\\\":\\\"9912003888\\\"}\",\"environment\":\"local\"}";
 
 //    @Test
 //    void shouldSendMessageToNotSuspendedSNSTopic(){
