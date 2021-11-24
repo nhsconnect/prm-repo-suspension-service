@@ -6,7 +6,10 @@ locals {
   environment_variables = [
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "AWS_REGION", value = var.region },
-    { name = "LOG_LEVEL", value = var.log_level }
+    { name = "LOG_LEVEL", value = var.log_level },
+    { name = "SUSPENSIONS_QUEUE_NAME", value = aws_sqs_queue.suspensions.name },
+    { name = "NOT_SUSPENDED_SNS_TOPIC_ARN", value = aws_sns_topic.not_suspended.arn },
+    { name = "NOT_SUSPENDED_QUEUE_NAME", value = aws_sqs_queue.not_suspended.name }
   ]
 }
 

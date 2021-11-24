@@ -22,6 +22,8 @@ public class SuspensionsEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
+        String traceId = tracer.createTraceId();
+        tracer.setTraceId(traceId);
         String payload = null;
         try {
             payload = ((TextMessage) message).getText();

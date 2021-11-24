@@ -18,7 +18,8 @@ public class NotSuspendedEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        log.info("Not suspended queue got something");
+        String traceId = tracer.createTraceId();
+        tracer.setTraceId(traceId);
         String payload = null;
         try {
             payload = ((TextMessage) message).getText();
