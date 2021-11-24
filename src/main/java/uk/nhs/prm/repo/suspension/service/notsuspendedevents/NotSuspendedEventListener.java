@@ -18,11 +18,12 @@ public class NotSuspendedEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        String traceId = tracer.createTraceId();
-        tracer.setTraceId(traceId);
-        String payload = null;
+        log.info("RECEIVED: Not Suspended Event Message");
+        if(tracer.getTraceId().isEmpty()){
+            tracer.createTraceId();
+        }
         try {
-            payload = ((TextMessage) message).getText();
+            String payload = ((TextMessage) message).getText();
             notSuspendedEventService.processSuspensionsEvent(payload);
         } catch (JMSException e) {
             e.printStackTrace();

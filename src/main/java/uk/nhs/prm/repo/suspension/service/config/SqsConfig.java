@@ -34,7 +34,6 @@ public class SqsConfig {
     private final NotSuspendedEventService notSuspendedEventService;
     private final Tracer tracer;
 
-
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
         return AmazonSQSAsyncClientBuilder.defaultClient();
