@@ -1,11 +1,11 @@
 locals {
   suspensions_queue_name = "${var.environment}-${var.component_name}-suspensions-queue"
-  not_suspended_queue_name = "${var.environment}-${var.component_name}-not-suspended-queue"
+  not_suspended_queue_name = "${var.environment}-${var.component_name}-not-suspended-observability-queue"
 }
 
 resource "aws_sqs_queue" "suspensions" {
   name                       = local.suspensions_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = 1209600
   kms_master_key_id = data.aws_ssm_parameter.suspensions_kms_key_id.value
 
   tags = {

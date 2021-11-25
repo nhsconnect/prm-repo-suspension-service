@@ -10,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.nhs.prm.repo.suspension.service.notsuspendedevents.NotSuspendedEventListener;
-import uk.nhs.prm.repo.suspension.service.notsuspendedevents.NotSuspendedEventService;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionsEventListener;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionsEventService;
 
@@ -27,11 +25,7 @@ public class SqsConfig {
     @Value("${aws.suspensionsQueueName}")
     private String suspensionsQueueName;
 
-    @Value("${aws.notSuspendedQueueName}")
-    private String notSuspendedQueueName;
-
     private final SuspensionsEventService suspensionsEventService;
-    private final NotSuspendedEventService notSuspendedEventService;
     private final Tracer tracer;
 
     @Bean
@@ -52,22 +46,6 @@ public class SqsConfig {
         MessageConsumer consumer = session.createConsumer(session.createQueue(suspensionsQueueName));
 
         consumer.setMessageListener(new SuspensionsEventListener(suspensionsEventService, tracer));
-
-        connection.start();
-
-        // TODO: check if we can get rid of this
-        Thread.sleep(1000);
-
-        return session;
-    }
-
-    @Bean
-    public Session createNotSuspendedListeners(SQSConnection connection) throws JMSException, InterruptedException {
-        Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-        log.info("not suspended event queue name : {}", notSuspendedQueueName);
-        MessageConsumer consumer = session.createConsumer(session.createQueue(notSuspendedQueueName));
-
-        consumer.setMessageListener(new NotSuspendedEventListener(notSuspendedEventService, tracer));
 
         connection.start();
 
