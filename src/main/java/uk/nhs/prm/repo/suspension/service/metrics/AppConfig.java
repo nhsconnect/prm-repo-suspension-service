@@ -7,16 +7,34 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 
 @Configuration
 public class AppConfig {
-    private final String environment;
 
-    public AppConfig(@Value("${environment}") String environment) {
+    private final String environment;
+    private final String suspensionsQueueName;
+    private final String notSuspendedSnsTopicArn;
+    private final String notSuspendedQueueName;
+
+    public AppConfig(@Value("${environment}") String environment, @Value("${aws.suspensionsQueueName}") String suspensionsQueueName, @Value("${aws.notSuspendedSnsTopicArn}") String notSuspendedSnsTopicArn, @Value("${aws.notSuspendedQueueName}") String notSuspendedQueueName) {
         this.environment = environment;
+        this.suspensionsQueueName = suspensionsQueueName;
+        this.notSuspendedSnsTopicArn = notSuspendedSnsTopicArn;
+        this.notSuspendedQueueName = notSuspendedQueueName;
     }
 
     public String environment() {
         return environment;
     }
 
+    public String suspensionsQueueName() {
+        return suspensionsQueueName;
+    }
+
+    public String notSuspendedSnsTopicArn() {
+        return notSuspendedSnsTopicArn;
+    }
+
+    public String notSuspendedQueueName() {
+        return notSuspendedQueueName;
+    }
 
     @Bean
     @SuppressWarnings("unused")

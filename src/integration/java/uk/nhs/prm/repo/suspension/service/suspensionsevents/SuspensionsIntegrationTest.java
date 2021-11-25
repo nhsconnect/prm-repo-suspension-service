@@ -65,7 +65,7 @@ public class SuspensionsIntegrationTest {
 
             assertTrue(receivedMessageHolder[0].getBody().contains("lastUpdated"));
             assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
-//            assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
+            assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
 
     }
