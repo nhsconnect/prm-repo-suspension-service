@@ -79,6 +79,51 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
   }
 }
 
+resource "aws_iam_role_policy_attachment" "nems_events_processor_sqs" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.suspensions_processor_sqs.arn
+}
+
+resource "aws_iam_policy" "suspensions_processor_sqs" {
+  name   = "${var.environment}-${var.component_name}-sqs"
+  policy = data.aws_iam_policy_document.sqs_suspensions_ecs_task.json
+}
+
+data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
+  statement {
+    actions = [
+      "sqs:GetQueue*",
+      "sqs:ChangeMessageVisibility",
+      "sqs:DeleteMessage",
+      "sqs:ReceiveMessage"
+    ]
+    resources = [
+      aws_sqs_queue.suspensions.arn,
+      aws_sqs_queue.not_suspended.arn
+    ]
+  }
+}
+resource "aws_iam_policy" "not_suspended_processor_sns" {
+  name   = "${var.environment}-${var.component_name}-sns"
+  policy = data.aws_iam_policy_document.sns_policy_doc.json
+}
+
+resource "aws_iam_role_policy_attachment" "nems_events_processor_sns" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.not_suspended_processor_sns.arn
+}
+
+data "aws_iam_policy_document" "sns_policy_doc" {
+  statement {
+    actions = [
+      "sns:Publish",
+      "sns:GetTopicAttributes"
+    ]
+    resources = [
+      aws_sns_topic.not_suspended.arn,
+    ]
+  }
+}
 resource "aws_iam_policy" "ecr_policy" {
   name   = "${var.environment}-${var.component_name}-ecr"
   policy = data.aws_iam_policy_document.ecr_policy_doc.json
