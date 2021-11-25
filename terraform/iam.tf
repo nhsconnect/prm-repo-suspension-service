@@ -79,7 +79,7 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "nems_events_processor_sqs" {
+resource "aws_iam_role_policy_attachment" "suspensions_processor_sqs" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.suspensions_processor_sqs.arn
 }
@@ -121,6 +121,27 @@ data "aws_iam_policy_document" "sns_policy_doc" {
     ]
     resources = [
       aws_sns_topic.not_suspended.arn,
+    ]
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "suspensions_kms" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.suspensions_kms.arn
+}
+
+resource "aws_iam_policy" "suspensions_kms" {
+  name   = "${var.environment}-${var.component_name}-kms"
+  policy = data.aws_iam_policy_document.kms_policy_doc.json
+}
+
+data "aws_iam_policy_document" "kms_policy_doc" {
+  statement {
+    actions = [
+      "kms:*"
+    ]
+    resources = [
+      "*"
     ]
   }
 }
