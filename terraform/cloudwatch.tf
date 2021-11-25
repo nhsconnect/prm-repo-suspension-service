@@ -51,7 +51,7 @@ resource "aws_cloudwatch_metric_alarm" "error_log_alarm" {
   namespace                 = local.suspension_service_metric_namespace
   statistic                 = "Sum"
   alarm_description         = "This alarm monitors errors logs in ${var.component_name}"
-  treat_missing_data        = "missing"
+  treat_missing_data        = "notBreaching"
   actions_enabled           = "true"
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
