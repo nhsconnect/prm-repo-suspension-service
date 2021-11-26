@@ -19,3 +19,7 @@ data "aws_ssm_parameter" "deductions_private_db_subnets" {
 data "aws_ssm_parameter" "suspensions_kms_key_id" {
   name = "/repo/${var.environment}/output/prm-deductions-nems-event-processor/suspensions-kms-key-id"
 }
+
+data "aws_ssm_parameter" "suspensions_sns_topic_arn" {
+  name = "/repo/${var.environment}/output/nems-event-processor/suspensions-sns-topic-arn"
+}

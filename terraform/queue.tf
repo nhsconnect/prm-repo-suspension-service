@@ -15,6 +15,14 @@ resource "aws_sqs_queue" "suspensions" {
   }
 }
 
+resource "aws_sns_topic_subscription" "suspensions_topic" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = data.aws_ssm_parameter.suspensions_sns_topic_arn.value
+  endpoint             = aws_sqs_queue.suspensions.arn
+}
+
+
 resource "aws_ssm_parameter" "suspensions_queue_arn" {
   name  = "/repo/${var.environment}/output/${var.component_name}/suspensions-queue-arn"
   type  = "String"
