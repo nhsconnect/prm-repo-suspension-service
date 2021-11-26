@@ -15,6 +15,12 @@ resource "aws_sqs_queue" "suspensions" {
   }
 }
 
+resource "aws_ssm_parameter" "suspensions_queue_arn" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/suspensions-queue-arn"
+  type  = "String"
+  value = aws_sqs_queue.suspensions.arn
+}
+
 resource "aws_sns_topic" "not_suspended" {
   name = "${var.environment}-${var.component_name}-not-suspended-sns-topic"
   kms_master_key_id = aws_kms_key.not_suspended.id
