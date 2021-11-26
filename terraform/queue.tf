@@ -18,7 +18,7 @@ resource "aws_sqs_queue" "suspensions" {
 resource "aws_sns_topic" "not_suspended" {
   name = "${var.environment}-${var.component_name}-not-suspended-sns-topic"
   kms_master_key_id = aws_kms_key.not_suspended.id
-  sns_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 
   tags = {
     Name = "${var.environment}-${var.component_name}-not-suspended-sns-topic"
