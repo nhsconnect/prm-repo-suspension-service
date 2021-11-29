@@ -35,9 +35,9 @@ public class MessagePublisher {
                 .topicArn(topicArn)
                 .build();
 
-        log.debug("Sending message to {}", topicArn);
         PublishResponse result = snsClient.publish(request);
-        log.info("PUBLISHED: message to {} topic. Published SNS message id: {}", topicArn, result.messageId());
+        String [] topicAttributes = topicArn.split(":");
+        log.info("PUBLISHED: message to {} topic. Published SNS message id: {}", topicAttributes[topicAttributes.length-1], result.messageId());
     }
 
     private Map<String, MessageAttributeValue> createMessageAttributes() {

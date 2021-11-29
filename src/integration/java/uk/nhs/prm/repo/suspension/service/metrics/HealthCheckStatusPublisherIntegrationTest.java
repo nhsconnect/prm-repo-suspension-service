@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 @SpringBootTest()
-@ActiveProfiles("test")
+@ActiveProfiles("integration-test")
 @SpringJUnitConfig(TestScheduledConfig.class)
 @TestPropertySource(properties = {"environment = integration_test"})
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +45,7 @@ public class HealthCheckStatusPublisherIntegrationTest {
             final MetricDataResult[] metricData = new MetricDataResult[1];
             metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "integration_test")));
             assertThat(metricData[0].values()).isNotEmpty();
-//            assertThat(metricData[0].values().get(0)).isEqualTo(HEALTHY_HEALTH_VALUE);
+            assertThat(metricData[0].values().get(0)).isEqualTo(HEALTHY_HEALTH_VALUE);
         });
 
     }

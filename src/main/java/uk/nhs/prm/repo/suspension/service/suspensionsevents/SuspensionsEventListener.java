@@ -22,7 +22,6 @@ public class SuspensionsEventListener implements MessageListener {
         try {
             setTraceId(message);
             String payload = ((TextMessage) message).getText();
-            log.info("Abaout to call service");
             suspensionsEventService.processSuspensionsEvent(payload);
             message.acknowledge();
         } catch (JMSException e) {
@@ -32,7 +31,7 @@ public class SuspensionsEventListener implements MessageListener {
 
     private void setTraceId(Message message) throws JMSException {
         if(message.getStringProperty("traceId")==null){
-            log.info("The message has no trace id attribute");
+            log.info("The message has no trace id attribute, we'll create and assign one.");
             tracer.setTraceId(tracer.createTraceId());
         }else{
             log.info("The message has a trace id attribute");
