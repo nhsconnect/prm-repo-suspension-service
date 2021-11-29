@@ -43,7 +43,7 @@ public class HealthCheckStatusPublisherIntegrationTest {
             assertThat(metrics).isNotEmpty();
 
             final MetricDataResult[] metricData = new MetricDataResult[1];
-            metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "integration_test")));
+            metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "dev")));
             assertThat(metricData[0].values()).isNotEmpty();
             assertThat(metricData[0].values().get(0)).isEqualTo(HEALTHY_HEALTH_VALUE);
         });
