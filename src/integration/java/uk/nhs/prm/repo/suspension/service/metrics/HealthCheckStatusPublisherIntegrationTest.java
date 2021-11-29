@@ -24,7 +24,7 @@ import static org.awaitility.Awaitility.await;
 @SpringBootTest()
 @ActiveProfiles("integration-test")
 @SpringJUnitConfig(TestScheduledConfig.class)
-@TestPropertySource(properties = {"environment = integration_test"})
+@TestPropertySource(properties = {"environment = dev"})
 @ExtendWith(MockitoExtension.class)
 public class HealthCheckStatusPublisherIntegrationTest {
 

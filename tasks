@@ -43,6 +43,7 @@ function get_aws_account_id {
 
 function configure_envs {
   export AWS_REGION=${AWS_DEFAULT_REGION}
+  export NHS_ENVIRONMENT="dev"
   SNS_TOPIC_NAME="dev-suspension-service-not-suspended-sns-topic"
   #setting not suspended sns topic arn as sns topic arn from dev env.
   export NOT_SUSPENDED_SNS_TOPIC_ARN=$(dojo -c Dojofile-infra "aws sns create-topic --name ${SNS_TOPIC_NAME} --region eu-west-2 | jq -r .TopicArn")
@@ -167,6 +168,7 @@ case "${command}" in
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _test_integration)
+      _assume_environment_role $NHS_ENVIRONMENT
       gradle --info integration
       ;;
   test_integration)
