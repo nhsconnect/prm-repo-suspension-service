@@ -35,15 +35,15 @@ public class SqsConfig {
 
     @Bean
     public SQSConnection createConnection(AmazonSQSAsync amazonSQSAsync) throws JMSException {
-        SQSConnectionFactory connectionFactory = new SQSConnectionFactory(new ProviderConfiguration(), amazonSQSAsync);
+        var connectionFactory = new SQSConnectionFactory(new ProviderConfiguration(), amazonSQSAsync);
         return connectionFactory.createConnection();
     }
 
     @Bean
     public Session createSuspensionsListeners(SQSConnection connection) throws JMSException, InterruptedException {
-        Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+        var session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
         log.info("suspensions event queue name : {}", suspensionsQueueName);
-        MessageConsumer consumer = session.createConsumer(session.createQueue(suspensionsQueueName));
+        var consumer = session.createConsumer(session.createQueue(suspensionsQueueName));
 
         consumer.setMessageListener(new SuspensionsEventListener(suspensionsEventService, tracer));
 

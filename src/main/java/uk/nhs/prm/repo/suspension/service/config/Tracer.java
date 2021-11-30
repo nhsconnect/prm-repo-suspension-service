@@ -11,8 +11,8 @@ import java.util.UUID;
 public class Tracer {
 
     public String createTraceId() {
-        String traceIdUUID = UUID.randomUUID().toString();
-        String traceIdHex = traceIdUUID.replaceAll("-", "");
+        var traceIdUUID = UUID.randomUUID().toString();
+        var traceIdHex = traceIdUUID.replaceAll("-", "");
         return traceIdHex;
     }
 

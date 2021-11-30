@@ -21,7 +21,7 @@ public class SuspensionsEventListener implements MessageListener {
         log.info("RECEIVED: Suspensions Event Message");
         try {
             setTraceId(message);
-            String payload = ((TextMessage) message).getText();
+            var payload = ((TextMessage) message).getText();
             suspensionsEventService.processSuspensionsEvent(payload);
             message.acknowledge();
         } catch (JMSException e) {

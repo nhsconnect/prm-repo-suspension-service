@@ -18,7 +18,7 @@ public class NotSuspendedSnsHealthProbe implements HealthProbe {
     @Override
     public boolean isHealthy() {
         try {
-            SnsClient snsClient = SnsClient.create();
+            var snsClient = SnsClient.create();
             snsClient.getTopicAttributes(GetTopicAttributesRequest.builder().topicArn(config.notSuspendedSnsTopicArn()).build());
             return true;
         } catch (RuntimeException exception) {

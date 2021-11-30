@@ -24,7 +24,7 @@ public class MessagePublisher {
     }
 
     public void sendMessage(String topicArn, String message, String attributeKey, String attributeValue) {
-        Map<String, MessageAttributeValue> messageAttributes = createMessageAttributes();
+        var messageAttributes = createMessageAttributes();
         if (attributeKey != null) {
             messageAttributes.put(attributeKey, getMessageAttributeValue(attributeValue));
         }
@@ -35,8 +35,8 @@ public class MessagePublisher {
                 .topicArn(topicArn)
                 .build();
 
-        PublishResponse result = snsClient.publish(request);
-        String [] topicAttributes = topicArn.split(":");
+        var result = snsClient.publish(request);
+        var topicAttributes = topicArn.split(":");
         log.info("PUBLISHED: message to {} topic. Published SNS message id: {}", topicAttributes[topicAttributes.length-1], result.messageId());
     }
 

@@ -18,8 +18,8 @@ public class NotSuspendedSqsHealthProbe implements HealthProbe {
     @Override
     public boolean isHealthy() {
         try {
-            SqsClient sqsClient = SqsClient.create();
-            String queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName()).build()).queueUrl();
+            var sqsClient = SqsClient.create();
+            var queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName()).build()).queueUrl();
             sqsClient.getQueueAttributes(GetQueueAttributesRequest.builder().queueUrl(queueUrl).build());
             return true;
         } catch (RuntimeException exception) {
