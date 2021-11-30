@@ -22,28 +22,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 @SpringBootTest()
-@ActiveProfiles("integration-test")
+@ActiveProfiles("test")
 @SpringJUnitConfig(TestScheduledConfig.class)
-@TestPropertySource(properties = {"environment = dev"})
+@TestPropertySource(properties = {"environment = integration_test"})
 @ExtendWith(MockitoExtension.class)
-public class HealthCheckStatusPublisherIntegrationTest {
+public class MetricPublisherIntegrationTest {
 
     @Autowired
-    private HealthCheckStatusPublisher publisher;
+    private MetricPublisher publisher;
 
     private final CloudWatchClient cloudWatchClient = CloudWatchClient.create();
     static final double HEALTHY_HEALTH_VALUE = 1.0;
 
     @Test
     void shouldPutHealthMetricDataIntoCloudWatch() {
-        publisher.publishHealthStatus();
+        publisher.publishMetric("Health", HEALTHY_HEALTH_VALUE);
 
         await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
             List<Metric> metrics = fetchMetricsMatching("SuspensionService", "Health");
             assertThat(metrics).isNotEmpty();
 
             final MetricDataResult[] metricData = new MetricDataResult[1];
-            metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "dev")));
+            metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "integration_test")));
             assertThat(metricData[0].values()).isNotEmpty();
             assertThat(metricData[0].values().get(0)).isEqualTo(HEALTHY_HEALTH_VALUE);
         });
