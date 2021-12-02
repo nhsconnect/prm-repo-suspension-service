@@ -99,7 +99,7 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
     ]
     resources = [
       aws_sqs_queue.suspensions.arn,
-      aws_sqs_queue.not_suspended.arn
+      aws_sqs_queue.not_suspended_observability.arn
     ]
   }
 }

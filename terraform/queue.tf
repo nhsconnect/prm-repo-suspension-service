@@ -15,6 +15,12 @@ resource "aws_sqs_queue" "suspensions" {
   }
 }
 
+resource "aws_ssm_parameter" "suspensions_queue_name" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/suspensions-queue-name"
+  type  = "String"
+  value = aws_sqs_queue.suspensions.name
+}
+
 resource "aws_sns_topic_subscription" "suspensions_topic" {
   protocol             = "sqs"
   raw_message_delivery = true
@@ -41,7 +47,7 @@ resource "aws_sns_topic" "not_suspended" {
   }
 }
 
-resource "aws_sqs_queue" "not_suspended" {
+resource "aws_sqs_queue" "not_suspended_observability" {
   name                       = local.not_suspended_queue_name
   message_retention_seconds  = 1800
   kms_master_key_id = aws_kms_key.not_suspended.id
@@ -53,15 +59,22 @@ resource "aws_sqs_queue" "not_suspended" {
   }
 }
 
+resource "aws_ssm_parameter" "not_suspended_observability_queue" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/not-suspended-observability-queue-name"
+  type  = "String"
+  value = aws_sqs_queue.not_suspended_observability.name
+}
+
+
 resource "aws_sns_topic_subscription" "not_suspended" {
   protocol             = "sqs"
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.not_suspended.arn
-  endpoint             = aws_sqs_queue.not_suspended.arn
+  endpoint             = aws_sqs_queue.not_suspended_observability.arn
 }
 
 resource "aws_sqs_queue_policy" "not_suspended_events_subscription" {
-  queue_url = aws_sqs_queue.not_suspended.id
+  queue_url = aws_sqs_queue.not_suspended_observability.id
   policy    = data.aws_iam_policy_document.not_suspended_events_policy_doc.json
 }
 
@@ -80,7 +93,7 @@ data "aws_iam_policy_document" "not_suspended_events_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.not_suspended.arn
+      aws_sqs_queue.not_suspended_observability.arn
     ]
 
     condition {
