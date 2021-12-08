@@ -3,6 +3,7 @@ locals {
   suspension_service_metric_namespace = "SuspensionService"
   not_suspended_sns_topic_name        = "${var.environment}-suspension-service-not-suspended-sns-topic"
   sns_topic_namespace = "AWS/SNS"
+  sqs_namespace = "AWS/SQS"
   sns_topic_error_logs_metric_name = "NumberOfNotificationsFailed"
 }
 
@@ -79,4 +80,52 @@ resource "aws_cloudwatch_metric_alarm" "not_suspended_sns_topic_error_log_alarm"
   treat_missing_data        = "notBreaching"
   actions_enabled           = "true"
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "suspensions_queue_ratio_of_received_to_acknowledgement" {
+  alarm_name                = "${var.environment}-suspensions-queue-ratio-of-received-to-acknowledgement"
+  comparison_operator       = "LessThanOrEqualToThreshold"
+  evaluation_periods        = "1"
+  threshold                 = "90"
+  alarm_description         = "Received message ratio to acknowledgement exceeds %20"
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+
+  metric_query {
+    id          = "e1"
+    expression  = "(acknowledgement+0.1)/(received+0.1)*100"
+    label       = "Expression"
+    return_data = "true"
+  }
+
+  metric_query {
+    id = "received"
+
+    metric {
+      metric_name = "NumberOfMessagesReceived"
+      namespace   = local.sqs_namespace
+      period      = "300"
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        QueueName = aws_sqs_queue.suspensions.name
+      }
+    }
+  }
+
+  metric_query {
+    id = "acknowledgement"
+
+    metric {
+      metric_name = "NumberOfMessagesDeleted"
+      namespace   = local.sqs_namespace
+      period      = "300"
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        QueueName = aws_sqs_queue.suspensions.name
+      }
+    }
+  }
 }
