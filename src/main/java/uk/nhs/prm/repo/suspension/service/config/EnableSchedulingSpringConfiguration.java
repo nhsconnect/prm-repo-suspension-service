@@ -8,5 +8,5 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableScheduling
 @ComponentScan("uk.nhs.prm.repo.suspension.service.metrics")
-public class ScheduledConfig {
+public class EnableSchedulingSpringConfiguration {
 }

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.FilterType;
 
 @Configuration
 @ComponentScan(excludeFilters =
-@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = HealthCheckStatusPublisher.class))
-public class TestScheduledConfig {
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = HealthCheckStatusPublisher.class)
+)
+public class TestSpringConfiguration {
 }

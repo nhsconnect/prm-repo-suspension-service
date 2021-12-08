@@ -14,13 +14,12 @@ import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionsEventList
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionsEventService;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class SqsConfig {
+public class SqsListenerSpringConfiguration {
 
     @Value("${aws.suspensionsQueueName}")
     private String suspensionsQueueName;

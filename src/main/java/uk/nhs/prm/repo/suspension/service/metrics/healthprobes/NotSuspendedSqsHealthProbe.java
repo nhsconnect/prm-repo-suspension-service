@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.suspension.service.metrics.healthprobes;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
@@ -11,14 +12,17 @@ import uk.nhs.prm.repo.suspension.service.metrics.AppConfig;
 @Slf4j
 public class NotSuspendedSqsHealthProbe implements HealthProbe {
     private final AppConfig config;
-    public NotSuspendedSqsHealthProbe(AppConfig config) {
+    private final SqsClient sqsClient;
+
+    @Autowired
+    public NotSuspendedSqsHealthProbe(AppConfig config, SqsClient sqsClient) {
         this.config = config;
+        this.sqsClient = sqsClient;
     }
 
     @Override
     public boolean isHealthy() {
         try {
-            var sqsClient = SqsClient.create();
             var queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName()).build()).queueUrl();
             sqsClient.getQueueAttributes(GetQueueAttributesRequest.builder().queueUrl(queueUrl).build());
             return true;

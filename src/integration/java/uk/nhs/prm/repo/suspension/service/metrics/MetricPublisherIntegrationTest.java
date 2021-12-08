@@ -6,10 +6,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
+import uk.nhs.prm.repo.suspension.service.config.SnsClientSpringConfiguration;
+import uk.nhs.prm.repo.suspension.service.config.SqsClientSpringConfiguration;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -23,9 +26,10 @@ import static org.awaitility.Awaitility.await;
 
 @SpringBootTest()
 @ActiveProfiles("test")
-@SpringJUnitConfig(TestScheduledConfig.class)
+@SpringJUnitConfig(TestSpringConfiguration.class)
 @TestPropertySource(properties = {"environment = integration_test"})
 @ExtendWith(MockitoExtension.class)
+@ContextConfiguration(classes = {SnsClientSpringConfiguration.class, SqsClientSpringConfiguration.class, MetricPublisher.class, AppConfig.class})
 public class MetricPublisherIntegrationTest {
 
     @Autowired
