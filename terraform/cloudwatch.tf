@@ -141,7 +141,7 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_age_of_message" {
   namespace                 = local.sqs_namespace
   alarm_description         = "Alarm to alert approximate time for message in the queue"
   statistic                 = "Maximum"
-  period                    = "1800"
+  period                    = var.period_of_age_of_message_metric
   dimensions = {
     QueueName = aws_sqs_queue.suspensions.name
   }
