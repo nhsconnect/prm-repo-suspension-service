@@ -3,12 +3,10 @@ package uk.nhs.prm.repo.suspension.service.metrics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.metrics.healthprobes.HealthProbe;
 import uk.nhs.prm.repo.suspension.service.metrics.healthprobes.NotSuspendedSnsHealthProbe;
-import uk.nhs.prm.repo.suspension.service.metrics.healthprobes.NotSuspendedSqsHealthProbe;
 import uk.nhs.prm.repo.suspension.service.metrics.healthprobes.SuspensionsQueueHealthProbe;
 
 import java.util.ArrayList;
@@ -21,7 +19,6 @@ class HealthCheckStatusPublisherTest {
     private MetricPublisher metricPublisher;
     private SuspensionsQueueHealthProbe suspensionsQueueHealthProbe;
     private NotSuspendedSnsHealthProbe notSuspendedSnsHealthProbe;
-    private NotSuspendedSqsHealthProbe notSuspendedSqsHealthProbe;
     private List<HealthProbe> probe = new ArrayList<>();
 
     @BeforeEach
@@ -29,10 +26,8 @@ class HealthCheckStatusPublisherTest {
         metricPublisher = Mockito.mock(MetricPublisher.class);
         suspensionsQueueHealthProbe = Mockito.mock(SuspensionsQueueHealthProbe.class);
         notSuspendedSnsHealthProbe = Mockito.mock(NotSuspendedSnsHealthProbe.class);
-        notSuspendedSqsHealthProbe = Mockito.mock(NotSuspendedSqsHealthProbe.class);
         probe.add(suspensionsQueueHealthProbe);
         probe.add(notSuspendedSnsHealthProbe);
-        probe.add(notSuspendedSqsHealthProbe);
     }
 
     @Test
@@ -49,7 +44,6 @@ class HealthCheckStatusPublisherTest {
     public void shouldSetHealthMetricToOneIfAllConnectionsAreHealthy() {
         when(suspensionsQueueHealthProbe.isHealthy()).thenReturn(true);
         when(notSuspendedSnsHealthProbe.isHealthy()).thenReturn(true);
-        when(notSuspendedSqsHealthProbe.isHealthy()).thenReturn(true);
 
         HealthCheckStatusPublisher healthPublisher = new HealthCheckStatusPublisher(metricPublisher, probe);
         healthPublisher.publishHealthStatus();

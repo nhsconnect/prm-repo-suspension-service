@@ -36,10 +36,7 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.notSuspendedQueueName}")
     private String notSuspendedQueueName;
 
-    @Value("${aws.notSuspendedSnsTopicArn}")
-    private String suspensionsSNSTopicArn;
-
-    private String sampleMessage = "{\\\"lastUpdated\\\":\\\"2017-11-01T15:00:33+00:00\\\",\\\"previousOdsCode\\\":\\\"B85612\\\",\\\"eventType\\\":\\\"SUSPENSION\\\",\\\"nhsNumber\\\":\\\"9912003888\\\"}\",\"environment\":\"local\"}";
+    private String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}\",\"environment\":\"local\"}";
 
     @Test
     void shouldSendMessageToNotSuspendedSNSTopic(){
@@ -67,6 +64,5 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
-
     }
 }
