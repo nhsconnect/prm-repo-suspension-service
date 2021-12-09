@@ -37,3 +37,8 @@ variable "log_level" {
 }
 
 variable "grant_access_through_vpn" {}
+
+//this might change per environment.
+variable "threshold_for_suspensions_queue_age_of_message" {
+  default = "86400"
+}
