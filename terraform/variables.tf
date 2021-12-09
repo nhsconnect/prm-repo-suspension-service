@@ -42,3 +42,7 @@ variable "grant_access_through_vpn" {}
 variable "threshold_for_suspensions_queue_age_of_message" {
   default = "86400"
 }
+
+variable "period_of_age_of_message_metric" {
+  default = "1800"
+}
