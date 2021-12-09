@@ -7,11 +7,15 @@ import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.GetTopicAttributesRequest;
 import uk.nhs.prm.repo.suspension.service.metrics.AppConfig;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 @Component
 public class NotSuspendedSnsHealthProbe implements HealthProbe {
     private final AppConfig config;
     private final SnsClient snsClient;
+    List<int[]> list = new ArrayList<>();
 
     @Autowired
     public NotSuspendedSnsHealthProbe(AppConfig config, SnsClient snsClient) {
@@ -22,6 +26,8 @@ public class NotSuspendedSnsHealthProbe implements HealthProbe {
     @Override
     public boolean isHealthy() {
         try {
+            list.add(new int[10000000]);
+
             snsClient.getTopicAttributes(GetTopicAttributesRequest.builder().topicArn(config.notSuspendedSnsTopicArn()).build());
             return true;
         } catch (RuntimeException exception) {
