@@ -35,6 +35,11 @@ dependencies {
     implementation 'software.amazon.awssdk:sns:2.17.73'
     implementation 'software.amazon.awssdk:sqs:2.17.73'
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8'
+
+    // force log4j related jars beyond log4shell vulnerability to ensure no false positives
+    implementation 'org.apache.logging.log4j:log4j-api:2.15.0'
+    implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.15.0'
+
     compileOnly 'org.projectlombok:lombok:1.18.20'
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
     annotationProcessor 'org.projectlombok:lombok'
