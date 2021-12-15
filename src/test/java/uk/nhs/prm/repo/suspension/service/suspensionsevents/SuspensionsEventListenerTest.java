@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 public class SuspensionsEventListenerTest {
 
         @Mock
-        private SuspensionsEventService suspensionsEventService;
+        private SuspensionsEventProcessor suspensionsEventProcessor;
         @Mock
         private Tracer tracer;
 
@@ -30,7 +30,7 @@ public class SuspensionsEventListenerTest {
             SQSTextMessage message = spy(new SQSTextMessage(payload));
 
             suspensionsEventListener.onMessage(message);
-            verify(suspensionsEventService).processSuspensionsEvent(payload);
+            verify(suspensionsEventProcessor).processSuspensionEvent(payload);
             verify(message).acknowledge();
         }
 

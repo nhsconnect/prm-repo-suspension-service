@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionsEventListener;
-import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionsEventService;
+import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionsEventProcessor;
 
 import javax.jms.JMSException;
 import javax.jms.Session;
@@ -24,7 +24,7 @@ public class SqsListenerSpringConfiguration {
     @Value("${aws.suspensionsQueueName}")
     private String suspensionsQueueName;
 
-    private final SuspensionsEventService suspensionsEventService;
+    private final SuspensionsEventProcessor suspensionsEventProcessor;
     private final Tracer tracer;
 
     @Bean
@@ -44,7 +44,7 @@ public class SqsListenerSpringConfiguration {
         log.info("suspensions event queue name : {}", suspensionsQueueName);
         var consumer = session.createConsumer(session.createQueue(suspensionsQueueName));
 
-        consumer.setMessageListener(new SuspensionsEventListener(suspensionsEventService, tracer));
+        consumer.setMessageListener(new SuspensionsEventListener(suspensionsEventProcessor, tracer));
 
         connection.start();
 

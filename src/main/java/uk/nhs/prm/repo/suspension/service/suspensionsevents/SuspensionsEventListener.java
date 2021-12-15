@@ -13,7 +13,7 @@ import javax.jms.TextMessage;
 @RequiredArgsConstructor
 public class SuspensionsEventListener implements MessageListener {
 
-    private final SuspensionsEventService suspensionsEventService;
+    private final SuspensionsEventProcessor suspensionsEventProcessor;
     private final Tracer tracer;
 
     @Override
@@ -22,7 +22,7 @@ public class SuspensionsEventListener implements MessageListener {
         try {
             setTraceId(message);
             var payload = ((TextMessage) message).getText();
-            suspensionsEventService.processSuspensionsEvent(payload);
+            suspensionsEventProcessor.processSuspensionEvent(payload);
             message.acknowledge();
         } catch (JMSException e) {
             e.printStackTrace();

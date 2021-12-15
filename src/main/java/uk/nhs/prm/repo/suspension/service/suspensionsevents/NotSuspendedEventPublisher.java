@@ -5,11 +5,11 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class SuspensionsEventPublisher {
+public class NotSuspendedEventPublisher {
     private final String suspensionsSnsTopicArn;
     private final MessagePublisher messagePublisher;
 
-    public SuspensionsEventPublisher(MessagePublisher messagePublisher, @Value("${aws.notSuspendedSnsTopicArn}") String suspensionsSnsTopicArn) {
+    public NotSuspendedEventPublisher(MessagePublisher messagePublisher, @Value("${aws.notSuspendedSnsTopicArn}") String suspensionsSnsTopicArn) {
         this.messagePublisher = messagePublisher;
         this.suspensionsSnsTopicArn = suspensionsSnsTopicArn;
     }

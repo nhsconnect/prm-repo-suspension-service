@@ -9,23 +9,23 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class SuspensionsEventPublisherTest {
+class NotSuspendedEventPublisherTest {
 
     @Mock
     private MessagePublisher messagePublisher;
 
     private final static String suspensionsTopicArn = "suspensionsTopicArn";
 
-    private SuspensionsEventPublisher suspensionsEventPublisher;
+    private NotSuspendedEventPublisher notSuspendedEventPublisher;
 
     @BeforeEach
     void setUp() {
-        suspensionsEventPublisher = new SuspensionsEventPublisher(messagePublisher, suspensionsTopicArn);
+        notSuspendedEventPublisher = new NotSuspendedEventPublisher(messagePublisher, suspensionsTopicArn);
     }
 
     @Test
     void shouldPublishMessageToTheUnhandledTopic() {
-        suspensionsEventPublisher.sendMessage("message");
+        notSuspendedEventPublisher.sendMessage("message");
         verify(messagePublisher).sendMessage(suspensionsTopicArn, "message");
     }
 }

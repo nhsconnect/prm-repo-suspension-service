@@ -23,3 +23,7 @@ data "aws_ssm_parameter" "suspensions_kms_key_id" {
 data "aws_ssm_parameter" "suspensions_sns_topic_arn" {
   name = "/repo/${var.environment}/output/nems-event-processor/suspensions-sns-topic-arn"
 }
+
+data "aws_ssm_parameter" "pds_adaptor_auth_key" {
+  name = "/repo/${var.environment}/user-input/api-keys/pds-adaptor/suspension-service"
+}
