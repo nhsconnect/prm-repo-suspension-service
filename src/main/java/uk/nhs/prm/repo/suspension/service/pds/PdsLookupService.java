@@ -16,7 +16,7 @@ public class PdsLookupService {
 
     private RestTemplate pdsAdaptorClient;
 
-    private final String SUSPENDED_PATIENT = "suspended-patient-status/";
+    private static final String SUSPENDED_PATIENT = "suspended-patient-status/";
 
     @Value("${pdsAdaptor.suspensionService.password}")
     private String suspensionServicePassword;
