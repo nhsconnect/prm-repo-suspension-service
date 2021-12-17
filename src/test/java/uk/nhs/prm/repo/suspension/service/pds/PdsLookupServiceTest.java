@@ -2,8 +2,18 @@ package uk.nhs.prm.repo.suspension.service.pds;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
+import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -12,17 +22,27 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class PdsLookupServiceTest {
 
     @Mock
+    private RestTemplate client;
+
+    @InjectMocks
     private PdsLookupService pdsLookupService;
 
     @Test
-    void isMessageSuspended(){
-        //given
-        String suspendedMessage = "suspendedMessage";
+    public void getPdsResponse() {
+        ReflectionTestUtils.setField(pdsLookupService, "suspensionServicePassword", "PASS");
+        PdsAdaptorSuspensionStatusResponse myobjectA = new PdsAdaptorSuspensionStatusResponse(false, "11111");
+        ResponseEntity<PdsAdaptorSuspensionStatusResponse> myEntity =
+                new ResponseEntity<PdsAdaptorSuspensionStatusResponse>(myobjectA,HttpStatus.ACCEPTED);
 
-        //when
-//        when(pdsLookupService.isSuspended(suspendedMessage)).thenReturn(true);
+        Mockito.when(client.exchange(
+                ArgumentMatchers.eq("suspended-patient-status/123456789"),
+                ArgumentMatchers.eq(HttpMethod.GET),
+                ArgumentMatchers.<HttpEntity<?>>any(),
+                ArgumentMatchers.<Class<PdsAdaptorSuspensionStatusResponse>>any())
+        ).thenReturn(myEntity);
 
-        //then
-        assertThat(pdsLookupService.isSuspended(suspendedMessage));
+        PdsAdaptorSuspensionStatusResponse res = pdsLookupService.isSuspended("123456789");
+        assertThat(!res.getIsSuspended());
+        assertThat(res.getCurrentOdsCode()).isEqualTo("11111");
     }
 }

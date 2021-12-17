@@ -14,7 +14,7 @@ public class SuspensionsEventProcessor {
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
 
     public void processSuspensionEvent(String suspensionMessage) {
-        if(pdsLookupService.isSuspended(suspensionMessage)){
+        if(pdsLookupService.isSuspended(suspensionMessage).getIsSuspended()){
             mofUpdatedEventPublisher.sendMessage(suspensionMessage);
         } else {
             notSuspendedEventPublisher.sendMessage(suspensionMessage);

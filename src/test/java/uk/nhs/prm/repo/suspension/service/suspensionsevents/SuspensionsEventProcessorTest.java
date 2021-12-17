@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.PdsLookupService;
 
 import static org.mockito.Mockito.*;
@@ -28,7 +29,9 @@ public class SuspensionsEventProcessorTest {
     @Test
     void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended(){
         String notSuspendedMessage = "notSuspendedMessage";
-        when(pdsLookupService.isSuspended(notSuspendedMessage)).thenReturn(false);
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(false, "null");
+        when(pdsLookupService.isSuspended(notSuspendedMessage)).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionsEventProcessor.processSuspensionEvent(notSuspendedMessage);
 
@@ -39,7 +42,9 @@ public class SuspensionsEventProcessorTest {
     @Test
     void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientIsConfirmedSuspended(){
         String suspendedMessage = "suspendedMessage";
-        when(pdsLookupService.isSuspended(suspendedMessage)).thenReturn(true);
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(true, "12345");
+        when(pdsLookupService.isSuspended(suspendedMessage)).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
 
