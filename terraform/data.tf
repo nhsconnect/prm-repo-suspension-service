@@ -27,3 +27,7 @@ data "aws_ssm_parameter" "suspensions_sns_topic_arn" {
 data "aws_ssm_parameter" "pds_adaptor_auth_key" {
   name = "/repo/${var.environment}/user-input/api-keys/pds-adaptor/suspension-service"
 }
+
+data "aws_ssm_parameter" "pds_adaptor_service_url" {
+  name = "/repo/${var.environment}/output/prm-deductions-pds-adaptor/service-url"
+}
