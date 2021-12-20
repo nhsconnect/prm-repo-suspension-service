@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -68,4 +69,27 @@ public class SuspensionsEventProcessorTest {
 
     }
 
+    @Test
+    void shouldNotProcessMessagesWhichHasNotProperNhsNumber(){
+        String message = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"invalid\"}\",\"environment\":\"local\"}";
+        Assertions.assertThrows(Exception.class, () -> {
+            suspensionsEventProcessor.processSuspensionEvent(message);
+        });
+    }
+
+    @Test
+    void shouldNotProcessMessagesWhichHaveNoNhsNumber(){
+        String message = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"environment\":\"local\"}";
+        Assertions.assertThrows(Exception.class, () -> {
+            suspensionsEventProcessor.processSuspensionEvent(message);
+        });
+    }
+
+    @Test
+    void shouldNotProcessMessagesWhichAreNotInCorrectFormat(){
+        String message = "invalid message";
+        Assertions.assertThrows(Exception.class, () -> {
+            suspensionsEventProcessor.processSuspensionEvent(message);
+        });
+    }
 }
