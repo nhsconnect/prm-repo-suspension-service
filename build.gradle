@@ -50,6 +50,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.6'
     testImplementation 'org.springframework.boot:spring-boot-starter-aop:2.5.6'
     testImplementation "org.mockito:mockito-core:3.+"
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.31.0'
 }
 
 test {

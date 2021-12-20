@@ -30,15 +30,18 @@ class PdsLookupServiceTest {
     @Test
     public void getPdsResponse() {
         ReflectionTestUtils.setField(pdsLookupService, "suspensionServicePassword", "PASS");
-        PdsAdaptorSuspensionStatusResponse myobjectA = new PdsAdaptorSuspensionStatusResponse(false, "11111");
-        ResponseEntity<PdsAdaptorSuspensionStatusResponse> myEntity =
-                new ResponseEntity<PdsAdaptorSuspensionStatusResponse>(myobjectA,HttpStatus.ACCEPTED);
+        String myobjectA = "{\n" +
+                "    \"isSuspended\": false,\n" +
+                "    \"currentOdsCode\": \"11111\"\n" +
+                "}";
+        ResponseEntity<String> myEntity =
+                new ResponseEntity<String>(myobjectA,HttpStatus.ACCEPTED);
 
         Mockito.when(client.exchange(
                 ArgumentMatchers.eq("suspended-patient-status/123456789"),
                 ArgumentMatchers.eq(HttpMethod.GET),
                 ArgumentMatchers.<HttpEntity<?>>any(),
-                ArgumentMatchers.<Class<PdsAdaptorSuspensionStatusResponse>>any())
+                ArgumentMatchers.<Class<String>>any())
         ).thenReturn(myEntity);
 
         PdsAdaptorSuspensionStatusResponse res = pdsLookupService.isSuspended("123456789");

@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,8 +40,30 @@ public class SuspensionsIntegrationTest {
 
     private String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}\",\"environment\":\"local\"}";
 
+    private WireMockServer initializeWebServer() {
+        WireMockServer wireMockServer = new WireMockServer(8080);
+        wireMockServer.start();
+
+        return wireMockServer;
+
+    }
+
+    private void stopMockServer(WireMockServer mockServer){
+        mockServer.stop();
+    }
+
     @Test
     void shouldSendMessageToNotSuspendedSNSTopic(){
+        WireMockServer mockServer = initializeWebServer();
+
+        stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
+                .inScenario("Get PDS Record")
+                .whenScenarioStateIs("Started")
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getString())));
+
         String queueUrl = amazonSQSAsync.getQueueUrl(suspensionsQueueName).getQueueUrl();
         String notSuspendedQueueUrl = amazonSQSAsync.getQueueUrl(notSuspendedQueueName).getQueueUrl();
         System.out.println("queue url is: " + queueUrl);
@@ -64,5 +88,13 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
+        stopMockServer(mockServer);
+    }
+
+    private String getString() {
+    return "{\n" +
+            "    \"isSuspended\": false,\n" +
+            "    \"currentOdsCode\": \"N85027\"\n" +
+            "}";
     }
 }

@@ -115,6 +115,11 @@ function build_docker_image() {
   echo Build completed on `date`
 }
 
+function configure_local_envs {
+  export LOG_LEVEL=debug
+  export NHS_ENVIRONMENT=local
+}
+
 ###########
 ## TASKS ##
 ###########

@@ -1,6 +1,9 @@
 package uk.nhs.prm.repo.suspension.service.pds;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -9,11 +12,14 @@ import org.springframework.web.client.RestTemplate;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 
 import java.util.Arrays;
+import java.util.Map;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class PdsLookupService {
 
+    public static final String SUSPENSION_SERVICE_USERNAME = "suspension-service";
     private RestTemplate pdsAdaptorClient;
 
     private static final String SUSPENDED_PATIENT = "suspended-patient-status/";
@@ -27,17 +33,28 @@ public class PdsLookupService {
     }
 
     public PdsAdaptorSuspensionStatusResponse isSuspended(String nhsNumber) {
-        ResponseEntity<PdsAdaptorSuspensionStatusResponse> responseEntity = pdsAdaptorClient
-                .exchange(SUSPENDED_PATIENT + nhsNumber, HttpMethod.GET, prepareHeader(), PdsAdaptorSuspensionStatusResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<String> responseEntity = pdsAdaptorClient
+                .exchange(SUSPENDED_PATIENT + nhsNumber, HttpMethod.GET, prepareHeader(), String.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse = null;
+        try {
+            Map<String, Object> map = mapper.readValue(responseEntity.getBody(), Map.class);
+            pdsAdaptorSuspensionStatusResponse = new PdsAdaptorSuspensionStatusResponse(Boolean.valueOf(map.get("isSuspended").toString()),
+                    map.get("currentOdsCode").toString());
+        } catch (JsonProcessingException e) {
+            log.error("Got an exception while parsing PDS lookup response.");
+        }
+        return pdsAdaptorSuspensionStatusResponse;
     }
 
     private HttpEntity<String> prepareHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        headers.setBasicAuth("suspension-service", suspensionServicePassword);
+        headers.setBasicAuth(SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
 
         HttpEntity<String> entity = new HttpEntity<String>(headers);
+
         return entity;
     }
 }

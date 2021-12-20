@@ -39,7 +39,7 @@ public class SuspensionsEventProcessor {
         try {
             map = mapper.readValue(suspensionMessage, new TypeReference<HashMap<String,Object>>(){});
         } catch (JsonProcessingException e) {
-            log.error("Message is not message");
+            log.error("Got an exception while parsing suspensions message to a map.");
         }
         return map;
     }
@@ -47,12 +47,12 @@ public class SuspensionsEventProcessor {
     private String validateNhsNumber(HashMap<String, Object> map) {
         if(map.get("nhsNumber")==null){
             log.error("Nhs number is not proper");
-            throw new IllegalArgumentException("Nhs number is not proper");
+            throw new IllegalArgumentException("Message has no nhs number.");
         }
         String nhsNumber = map.get("nhsNumber").toString();
         if (!nhsNumber.matches("[0-9]+") && nhsNumber.length() != 10){
-            log.error("Nhs number is not proper");
-            throw new IllegalArgumentException("Nhs number is not proper");
+            log.error("Nhs number is invalid.");
+            throw new IllegalArgumentException("Nhs number is invalid.");
         }
         return nhsNumber;
     }
