@@ -28,10 +28,10 @@ public class SuspensionsEventProcessorTest {
 
     @Test
     void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended(){
-        String notSuspendedMessage = "notSuspendedMessage";
+        String notSuspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(false, "null");
-        when(pdsLookupService.isSuspended(notSuspendedMessage)).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionsEventProcessor.processSuspensionEvent(notSuspendedMessage);
 
@@ -41,14 +41,29 @@ public class SuspensionsEventProcessorTest {
 
     @Test
     void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientIsConfirmedSuspended(){
-        String suspendedMessage = "suspendedMessage";
+        String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(true, "12345");
-        when(pdsLookupService.isSuspended(suspendedMessage)).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage(suspendedMessage);
+        verify(notSuspendedEventPublisher, never()).sendMessage(any());
+
+    }
+
+    @Test
+    void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientIsConfirme(){
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
+
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(true, "12345");
+        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
+        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+
+        verify(mofUpdatedEventPublisher).sendMessage(sampleMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
 
     }
