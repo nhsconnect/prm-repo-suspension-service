@@ -1,11 +1,23 @@
 package uk.nhs.prm.repo.suspension.service.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
-@AllArgsConstructor
 public class PdsAdaptorSuspensionStatusResponse {
-        private Boolean isSuspended;
-        private String currentOdsCode;
+        private final Boolean isSuspended;
+        private final Object currentOdsCode;
+        private final Object managingOrganisation;
+        private final String recordETag;
+
+
+        public PdsAdaptorSuspensionStatusResponse(@JsonProperty("isSuspended") Boolean isSuspended, @JsonProperty("currentOdsCode")
+                Object currentOdsCode, @JsonProperty("managingOrganisation") Object managingOrganisation, @JsonProperty("recordETag")String recordETag) {
+                this.isSuspended = isSuspended;
+                this.currentOdsCode = currentOdsCode;
+                this.managingOrganisation = managingOrganisation;
+                this.recordETag = recordETag;
+        }
 }

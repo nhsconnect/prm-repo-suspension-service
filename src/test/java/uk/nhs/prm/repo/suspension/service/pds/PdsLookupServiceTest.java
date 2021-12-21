@@ -28,11 +28,13 @@ class PdsLookupServiceTest {
     private PdsLookupService pdsLookupService;
 
     @Test
-    public void getPdsResponse() {
+    public void getPdsResponseAsnotSuspended() {
         ReflectionTestUtils.setField(pdsLookupService, "suspensionServicePassword", "PASS");
         String myobjectA = "{\n" +
                 "    \"isSuspended\": false,\n" +
-                "    \"currentOdsCode\": \"11111\"\n" +
+                "    \"currentOdsCode\": \"B86041\",\n" +
+                "    \"managingOrganisation\": null,\n" +
+                "    \"recordETag\": \"W/\\\"5\\\"\"\n" +
                 "}";
         ResponseEntity<String> myEntity =
                 new ResponseEntity<String>(myobjectA,HttpStatus.ACCEPTED);
@@ -46,6 +48,31 @@ class PdsLookupServiceTest {
 
         PdsAdaptorSuspensionStatusResponse res = pdsLookupService.isSuspended("123456789");
         assertThat(!res.getIsSuspended());
-        assertThat(res.getCurrentOdsCode()).isEqualTo("11111");
+        assertThat(res.getCurrentOdsCode()).isEqualTo("B86041");
+    }
+
+    @Test
+    public void getPdsResponseAsSuspended() {
+        ReflectionTestUtils.setField(pdsLookupService, "suspensionServicePassword", "PASS");
+        String myobjectA = "{\n" +
+                "    \"isSuspended\": true,\n" +
+                "    \"currentOdsCode\": null,\n" +
+                "    \"managingOrganisation\": \"M85019\",\n" +
+                "    \"recordETag\": \"W/\\\"11\\\"\"\n" +
+                "}";
+        ResponseEntity<String> myEntity =
+                new ResponseEntity<String>(myobjectA,HttpStatus.ACCEPTED);
+
+        Mockito.when(client.exchange(
+                ArgumentMatchers.eq("suspended-patient-status/123456789"),
+                ArgumentMatchers.eq(HttpMethod.GET),
+                ArgumentMatchers.<HttpEntity<?>>any(),
+                ArgumentMatchers.<Class<String>>any())
+        ).thenReturn(myEntity);
+
+        PdsAdaptorSuspensionStatusResponse res = pdsLookupService.isSuspended("123456789");
+        assertThat(res.getIsSuspended());
+        assertThat(res.getCurrentOdsCode()).isNull();
+        assertThat(res.getManagingOrganisation()).isEqualTo("M85019");
     }
 }

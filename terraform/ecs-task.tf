@@ -66,3 +66,9 @@ resource "aws_security_group" "ecs-tasks-sg" {
     Environment = var.environment
   }
 }
+
+resource "aws_ssm_parameter" "ecs_tasks_sq" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/ecs-sg-id"
+  type  = "String"
+  value = aws_security_group.ecs-tasks-sg.id
+}

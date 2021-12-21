@@ -39,9 +39,7 @@ public class PdsLookupService {
         ObjectMapper mapper = new ObjectMapper();
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse = null;
         try {
-            Map<String, Object> map = mapper.readValue(responseEntity.getBody(), Map.class);
-            pdsAdaptorSuspensionStatusResponse = new PdsAdaptorSuspensionStatusResponse(Boolean.valueOf(map.get("isSuspended").toString()),
-                    map.get("currentOdsCode").toString());
+            pdsAdaptorSuspensionStatusResponse = mapper.readValue(responseEntity.getBody(), PdsAdaptorSuspensionStatusResponse.class);
         } catch (JsonProcessingException e) {
             log.error("Got an exception while parsing PDS lookup response.");
         }
