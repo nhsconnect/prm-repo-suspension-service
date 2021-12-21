@@ -29,7 +29,6 @@ class PdsLookupServiceTest {
 
     @Test
     public void getPdsResponse() {
-        ReflectionTestUtils.setField(pdsLookupService, "suspensionServicePassword", "PASS");
         String myobjectA = "{\n" +
                 "    \"isSuspended\": false,\n" +
                 "    \"currentOdsCode\": \"11111\"\n" +

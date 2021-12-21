@@ -5,6 +5,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.RegistryBuilder;
@@ -26,12 +27,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 
 @Configuration
+@Slf4j
 public class HttpClientConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientConfig.class);
-
-    //@formatter:off
-    private static final int CONNECT_TIMEOUT = Integer.getInteger("HTTP_CONNECT_TIMEOUT", 10_000);
+    private static final int CONNECT_TIMEOUT = Integer.getInteger("HTTP_CONNECT_TIMEOUT", 20_000);
     private static final int REQUEST_TIMEOUT = Integer.getInteger("HTTP_REQUEST_TIMEOUT", 30_000);
     private static final int SOCKET_TIMEOUT = Integer.getInteger("HTTP_REQUEST_TIMEOUT", REQUEST_TIMEOUT);
     private static final int MAX_TOTAL_CONNECTIONS = Integer.getInteger("MAX_TOTAL_CONNECTIONS", 50);
@@ -39,7 +38,6 @@ public class HttpClientConfig {
             = Integer.getInteger("DEFAULT_KEEP_ALIVE_TIME_MILLIS", 20_000);
     private static final int CLOSE_IDLE_CONNECTION_WAIT_TIME_SECS
             = Integer.getInteger("DEFAULT_KEEP_ALIVE_TIME_MILLIS", DEFAULT_KEEP_ALIVE_TIME_MILLIS);
-    //@formatter:on
 
     @Bean
     public PoolingHttpClientConnectionManager poolingConnectionManager() {
@@ -48,7 +46,7 @@ public class HttpClientConfig {
             builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
         }
         catch (NoSuchAlgorithmException | KeyStoreException e) {
-            LOGGER.error("Pooling Connection Manager Initialisation failure because of "
+            log.error("Pooling Connection Manager Initialisation failure because of "
                     + e.getMessage(), e);
         }
 
@@ -57,7 +55,7 @@ public class HttpClientConfig {
             sslsf = new SSLConnectionSocketFactory(builder.build());
         }
         catch (KeyManagementException | NoSuchAlgorithmException e) {
-            LOGGER.error("Pooling Connection Manager Initialisation failure because of "
+            log.error("Pooling Connection Manager Initialisation failure because of "
                     + e.getMessage(), e);
         }
 
@@ -114,19 +112,19 @@ public class HttpClientConfig {
             public void run() {
                 try {
                     if (connectionManager != null) {
-                        LOGGER.trace(
+                        log.trace(
                                 "run IdleConnectionMonitor - Closing expired and idle connections...");
                         connectionManager.closeExpiredConnections();
                         connectionManager.closeIdleConnections(CLOSE_IDLE_CONNECTION_WAIT_TIME_SECS,
                                 TimeUnit.SECONDS);
                     }
                     else {
-                        LOGGER.trace(
+                        log.trace(
                                 "run IdleConnectionMonitor - Http Client Connection manager is not initialised");
                     }
                 }
                 catch (Exception e) {
-                    LOGGER.error("run IdleConnectionMonitor - Exception occurred. msg={}, e={}",
+                    log.error("run IdleConnectionMonitor - Exception occurred. msg={}, e={}",
                             e.getMessage(), e);
                 }
             }
