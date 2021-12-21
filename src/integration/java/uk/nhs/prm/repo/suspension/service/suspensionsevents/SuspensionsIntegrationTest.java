@@ -59,7 +59,6 @@ public class SuspensionsIntegrationTest {
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .inScenario("Get PDS Record")
                 .whenScenarioStateIs("Started")
-                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(getString())));
