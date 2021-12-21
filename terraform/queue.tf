@@ -165,7 +165,6 @@ resource "aws_ssm_parameter" "mof_updated_queue" {
   value = aws_sqs_queue.mof_updated.name
 }
 
-
 resource "aws_sns_topic_subscription" "mof_updated" {
   protocol             = "sqs"
   raw_message_delivery = true
@@ -173,34 +172,4 @@ resource "aws_sns_topic_subscription" "mof_updated" {
   endpoint             = aws_sqs_queue.mof_updated.arn
 }
 
-resource "aws_sqs_queue_policy" "mof_updated_events_subscription" {
-  queue_url = aws_sqs_queue.mof_updated.id
-  policy    = data.aws_iam_policy_document.mof_updated_events_policy_doc.json
-}
-
-data "aws_iam_policy_document" "mof_updated_events_policy_doc" {
-  statement {
-
-    effect = "Allow"
-
-    actions = [
-      "sqs:SendMessage"
-    ]
-
-    principals {
-      identifiers = ["sns.amazonaws.com"]
-      type        = "Service"
-    }
-
-    resources = [
-      aws_sqs_queue.mof_updated.arn
-    ]
-
-    condition {
-      test     = "ArnEquals"
-      values   = [aws_sns_topic.mof_updated.arn]
-      variable = "aws:SourceArn"
-    }
-  }
-}
 
