@@ -12,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 
 import java.util.Arrays;
-import java.util.Map;
 
 @Component
 @AllArgsConstructor
@@ -33,9 +32,14 @@ public class PdsLookupService {
     }
 
     public PdsAdaptorSuspensionStatusResponse isSuspended(String nhsNumber) {
-        ResponseEntity<String> responseEntity = pdsAdaptorClient
-                .exchange(SUSPENDED_PATIENT + nhsNumber, HttpMethod.GET, prepareHeader(), String.class);
-
+        ResponseEntity<String> responseEntity = null;
+        try {
+            responseEntity = pdsAdaptorClient
+                    .exchange(SUSPENDED_PATIENT + nhsNumber, HttpMethod.GET, prepareHeader(), String.class);
+        } catch (Exception e) {
+            //log message is publishing as an info log, this is just to make it visible.
+            log.error(e.getMessage());
+        }
         ObjectMapper mapper = new ObjectMapper();
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse = null;
         try {
