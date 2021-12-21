@@ -19,9 +19,18 @@ import java.util.Map;
 @Slf4j
 public class PdsLookupService {
 
+    public static final String SUSPENSION_SERVICE_USERNAME = "suspension-service";
     private RestTemplate pdsAdaptorClient;
 
     private static final String SUSPENDED_PATIENT = "suspended-patient-status/";
+
+    @Value("${pdsAdaptor.suspensionService.password}")
+    private String suspensionServicePassword;
+
+    @Autowired
+    public PdsLookupService(RestTemplate pdsAdaptorClient) {
+        this.pdsAdaptorClient = pdsAdaptorClient;
+    }
 
     public PdsAdaptorSuspensionStatusResponse isSuspended(String nhsNumber) {
         ResponseEntity<String> responseEntity = pdsAdaptorClient
@@ -42,6 +51,7 @@ public class PdsLookupService {
     private HttpEntity<String> prepareHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        headers.setBasicAuth(SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
 
         HttpEntity<String> entity = new HttpEntity<String>(headers);
 
