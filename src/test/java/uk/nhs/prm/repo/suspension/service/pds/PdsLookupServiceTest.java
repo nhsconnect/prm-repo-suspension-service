@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,7 +29,7 @@ class PdsLookupServiceTest {
 
     @BeforeEach
     public void setUp() {
-        pdsLookupService = new PdsLookupService("something", new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client));
+        pdsLookupService = new PdsLookupService(new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client));
     }
     @Test
     public void getPdsResponseAsnotSuspended() {
