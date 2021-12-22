@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import uk.nhs.prm.repo.suspension.service.config.Tracer;
 import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 
@@ -27,9 +28,12 @@ class PdsLookupServiceTest {
 
     private PdsLookupService pdsLookupService;
 
+    @Mock
+    private Tracer tracer;
+
     @BeforeEach
     public void setUp() {
-        pdsLookupService = new PdsLookupService(new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client));
+        pdsLookupService = new PdsLookupService(new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client, tracer));
     }
     @Test
     public void getPdsResponseAsnotSuspended() {
@@ -42,6 +46,8 @@ class PdsLookupServiceTest {
                 "}";
         ResponseEntity<String> myEntity =
                 new ResponseEntity<String>(myobjectA,HttpStatus.ACCEPTED);
+
+        Mockito.when(tracer.getTraceId()).thenReturn("12345678");
 
         Mockito.when(client.exchange(
                 ArgumentMatchers.eq("suspended-patient-status/123456789"),
