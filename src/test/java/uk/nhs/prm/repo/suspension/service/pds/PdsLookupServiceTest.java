@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.suspension.service.pds;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -24,9 +26,12 @@ class PdsLookupServiceTest {
     @Mock
     private RestTemplate client;
 
-    @InjectMocks
     private PdsLookupService pdsLookupService;
 
+    @BeforeEach
+    public void setUp() {
+        pdsLookupService = new PdsLookupService("something", new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client));
+    }
     @Test
     public void getPdsResponseAsnotSuspended() {
         ReflectionTestUtils.setField(pdsLookupService, "suspensionServicePassword", "PASS");
