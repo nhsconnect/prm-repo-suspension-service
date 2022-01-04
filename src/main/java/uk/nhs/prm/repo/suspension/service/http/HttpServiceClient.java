@@ -29,6 +29,11 @@ public class HttpServiceClient {
         return responseBody;
     }
 
+    public String put(String url, String username, String password){
+
+        return "";
+    }
+
     private HttpEntity<String> prepareHeader(String username, String password) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.PdsLookupService;
 
 import java.util.HashMap;
@@ -20,7 +21,11 @@ public class SuspensionsEventProcessor {
 
     public void processSuspensionEvent(String suspensionMessage) {
         String nhsNumber = extractNhsNumber(suspensionMessage);
-        if(pdsLookupService.isSuspended(nhsNumber).getIsSuspended()){
+        String previousOdsCode=extractPreviousOdsCode(suspensionMessage);
+        PdsAdaptorSuspensionStatusResponse response = pdsLookupService.isSuspended(nhsNumber);
+        String recordATag=response.getRecordETag();
+
+        if(Boolean.TRUE.equals(response.getIsSuspended())){
             mofUpdatedEventPublisher.sendMessage(suspensionMessage);
         } else {
             notSuspendedEventPublisher.sendMessage(suspensionMessage);
@@ -32,6 +37,12 @@ public class SuspensionsEventProcessor {
 
         return  validateNhsNumber(map);
     }
+
+    private String extractPreviousOdsCode(String suspensionMessage){
+        HashMap<String, Object> map = mapMessageToHashMap(suspensionMessage);
+        return validateOdsCode(map);
+    }
+
 
     private HashMap<String, Object> mapMessageToHashMap(String suspensionMessage) {
         HashMap<String, Object> map = new HashMap<String,Object>();
@@ -55,5 +66,14 @@ public class SuspensionsEventProcessor {
             throw new IllegalArgumentException("Nhs number is invalid.");
         }
         return nhsNumber;
+    }
+
+    private String validateOdsCode(HashMap<String, Object> map) {
+        if(map.get("previousOdsCode")==null){
+            log.error("Ods can not be null");
+            throw new IllegalArgumentException("Ods can not be null");
+        }
+        return map.get("previousOdsCode").toString();
+
     }
 }
