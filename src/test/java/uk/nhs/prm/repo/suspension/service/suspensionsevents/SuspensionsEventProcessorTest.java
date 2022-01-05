@@ -25,6 +25,9 @@ public class SuspensionsEventProcessorTest {
     private MofUpdatedEventPublisher mofUpdatedEventPublisher;
 
     @Mock
+    private MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
+
+    @Mock
     private PdsUpdateService pdsUpdateService;
 
     @Mock
@@ -81,6 +84,21 @@ public class SuspensionsEventProcessorTest {
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage(sampleMessage);
+        verify(notSuspendedEventPublisher, never()).sendMessage(any());
+
+    }
+
+    @Test
+    void shouldPublishSuspendedMessageToMofNotUpdatedSnsTopicWhenPatientMofAlreadySetToCorrectValue(){
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
+
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(true, null,"B85612", "");
+        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+
+        verify(mofNotUpdatedEventPublisher).sendMessage(sampleMessage);
+        verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
 
     }

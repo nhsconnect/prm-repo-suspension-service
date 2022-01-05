@@ -5,16 +5,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MofUpdatedEventPublisher {
-    private final String suspensionsSnsTopicArn;
+    private final String mofUpdatedSnsTopicArn;
     private final MessagePublisher messagePublisher;
 
-    public MofUpdatedEventPublisher(MessagePublisher messagePublisher, @Value("${aws.mofUpdatedSnsTopicArn}") String suspensionsSnsTopicArn) {
+    public MofUpdatedEventPublisher(MessagePublisher messagePublisher, @Value("${aws.mofUpdatedSnsTopicArn}") String mofUpdatedSnsTopicArn) {
         this.messagePublisher = messagePublisher;
-        this.suspensionsSnsTopicArn = suspensionsSnsTopicArn;
+        this.mofUpdatedSnsTopicArn = mofUpdatedSnsTopicArn;
     }
 
     public void sendMessage(String message) {
-        messagePublisher.sendMessage(this.suspensionsSnsTopicArn, message);
+        messagePublisher.sendMessage(this.mofUpdatedSnsTopicArn, message);
     }
 }
 

@@ -19,20 +19,29 @@ public class SuspensionsEventProcessor {
     private final NotSuspendedEventPublisher notSuspendedEventPublisher;
     private final PdsLookupService pdsLookupService;
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
+    private final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
     private final PdsUpdateService pdsUpdateService;
 
     public void processSuspensionEvent(String suspensionMessage) {
         String nhsNumber = extractNhsNumber(suspensionMessage);
         PdsAdaptorSuspensionStatusResponse response = pdsLookupService.isSuspended(nhsNumber);
-        String previousOdsCode = extractPreviousOdsCode(suspensionMessage);
-        String recordETag = response.getRecordETag();
 
         if (Boolean.TRUE.equals(response.getIsSuspended())){
+            updateMof(nhsNumber, response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage);
+        } else {
+            notSuspendedEventPublisher.sendMessage(suspensionMessage);
+        }
+    }
+
+    private void updateMof(String nhsNumber, String recordETag, Object managingOrganisation, String suspensionMessage) {
+        String previousOdsCode = extractPreviousOdsCode(suspensionMessage);
+        if (!managingOrganisation.toString().equals(previousOdsCode)) {
             PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsUpdateService.updateMof(nhsNumber, previousOdsCode, recordETag);
             log.info("MOF Updated to " + updateMofResponse.getManagingOrganisation());
             mofUpdatedEventPublisher.sendMessage(suspensionMessage);
         } else {
-            notSuspendedEventPublisher.sendMessage(suspensionMessage);
+            log.info("Managing Organisation field is already set to previous GP");
+            mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
         }
     }
 
