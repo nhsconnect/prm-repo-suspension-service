@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationPublisherMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.PdsLookupService;
 import uk.nhs.prm.repo.suspension.service.pds.PdsUpdateService;
@@ -21,27 +22,42 @@ public class SuspensionsEventProcessor {
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
     private final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
     private final PdsUpdateService pdsUpdateService;
+    private final ObjectMapper mapper;
 
     public void processSuspensionEvent(String suspensionMessage) {
         String nhsNumber = extractNhsNumber(suspensionMessage);
         PdsAdaptorSuspensionStatusResponse response = pdsLookupService.isSuspended(nhsNumber);
 
         if (Boolean.TRUE.equals(response.getIsSuspended())){
-            updateMof(nhsNumber, response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage);
+            try {
+                updateMof(nhsNumber, response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage);
+            } catch (JsonProcessingException e) {
+                log.error(e.getMessage());
+            }
         } else {
             notSuspendedEventPublisher.sendMessage(suspensionMessage);
         }
     }
 
-    private void updateMof(String nhsNumber, String recordETag, Object managingOrganisation, String suspensionMessage) {
+    private void updateMof(String nhsNumber, String recordETag, Object managingOrganisation, String suspensionMessage) throws JsonProcessingException {
         String previousOdsCode = extractPreviousOdsCode(suspensionMessage);
         if (!managingOrganisation.toString().equals(previousOdsCode)) {
             PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsUpdateService.updateMof(nhsNumber, previousOdsCode, recordETag);
             log.info("MOF Updated to " + updateMofResponse.getManagingOrganisation());
-            mofUpdatedEventPublisher.sendMessage(suspensionMessage);
+            publishMofUpdateMessage(nhsNumber, updateMofResponse);
         } else {
             log.info("Managing Organisation field is already set to previous GP");
             mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
+        }
+    }
+
+    private void publishMofUpdateMessage(String nhsNumber, PdsAdaptorSuspensionStatusResponse updateMofResponse) {
+        ManagingOrganisationPublisherMessage managingOrganisationPublisherMessage = new ManagingOrganisationPublisherMessage(nhsNumber,
+                updateMofResponse.getManagingOrganisation().toString());
+        try {
+            mofUpdatedEventPublisher.sendMessage(mapper.writeValueAsString(managingOrganisationPublisherMessage));
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
         }
     }
 

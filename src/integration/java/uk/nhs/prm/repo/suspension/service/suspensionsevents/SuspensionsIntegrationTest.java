@@ -132,7 +132,9 @@ public class SuspensionsIntegrationTest {
             System.out.println("message attributes: " + messages.get(0).getMessageAttributes());
             System.out.println("message attributes empty: " + messages.get(0).getMessageAttributes().isEmpty());
 
-            assertTrue(receivedMessageHolder[0].getBody().contains("lastUpdated"));
+            assertTrue(receivedMessageHolder[0].getBody().contains("nhsNumber"));
+            assertTrue(receivedMessageHolder[0].getBody().contains("9912003888"));
+            assertTrue(receivedMessageHolder[0].getBody().contains("managingOrgainsationOdsCode"));
             assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });

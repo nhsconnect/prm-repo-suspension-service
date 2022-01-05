@@ -1,5 +1,7 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +35,9 @@ public class SuspensionsEventProcessorTest {
     @Mock
     private PdsLookupService pdsLookupService;
 
+    @Mock
+    private ObjectMapper mapper;
+
 
     @Test
     void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended(){
@@ -48,16 +53,19 @@ public class SuspensionsEventProcessorTest {
     }
 
     @Test
-    void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientIsConfirmedSuspended(){
+    void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientIsConfirmedSuspended() throws JsonProcessingException {
         String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(true, "12345","", "");
         when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsUpdateService.updateMof("9692294951", "B85612", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
+        String messageJson = "{\"nhsNumber\":\"9692294951\",\"managingOrgainsationOdsCode\":\"B85612\"}";
+        when(mapper.writeValueAsString(any())).thenReturn(messageJson);
+
         suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
 
-        verify(mofUpdatedEventPublisher).sendMessage(suspendedMessage);
+        verify(mofUpdatedEventPublisher).sendMessage(messageJson);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
 
     }
@@ -74,16 +82,21 @@ public class SuspensionsEventProcessorTest {
     }
 
     @Test
-    void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientConfirmedSuspended(){
+    void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientConfirmedSuspended() throws JsonProcessingException {
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, "12345","", "");
+                = new PdsAdaptorSuspensionStatusResponse(true, null,"B85614", "");
         when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsUpdateService.updateMof("9692294951", "B85612", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
+        String messageJson = "{\"nhsNumber\":\"9692294951\",\"managingOrgainsationOdsCode\":\"B85612\"}";
+        when(mapper.writeValueAsString(any())).thenReturn(messageJson);
+
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
-        verify(mofUpdatedEventPublisher).sendMessage(sampleMessage);
+
+        verify(mofUpdatedEventPublisher).sendMessage(messageJson);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
 
     }
