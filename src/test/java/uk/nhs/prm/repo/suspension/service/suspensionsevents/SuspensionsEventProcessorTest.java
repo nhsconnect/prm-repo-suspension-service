@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.PdsLookupService;
+import uk.nhs.prm.repo.suspension.service.pds.PdsUpdateService;
 
 import static org.mockito.Mockito.*;
 
@@ -22,6 +23,9 @@ public class SuspensionsEventProcessorTest {
 
     @Mock
     private MofUpdatedEventPublisher mofUpdatedEventPublisher;
+
+    @Mock
+    private PdsUpdateService pdsUpdateService;
 
     @Mock
     private PdsLookupService pdsLookupService;
@@ -46,6 +50,7 @@ public class SuspensionsEventProcessorTest {
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(true, "12345","", "");
         when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsUpdateService.updateMof("9692294951", "B85612", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
 
@@ -55,13 +60,24 @@ public class SuspensionsEventProcessorTest {
     }
 
     @Test
-    void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientIsConfirme(){
+    void shouldUpdateMofWhenPatientIsConfirmedSuspended(){
+        String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(true, "12345","", "W/\"5\"");
+        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsUpdateService.updateMof("9692294951", "B85612", "W/\"5\"")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
+        verify(pdsUpdateService).updateMof("9692294951", "B85612", "W/\"5\"");
+    }
+
+    @Test
+    void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientConfirmedSuspended(){
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(true, "12345","", "");
         when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-
+        when(pdsUpdateService.updateMof("9692294951", "B85612", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage(sampleMessage);
@@ -72,24 +88,18 @@ public class SuspensionsEventProcessorTest {
     @Test
     void shouldNotProcessMessagesWhichHasNotProperNhsNumber(){
         String message = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"invalid\"}\",\"environment\":\"local\"}";
-        Assertions.assertThrows(Exception.class, () -> {
-            suspensionsEventProcessor.processSuspensionEvent(message);
-        });
+        Assertions.assertThrows(Exception.class, () -> suspensionsEventProcessor.processSuspensionEvent(message));
     }
 
     @Test
     void shouldNotProcessMessagesWhichHaveNoNhsNumber(){
         String message = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"environment\":\"local\"}";
-        Assertions.assertThrows(Exception.class, () -> {
-            suspensionsEventProcessor.processSuspensionEvent(message);
-        });
+        Assertions.assertThrows(Exception.class, () -> suspensionsEventProcessor.processSuspensionEvent(message));
     }
 
     @Test
     void shouldNotProcessMessagesWhichAreNotInCorrectFormat(){
         String message = "invalid message";
-        Assertions.assertThrows(Exception.class, () -> {
-            suspensionsEventProcessor.processSuspensionEvent(message);
-        });
+        Assertions.assertThrows(Exception.class, () -> suspensionsEventProcessor.processSuspensionEvent(message));
     }
 }

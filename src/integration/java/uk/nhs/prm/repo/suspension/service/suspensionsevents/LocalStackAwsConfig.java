@@ -41,6 +41,8 @@ public class LocalStackAwsConfig {
     @Value("${aws.notSuspendedQueueName}")
     private String notSuspendedQueueName;
 
+    @Value("${aws.mofUpdatedQueueName}")
+    private String mofUpdatedQueueName;
 
     @Bean
     public static AmazonSQSAsync amazonSQSAsync() {
@@ -73,9 +75,12 @@ public class LocalStackAwsConfig {
     public void setupTestQueuesAndTopics() {
         amazonSQSAsync.createQueue(suspensionsQueueName);
         CreateQueueResult notSuspendedQueue = amazonSQSAsync.createQueue(notSuspendedQueueName);
+        CreateQueueResult mofUpdatedQueue = amazonSQSAsync.createQueue(mofUpdatedQueueName);
         CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
+        CreateTopicResponse mofUpdatedTopic = snsClient.createTopic(CreateTopicRequest.builder().name("mof_updated_sns_topic").build());
 
         createSnsTestReceiverSubscription(topic, getQueueArn(notSuspendedQueue.getQueueUrl()));
+        createSnsTestReceiverSubscription(mofUpdatedTopic, getQueueArn(mofUpdatedQueue.getQueueUrl()));
     }
 
 

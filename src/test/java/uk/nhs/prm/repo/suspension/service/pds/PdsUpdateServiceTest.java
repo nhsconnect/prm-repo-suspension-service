@@ -20,7 +20,7 @@ import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusRespon
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @ExtendWith(MockitoExtension.class)@ExtendWith(MockitoExtension.class)
-public class PdsUpdatetServiceTest {
+public class PdsUpdateServiceTest {
 
     @Mock
     private RestTemplate client;
@@ -45,20 +45,19 @@ public class PdsUpdatetServiceTest {
                 "    \"recordETag\": \"W/\\\"11\\\"\"\n" +
                 "}";
         ResponseEntity<String> myEntity =
-                new ResponseEntity<String>(myobjectA,HttpStatus.ACCEPTED);
+                new ResponseEntity<>(myobjectA,HttpStatus.ACCEPTED);
 
+        Mockito.when(client.exchange(
+                ArgumentMatchers.eq("suspended-patient-status/123456789"),
+                ArgumentMatchers.eq(HttpMethod.PUT),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.<Class<String>>any())
+        ).thenReturn(myEntity);
 
-//        Mockito.when(client.exchange(
-//                ArgumentMatchers.eq("suspended-patient-status/123456789"),
-//                ArgumentMatchers.eq(HttpMethod.PUT),
-//                ArgumentMatchers.<HttpEntity<?>>any(),
-//                ArgumentMatchers.<Class<String>>any())
-//        ).thenReturn(myEntity);
-
-        PdsAdaptorSuspensionStatusResponse res = pdsUpdateService.updateMof("123456789", "PRVODS", "");
-//        assertThat(res.getIsSuspended());
-//        assertThat(res.getCurrentOdsCode()).isNull();
-//        assertThat(res.getManagingOrganisation()).isEqualTo("M85019");
+        PdsAdaptorSuspensionStatusResponse res = pdsUpdateService.updateMof("123456789", "PRVODS", "W/\"11\"");
+        assertThat(res.getIsSuspended());
+        assertThat(res.getCurrentOdsCode()).isNull();
+        assertThat(res.getManagingOrganisation()).isEqualTo("M85019");
     }
 
 }

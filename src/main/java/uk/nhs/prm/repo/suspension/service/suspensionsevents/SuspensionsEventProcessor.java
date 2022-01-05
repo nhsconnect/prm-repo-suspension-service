@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.PdsLookupService;
+import uk.nhs.prm.repo.suspension.service.pds.PdsUpdateService;
 
 import java.util.HashMap;
 
@@ -18,14 +19,17 @@ public class SuspensionsEventProcessor {
     private final NotSuspendedEventPublisher notSuspendedEventPublisher;
     private final PdsLookupService pdsLookupService;
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
+    private final PdsUpdateService pdsUpdateService;
 
     public void processSuspensionEvent(String suspensionMessage) {
         String nhsNumber = extractNhsNumber(suspensionMessage);
-        String previousOdsCode=extractPreviousOdsCode(suspensionMessage);
         PdsAdaptorSuspensionStatusResponse response = pdsLookupService.isSuspended(nhsNumber);
-        String recordATag=response.getRecordETag();
+        String previousOdsCode = extractPreviousOdsCode(suspensionMessage);
+        String recordETag = response.getRecordETag();
 
-        if(Boolean.TRUE.equals(response.getIsSuspended())){
+        if (Boolean.TRUE.equals(response.getIsSuspended())){
+            PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsUpdateService.updateMof(nhsNumber, previousOdsCode, recordETag);
+            log.info("MOF Updated to " + updateMofResponse.getManagingOrganisation());
             mofUpdatedEventPublisher.sendMessage(suspensionMessage);
         } else {
             notSuspendedEventPublisher.sendMessage(suspensionMessage);
@@ -45,7 +49,7 @@ public class SuspensionsEventProcessor {
 
 
     private HashMap<String, Object> mapMessageToHashMap(String suspensionMessage) {
-        HashMap<String, Object> map = new HashMap<String,Object>();
+        HashMap<String, Object> map = new HashMap<>();
         final ObjectMapper mapper = new ObjectMapper();
         try {
             map = mapper.readValue(suspensionMessage, new TypeReference<HashMap<String,Object>>(){});
@@ -74,6 +78,5 @@ public class SuspensionsEventProcessor {
             throw new IllegalArgumentException("Ods can not be null");
         }
         return map.get("previousOdsCode").toString();
-
     }
 }

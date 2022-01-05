@@ -27,8 +27,7 @@ public class PdsUpdateService {
 
     public PdsAdaptorSuspensionStatusResponse updateMof(String nhsNumber, String previousOdsCode, String recordETag) {
         final String url = SUSPENDED_PATIENT + nhsNumber;
-        String responseBody = httpClient.put(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
+        String responseBody = httpClient.put(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, previousOdsCode, recordETag);
         return responseParser.parse(responseBody);
     }
-
 }
