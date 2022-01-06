@@ -4,7 +4,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +41,18 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.mofUpdatedQueueName}")
     private String mofUpdatedQueueName;
 
+    private WireMockServer wireMockServer;
+
+    @BeforeEach
+    public void setUp(){
+        wireMockServer = initializeWebServer();
+    }
+
+    @AfterEach
+    public void tearDown(){
+        wireMockServer.stop();
+    }
+
     private String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}\",\"environment\":\"local\"}";
 
     private WireMockServer initializeWebServer() {
@@ -50,13 +62,8 @@ public class SuspensionsIntegrationTest {
         return wireMockServer;
     }
 
-    private void stopMockServer(WireMockServer mockServer){
-        mockServer.stop();
-    }
-
     @Test
     void shouldSendMessageToNotSuspendedSNSTopic(){
-        WireMockServer mockServer = initializeWebServer();
 
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .inScenario("Get PDS Record")
@@ -90,12 +97,10 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
-        stopMockServer(mockServer);
     }
 
     @Test
     void shouldSendMessageToMofUpdatedSNSTopic(){
-        WireMockServer mockServer = initializeWebServer();
 
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .inScenario("Get PDS Record")
@@ -135,10 +140,9 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder[0].getBody().contains("nhsNumber"));
             assertTrue(receivedMessageHolder[0].getBody().contains("9912003888"));
             assertTrue(receivedMessageHolder[0].getBody().contains("managingOrgainsationOdsCode"));
-            assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
+            assertTrue(receivedMessageHolder[0].getBody().contains("B1234"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
-        stopMockServer(mockServer);
     }
 
     private String getNotSuspendedResponse() {

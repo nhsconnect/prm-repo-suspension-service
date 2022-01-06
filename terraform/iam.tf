@@ -100,7 +100,8 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
     resources = [
       aws_sqs_queue.suspensions.arn,
       aws_sqs_queue.not_suspended_observability.arn,
-      aws_sqs_queue.mof_updated.arn
+      aws_sqs_queue.mof_updated.arn,
+      aws_sqs_queue.mof_not_updated.arn
     ]
   }
 }
@@ -122,7 +123,8 @@ data "aws_iam_policy_document" "sns_policy_doc" {
     ]
     resources = [
       aws_sns_topic.not_suspended.arn,
-      aws_sns_topic.mof_updated.arn
+      aws_sns_topic.mof_updated.arn,
+      aws_sns_topic.mof_not_updated.arn
     ]
   }
 }
@@ -252,6 +254,37 @@ data "aws_iam_policy_document" "mof_updated_events_policy_doc" {
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.mof_updated.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+resource "aws_sqs_queue_policy" "mof_not_updated_events_subscription" {
+  queue_url = aws_sqs_queue.mof_not_updated.id
+  policy    = data.aws_iam_policy_document.mof_not_updated_events_policy_doc.json
+}
+
+data "aws_iam_policy_document" "mof_not_updated_events_policy_doc" {
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.mof_not_updated.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.mof_not_updated.arn]
       variable = "aws:SourceArn"
     }
   }

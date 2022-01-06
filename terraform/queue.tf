@@ -2,6 +2,8 @@ locals {
   suspensions_queue_name = "${var.environment}-${var.component_name}-suspensions-queue"
   not_suspended_queue_name = "${var.environment}-${var.component_name}-not-suspended-observability-queue"
   mof_updated_queue_name = "${var.environment}-${var.component_name}-mof-updated-queue"
+  mof_not_updated_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-queue"
+
 }
 
 resource "aws_sqs_queue" "suspensions" {
@@ -147,6 +149,30 @@ resource "aws_sns_topic" "mof_updated" {
   }
 }
 
+resource "aws_sns_topic" "mof_not_updated" {
+  name = "${var.environment}-${var.component_name}-mof-not-updated-sns-topic"
+  kms_master_key_id = aws_kms_key.mof_not_updated.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-mof-updated-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "mof_not_updated" {
+  name                       = local.mof_not_updated_queue_name
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_kms_key.mof_not_updated.id
+
+  tags = {
+    Name = local.mof_not_updated_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 resource "aws_sqs_queue" "mof_updated" {
   name                       = local.mof_updated_queue_name
   message_retention_seconds  = 1800
@@ -172,4 +198,10 @@ resource "aws_sns_topic_subscription" "mof_updated" {
   endpoint             = aws_sqs_queue.mof_updated.arn
 }
 
+resource "aws_sns_topic_subscription" "mof_not_updated" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.mof_not_updated.arn
+  endpoint             = aws_sqs_queue.mof_not_updated.arn
+}
 

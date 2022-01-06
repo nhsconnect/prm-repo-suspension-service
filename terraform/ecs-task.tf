@@ -12,12 +12,9 @@ locals {
     { name = "NOT_SUSPENDED_QUEUE_NAME", value = aws_sqs_queue.not_suspended_observability.name },
     { name = "PDS_ADAPTOR_URL", value = data.aws_ssm_parameter.pds_adaptor_service_url.value },
     { name = "MOF_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_updated.arn },
+    { name = "MOF_NOT_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_not_updated.arn },
     { name = "PDS_ADAPTOR_SUSPENSION_SERVICE_PASSWORD", value = data.aws_ssm_parameter.pds_adaptor_auth_key.value }
   ]
-
-#  secret_environment_variables = [
-#    { name = "PDS_ADAPTOR_SUSPENSION_SERVICE_PASSWORD", valueFrom = data.aws_ssm_parameter.pds_adaptor_auth_key.value}
-#  ]
 }
 
 resource "aws_ecs_task_definition" "task" {
