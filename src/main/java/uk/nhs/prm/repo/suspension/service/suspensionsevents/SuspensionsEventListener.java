@@ -24,8 +24,8 @@ public class SuspensionsEventListener implements MessageListener {
             var payload = ((TextMessage) message).getText();
             suspensionsEventProcessor.processSuspensionEvent(payload);
             message.acknowledge();
-        } catch (JMSException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("Failure to handle message", e);
         }
     }
 
