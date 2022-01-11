@@ -19,27 +19,13 @@ public class HttpServiceClient {
     private final Tracer tracer;
 
     public String get(String url, String username, String password) {
-        String responseBody = null;
-        try {
-            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, prepareHeader(username, password), String.class);
-            responseBody = responseEntity.getBody();
-        } catch (Exception e) {
-            //log message is publishing as an info log, this is just to make it visible.
-            log.error(e.getMessage());
-        }
-        return responseBody;
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, prepareHeader(username, password), String.class);
+        return responseEntity.getBody();
     }
 
     public String put(String url, String username, String password, String previousOdsCode, String recordETag) {
-        String responseBody = null;
-        try {
-            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, prepareMofUpdateHttpEntity(username, password, previousOdsCode, recordETag), String.class);
-            responseBody = responseEntity.getBody();
-        } catch (Exception e) {
-            //log message is publishing as an info log, this is just to make it visible.
-            log.error(e.getMessage());
-        }
-        return responseBody;
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, prepareMofUpdateHttpEntity(username, password, previousOdsCode, recordETag), String.class);
+        return responseEntity.getBody();
     }
 
     private HttpEntity<String> prepareHeader(String username, String password) {
