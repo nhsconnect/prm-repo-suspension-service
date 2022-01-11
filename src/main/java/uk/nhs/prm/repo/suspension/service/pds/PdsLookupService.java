@@ -10,7 +10,7 @@ import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusRespon
 @Slf4j
 public class PdsLookupService {
 
-    public static final String SUSPENSION_SERVICE_USERNAME = "suspension-service";
+    private static final String SUSPENSION_SERVICE_USERNAME = "suspension-service";
     private static final String SUSPENDED_PATIENT = "suspended-patient-status/";
 
     @Value("${pdsAdaptor.suspensionService.password}")

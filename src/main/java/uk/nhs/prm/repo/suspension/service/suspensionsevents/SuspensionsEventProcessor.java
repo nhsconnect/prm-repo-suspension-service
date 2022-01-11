@@ -43,7 +43,7 @@ public class SuspensionsEventProcessor {
         String previousOdsCode = extractPreviousOdsCode(suspensionMessage);
         if (!managingOrganisation.toString().equals(previousOdsCode)) {
             PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsUpdateService.updateMof(nhsNumber, previousOdsCode, recordETag);
-            log.info("MOF Updated to " + updateMofResponse.getManagingOrganisation());
+            log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
             publishMofUpdateMessage(nhsNumber, updateMofResponse);
         } else {
             log.info("Managing Organisation field is already set to previous GP");
