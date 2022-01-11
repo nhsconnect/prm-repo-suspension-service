@@ -6,7 +6,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import uk.nhs.prm.repo.suspension.service.config.Tracer;
-import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationRequest;
 
 import java.util.Arrays;
 
@@ -19,32 +18,22 @@ public class HttpServiceClient {
     private final Tracer tracer;
 
     public String get(String url, String username, String password) {
-        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, prepareHeader(username, password), String.class);
+        HttpEntity<String> noPayloadEntity = new HttpEntity<>(createSharedHeaders(username, password));
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, noPayloadEntity, String.class);
         return responseEntity.getBody();
     }
 
-    public String put(String url, String username, String password, String previousOdsCode, String recordETag) {
-        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, prepareMofUpdateHttpEntity(username, password, previousOdsCode, recordETag), String.class);
+    public String put(String url, String username, String password, Object requestPayload) {
+        var requestEntity = new HttpEntity<>(requestPayload, createSharedHeaders(username, password));
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
         return responseEntity.getBody();
     }
 
-    private HttpEntity<String> prepareHeader(String username, String password) {
+    private HttpHeaders createSharedHeaders(String username, String password) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.setBasicAuth(username, password);
         headers.add("traceId", tracer.getTraceId());
-
-        return new HttpEntity<>(headers);
-    }
-
-    private HttpEntity<UpdateManagingOrganisationRequest> prepareMofUpdateHttpEntity(String username, String password, String previousOdsCode, String recordETag) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        headers.setBasicAuth(username, password);
-        headers.add("traceId", tracer.getTraceId());
-
-        UpdateManagingOrganisationRequest updateManagingOrganisationRequest = new UpdateManagingOrganisationRequest(previousOdsCode, recordETag);
-
-        return new HttpEntity<>(updateManagingOrganisationRequest, headers);
+        return headers;
     }
 }

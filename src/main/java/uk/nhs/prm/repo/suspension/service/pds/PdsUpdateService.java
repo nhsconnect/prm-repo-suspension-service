@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
+import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationRequest;
 
 @Component
 @Slf4j
@@ -27,7 +28,8 @@ public class PdsUpdateService {
 
     public PdsAdaptorSuspensionStatusResponse updateMof(String nhsNumber, String previousOdsCode, String recordETag) {
         final String url = SUSPENDED_PATIENT + nhsNumber;
-        String responseBody = httpClient.put(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, previousOdsCode, recordETag);
+        final UpdateManagingOrganisationRequest requestPayload = new UpdateManagingOrganisationRequest(previousOdsCode, recordETag);
+        String responseBody = httpClient.put(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, requestPayload);
         return responseParser.parse(responseBody);
     }
 }
