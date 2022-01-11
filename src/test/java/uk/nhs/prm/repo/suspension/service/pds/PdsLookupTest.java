@@ -21,7 +21,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 
 @ExtendWith(MockitoExtension.class)
-class PdsLookupServiceTest {
+class PdsLookupTest {
 
     @Mock
     private RestTemplate client;
@@ -35,6 +35,7 @@ class PdsLookupServiceTest {
     public void setUp() {
         pdsLookupService = new PdsLookupService(new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client, tracer));
     }
+
     @Test
     public void getPdsResponseAsnotSuspended() {
         ReflectionTestUtils.setField(pdsLookupService, "suspensionServicePassword", "PASS");

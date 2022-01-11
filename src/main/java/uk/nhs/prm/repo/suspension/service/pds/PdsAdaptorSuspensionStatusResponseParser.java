@@ -12,15 +12,16 @@ import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusRespon
 @AllArgsConstructor
 public class PdsAdaptorSuspensionStatusResponseParser {
     public PdsAdaptorSuspensionStatusResponse parse(String responseBody) {
-        ObjectMapper mapper = new ObjectMapper();
-        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse = null;
-        try {
-            if (responseBody != null) {
-                pdsAdaptorSuspensionStatusResponse = mapper.readValue(responseBody, PdsAdaptorSuspensionStatusResponse.class);
-            }
-        } catch (JsonProcessingException e) {
-            log.error("Got an exception while parsing PDS lookup response.");
+        if (null == responseBody) {
+            throw new UnexpectedPdsAdaptorResponseException("Response body was null attempting parse PDS status response");
         }
-        return pdsAdaptorSuspensionStatusResponse;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(responseBody, PdsAdaptorSuspensionStatusResponse.class);
+        }
+        catch (JsonProcessingException e) {
+            log.error("Got an exception while parsing PDS lookup response.");
+            throw new UnexpectedPdsAdaptorResponseException("JSON parsing error attempting to parse PDS status response");
+        }
     }
 }
