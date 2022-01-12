@@ -8,8 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationPublisherMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
-import uk.nhs.prm.repo.suspension.service.pds.PdsLookupService;
-import uk.nhs.prm.repo.suspension.service.pds.PdsUpdateService;
+import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
 import java.util.HashMap;
 
@@ -20,7 +19,7 @@ public class SuspensionsEventProcessor {
     private final NotSuspendedEventPublisher notSuspendedEventPublisher;
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
     private final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
-    private final PdsUpdateService pdsService;
+    private final PdsService pdsService;
     private final ObjectMapper mapper;
 
     public void processSuspensionEvent(String suspensionMessage) {

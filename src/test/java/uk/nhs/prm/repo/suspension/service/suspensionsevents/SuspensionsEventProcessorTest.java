@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
-import uk.nhs.prm.repo.suspension.service.pds.PdsUpdateService;
+import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
 import static org.mockito.Mockito.*;
 
@@ -29,7 +29,7 @@ public class SuspensionsEventProcessorTest {
     private MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
 
     @Mock
-    private PdsUpdateService pdsService;
+    private PdsService pdsService;
 
     @Mock
     private ObjectMapper mapper;

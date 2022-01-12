@@ -18,14 +18,17 @@ public class HttpServiceClient {
     private final Tracer tracer;
 
     public String get(String url, String username, String password) {
-        HttpEntity<String> noPayloadEntity = new HttpEntity<>(createSharedHeaders(username, password));
-        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, noPayloadEntity, String.class);
-        return responseEntity.getBody();
+        var requestEntity = new HttpEntity<>(createSharedHeaders(username, password));
+        return exchange(HttpMethod.GET, url, requestEntity);
     }
 
     public String put(String url, String username, String password, Object requestPayload) {
         var requestEntity = new HttpEntity<>(requestPayload, createSharedHeaders(username, password));
-        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+        return exchange(HttpMethod.PUT, url, requestEntity);
+    }
+
+    private String exchange(HttpMethod method, String url, HttpEntity requestEntity) {
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, method, requestEntity, String.class);
         return responseEntity.getBody();
     }
 

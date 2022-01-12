@@ -27,16 +27,17 @@ public class PdsUpdateTest {
     @Mock
     private Tracer tracer;
 
-    private PdsUpdateService pdsUpdateService;
+    private PdsService pdsService;
 
     @BeforeEach
     public void setUp() {
-        pdsUpdateService = new PdsUpdateService(new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client, tracer));
+        pdsService = new PdsService(new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client, tracer));
     }
 
     @Test
     void shouldUpdateMofWhenPatientSuspended(){
-        ReflectionTestUtils.setField(pdsUpdateService, "suspensionServicePassword", "PASS");
+        ReflectionTestUtils.setField(pdsService, "serviceUrl", "http://pds-adaptor");
+        ReflectionTestUtils.setField(pdsService, "suspensionServicePassword", "PASS");
         String myobjectA = "{\n" +
                 "    \"isSuspended\": true,\n" +
                 "    \"currentOdsCode\": null,\n" +
@@ -47,13 +48,13 @@ public class PdsUpdateTest {
                 new ResponseEntity<>(myobjectA,HttpStatus.ACCEPTED);
 
         Mockito.when(client.exchange(
-                ArgumentMatchers.eq("suspended-patient-status/123456789"),
+                ArgumentMatchers.eq("http://pds-adaptor/suspended-patient-status/123456789"),
                 ArgumentMatchers.eq(HttpMethod.PUT),
                 ArgumentMatchers.any(),
                 ArgumentMatchers.<Class<String>>any())
         ).thenReturn(myEntity);
 
-        PdsAdaptorSuspensionStatusResponse res = pdsUpdateService.updateMof("123456789", "PRVODS", "W/\"11\"");
+        PdsAdaptorSuspensionStatusResponse res = pdsService.updateMof("123456789", "PRVODS", "W/\"11\"");
         assertThat(res.getIsSuspended());
         assertThat(res.getCurrentOdsCode()).isNull();
         assertThat(res.getManagingOrganisation()).isEqualTo("M85019");

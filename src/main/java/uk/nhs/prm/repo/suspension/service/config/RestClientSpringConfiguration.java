@@ -15,14 +15,9 @@ public class RestClientSpringConfiguration {
     @Autowired
     CloseableHttpClient httpClient;
 
-    @Value("${pdsAdaptor.serviceUrl}")
-    private String apiHost;
-
     @Bean
     public RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(apiHost));
-        return restTemplate;
+        return new RestTemplate(clientHttpRequestFactory());
     }
 
     @Bean

@@ -26,18 +26,19 @@ class PdsLookupTest {
     @Mock
     private RestTemplate client;
 
-    private PdsUpdateService pdsService;
+    private PdsService pdsService;
 
     @Mock
     private Tracer tracer;
 
     @BeforeEach
     public void setUp() {
-        pdsService = new PdsUpdateService(new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client, tracer));
+        pdsService = new PdsService(new PdsAdaptorSuspensionStatusResponseParser(), new HttpServiceClient(client, tracer));
     }
 
     @Test
     public void getPdsResponseAsNotSuspended() {
+        ReflectionTestUtils.setField(pdsService, "serviceUrl", "http://pds-adaptor");
         ReflectionTestUtils.setField(pdsService, "suspensionServicePassword", "PASS");
         String myobjectA = "{\n" +
                 "    \"isSuspended\": false,\n" +
@@ -51,7 +52,7 @@ class PdsLookupTest {
         Mockito.when(tracer.getTraceId()).thenReturn("12345678");
 
         Mockito.when(client.exchange(
-                ArgumentMatchers.eq("suspended-patient-status/123456789"),
+                ArgumentMatchers.eq("http://pds-adaptor/suspended-patient-status/123456789"),
                 ArgumentMatchers.eq(HttpMethod.GET),
                 ArgumentMatchers.<HttpEntity<?>>any(),
                 ArgumentMatchers.<Class<String>>any())
@@ -64,6 +65,7 @@ class PdsLookupTest {
 
     @Test
     public void getPdsResponseAsSuspended() {
+        ReflectionTestUtils.setField(pdsService, "serviceUrl", "http://pds-adaptor");
         ReflectionTestUtils.setField(pdsService, "suspensionServicePassword", "PASS");
         String myobjectA = "{\n" +
                 "    \"isSuspended\": true,\n" +
@@ -75,7 +77,7 @@ class PdsLookupTest {
                 new ResponseEntity<String>(myobjectA,HttpStatus.ACCEPTED);
 
         Mockito.when(client.exchange(
-                ArgumentMatchers.eq("suspended-patient-status/123456789"),
+                ArgumentMatchers.eq("http://pds-adaptor/suspended-patient-status/123456789"),
                 ArgumentMatchers.eq(HttpMethod.GET),
                 ArgumentMatchers.<HttpEntity<?>>any(),
                 ArgumentMatchers.<Class<String>>any())

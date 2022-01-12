@@ -9,7 +9,7 @@ import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationReques
 
 @Component
 @Slf4j
-public class PdsUpdateService {
+public class PdsService {
 
     public static final String SUSPENSION_SERVICE_USERNAME = "suspension-service";
     private static final String SUSPENDED_PATIENT = "suspended-patient-status/";
@@ -17,25 +17,34 @@ public class PdsUpdateService {
     @Value("${pdsAdaptor.suspensionService.password}")
     private String suspensionServicePassword;
 
+    @Value("${pdsAdaptor.serviceUrl}")
+    private String serviceUrl;
+
     private final PdsAdaptorSuspensionStatusResponseParser responseParser;
 
     private final HttpServiceClient httpClient;
 
-    public PdsUpdateService(PdsAdaptorSuspensionStatusResponseParser responseParser, HttpServiceClient httpClient) {
+    public PdsService(PdsAdaptorSuspensionStatusResponseParser responseParser, HttpServiceClient httpClient) {
         this.responseParser = responseParser;
         this.httpClient = httpClient;
     }
 
     public PdsAdaptorSuspensionStatusResponse isSuspended(String nhsNumber) {
-        final String url = SUSPENDED_PATIENT + nhsNumber;
+        final String url = getPatientUrl(nhsNumber);
+
         String responseBody = httpClient.get(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
         return responseParser.parse(responseBody);
     }
 
     public PdsAdaptorSuspensionStatusResponse updateMof(String nhsNumber, String previousOdsCode, String recordETag) {
-        final String url = SUSPENDED_PATIENT + nhsNumber;
+        final String url = getPatientUrl(nhsNumber);
         final UpdateManagingOrganisationRequest requestPayload = new UpdateManagingOrganisationRequest(previousOdsCode, recordETag);
+
         String responseBody = httpClient.put(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, requestPayload);
         return responseParser.parse(responseBody);
+    }
+
+    private String getPatientUrl(String nhsNumber) {
+        return serviceUrl + "/" + SUSPENDED_PATIENT + nhsNumber;
     }
 }
