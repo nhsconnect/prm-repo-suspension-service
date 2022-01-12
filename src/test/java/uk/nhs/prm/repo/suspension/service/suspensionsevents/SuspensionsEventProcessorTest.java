@@ -9,7 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
-import uk.nhs.prm.repo.suspension.service.pds.PdsLookupService;
 import uk.nhs.prm.repo.suspension.service.pds.PdsUpdateService;
 
 import static org.mockito.Mockito.*;
@@ -30,10 +29,7 @@ public class SuspensionsEventProcessorTest {
     private MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
 
     @Mock
-    private PdsUpdateService pdsUpdateService;
-
-    @Mock
-    private PdsLookupService pdsLookupService;
+    private PdsUpdateService pdsService;
 
     @Mock
     private ObjectMapper mapper;
@@ -44,7 +40,7 @@ public class SuspensionsEventProcessorTest {
         String notSuspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(false, "null", "", "");
-        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionsEventProcessor.processSuspensionEvent(notSuspendedMessage);
 
@@ -57,8 +53,8 @@ public class SuspensionsEventProcessorTest {
         String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(true, "12345","", "");
-        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        when(pdsUpdateService.updateMof("9692294951", "B85612", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.updateMof("9692294951", "B85612", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         String messageJson = "{\"nhsNumber\":\"9692294951\",\"managingOrgainsationOdsCode\":\"B85612\"}";
         when(mapper.writeValueAsString(any())).thenReturn(messageJson);
@@ -75,10 +71,10 @@ public class SuspensionsEventProcessorTest {
         String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9692294951\"}\",\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(true, "12345","", "W/\"5\"");
-        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        when(pdsUpdateService.updateMof("9692294951", "B85612", "W/\"5\"")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.updateMof("9692294951", "B85612", "W/\"5\"")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
-        verify(pdsUpdateService).updateMof("9692294951", "B85612", "W/\"5\"");
+        verify(pdsService).updateMof("9692294951", "B85612", "W/\"5\"");
     }
 
     @Test
@@ -87,8 +83,8 @@ public class SuspensionsEventProcessorTest {
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(true, null,"B85614", "");
-        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        when(pdsUpdateService.updateMof("9692294951", "B85612", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.updateMof("9692294951", "B85612", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         String messageJson = "{\"nhsNumber\":\"9692294951\",\"managingOrgainsationOdsCode\":\"B85612\"}";
         when(mapper.writeValueAsString(any())).thenReturn(messageJson);
@@ -107,7 +103,7 @@ public class SuspensionsEventProcessorTest {
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(true, null,"B85612", "");
-        when(pdsLookupService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofNotUpdatedEventPublisher).sendMessage(sampleMessage);

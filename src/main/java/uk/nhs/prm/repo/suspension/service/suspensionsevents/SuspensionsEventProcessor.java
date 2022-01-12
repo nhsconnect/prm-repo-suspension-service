@@ -18,15 +18,14 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class SuspensionsEventProcessor {
     private final NotSuspendedEventPublisher notSuspendedEventPublisher;
-    private final PdsLookupService pdsLookupService;
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
     private final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
-    private final PdsUpdateService pdsUpdateService;
+    private final PdsUpdateService pdsService;
     private final ObjectMapper mapper;
 
     public void processSuspensionEvent(String suspensionMessage) {
         String nhsNumber = extractNhsNumber(suspensionMessage);
-        PdsAdaptorSuspensionStatusResponse response = pdsLookupService.isSuspended(nhsNumber);
+        PdsAdaptorSuspensionStatusResponse response = pdsService.isSuspended(nhsNumber);
 
         if (Boolean.TRUE.equals(response.getIsSuspended())){
             try {
@@ -42,7 +41,7 @@ public class SuspensionsEventProcessor {
     private void updateMof(String nhsNumber, String recordETag, Object managingOrganisation, String suspensionMessage) throws JsonProcessingException {
         String previousOdsCode = extractPreviousOdsCode(suspensionMessage);
         if (!managingOrganisation.toString().equals(previousOdsCode)) {
-            PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsUpdateService.updateMof(nhsNumber, previousOdsCode, recordETag);
+            PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsService.updateMof(nhsNumber, previousOdsCode, recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
             publishMofUpdateMessage(nhsNumber, updateMofResponse);
         } else {
