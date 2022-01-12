@@ -9,11 +9,12 @@
 				<timestamp>
 					<timeZone>UTC</timeZone>
 				</timestamp>
+				<mdc/>
+				<stackTrace/>
 				<pattern>
 					<omitEmptyFields>true</omitEmptyFields>
 					<pattern>
 						{
-						"traceId": "%mdc{traceId}",
 						"level": "%level",
 						"service": "suspension-service",
 						"class": "%C{0}",
