@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 @Data
 public class PdsAdaptorSuspensionStatusResponse {
         private final Boolean isSuspended;
-        private final Object currentOdsCode;
-        private final Object managingOrganisation;
+        private final Object currentOdsCode; // @todo these should be strings?
+        private final Object managingOrganisation; // @todo these should be strings?
         private final String recordETag;
 
 

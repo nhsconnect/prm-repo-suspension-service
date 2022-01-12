@@ -18,7 +18,7 @@ import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusRespon
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@ExtendWith(MockitoExtension.class)@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)
 public class PdsUpdateTest {
 
     @Mock
