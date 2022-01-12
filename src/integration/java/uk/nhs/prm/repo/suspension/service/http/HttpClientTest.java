@@ -8,15 +8,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
+import uk.nhs.prm.repo.suspension.service.config.HttpClientConfig;
+import uk.nhs.prm.repo.suspension.service.config.RestClientSpringConfiguration;
 import uk.nhs.prm.repo.suspension.service.config.Tracer;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {HttpServiceClient.class, Tracer.class, RestTemplate.class})
-public class HttpServiceClientTest {
+@ContextConfiguration(classes = {HttpServiceClient.class, RestClientSpringConfiguration.class, HttpClientConfig.class, Tracer.class})
+public class HttpClientTest {
 
     public static final String BOB_BANANA_AUTH_TOKEN = "Ym9iOmJhbmFuYQ==";
     private WireMockServer wireMockServer;
