@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {LocalStackAwsConfig.class, RestTemplate.class})
+@ContextConfiguration(classes = LocalStackAwsConfig.class)
 @EnableScheduling
 public class SuspensionsIntegrationTest {
 
