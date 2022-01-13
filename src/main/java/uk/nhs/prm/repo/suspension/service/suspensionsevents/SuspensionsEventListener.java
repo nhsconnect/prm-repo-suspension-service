@@ -13,7 +13,7 @@ import javax.jms.TextMessage;
 @RequiredArgsConstructor
 public class SuspensionsEventListener implements MessageListener {
 
-    private final SuspensionsEventProcessor suspensionsEventProcessor;
+    private final SuspensionMessageProcessor suspensionsEventProcessor;
     private final Tracer tracer;
 
     @Override

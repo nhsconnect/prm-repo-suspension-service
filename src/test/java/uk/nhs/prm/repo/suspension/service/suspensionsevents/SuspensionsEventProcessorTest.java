@@ -1,7 +1,6 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class SuspensionsEventProcessorTest {
 
-    private SuspensionsEventProcessor suspensionsEventProcessor;
+    private SuspensionMessageProcessor suspensionsEventProcessor;
 
     @Mock
     private NotSuspendedEventPublisher notSuspendedEventPublisher;
@@ -30,13 +29,10 @@ public class SuspensionsEventProcessorTest {
     @Mock
     private PdsService pdsService;
 
-    private ObjectMapper mapper;
-
     @BeforeEach
     public void setUp(){
-        mapper = new ObjectMapper();
-        suspensionsEventProcessor = new SuspensionsEventProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, pdsService, mapper);
+        suspensionsEventProcessor = new SuspensionMessageProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
+                mofNotUpdatedEventPublisher, pdsService, new SuspensionEventParser());
     }
 
 
