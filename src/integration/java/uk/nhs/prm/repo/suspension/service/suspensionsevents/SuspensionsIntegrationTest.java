@@ -109,7 +109,7 @@ public class SuspensionsIntegrationTest {
 
             assertTrue(receivedMessageHolder[0].getBody().contains("nhsNumber"));
             assertTrue(receivedMessageHolder[0].getBody().contains("9912003888"));
-            assertTrue(receivedMessageHolder[0].getBody().contains("managingOrgainsationOdsCode"));
+            assertTrue(receivedMessageHolder[0].getBody().contains("managingOrganisationOdsCode"));
             assertTrue(receivedMessageHolder[0].getBody().contains("B1234"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
