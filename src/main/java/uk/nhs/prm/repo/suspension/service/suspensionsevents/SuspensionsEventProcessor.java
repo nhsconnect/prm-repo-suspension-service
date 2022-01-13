@@ -62,18 +62,17 @@ public class SuspensionsEventProcessor {
     private String extractNhsNumber(String suspensionMessage) {
         HashMap<String, Object> map = mapMessageToHashMap(suspensionMessage);
 
-        return  validateNhsNumber(map);
+        return map.get("nhsNumber").toString();
     }
 
     private String extractPreviousOdsCode(String suspensionMessage){
         HashMap<String, Object> map = mapMessageToHashMap(suspensionMessage);
-        return validateOdsCode(map);
+        return map.get("previousOdsCode").toString();
     }
 
 
     private HashMap<String, Object> mapMessageToHashMap(String suspensionMessage) {
         HashMap<String, Object> map = new HashMap<>();
-        final ObjectMapper mapper = new ObjectMapper();
         try {
             map = mapper.readValue(suspensionMessage, new TypeReference<HashMap<String,Object>>(){});
         } catch (JsonProcessingException e) {
@@ -82,24 +81,4 @@ public class SuspensionsEventProcessor {
         return map;
     }
 
-    private String validateNhsNumber(HashMap<String, Object> map) {
-        if(map.get("nhsNumber")==null){
-            log.error("Nhs number is not proper");
-            throw new IllegalArgumentException("Message has no nhs number.");
-        }
-        String nhsNumber = map.get("nhsNumber").toString();
-        if (!nhsNumber.matches("[0-9]+") && nhsNumber.length() != 10){
-            log.error("Nhs number is invalid.");
-            throw new IllegalArgumentException("Nhs number is invalid.");
-        }
-        return nhsNumber;
-    }
-
-    private String validateOdsCode(HashMap<String, Object> map) {
-        if(map.get("previousOdsCode")==null){
-            log.error("Ods can not be null");
-            throw new IllegalArgumentException("Ods can not be null");
-        }
-        return map.get("previousOdsCode").toString();
-    }
 }

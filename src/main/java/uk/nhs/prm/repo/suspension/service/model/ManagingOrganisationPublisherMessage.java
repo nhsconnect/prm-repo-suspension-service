@@ -7,11 +7,11 @@ import lombok.Data;
 public class ManagingOrganisationPublisherMessage {
 
     private final String nhsNumber;
-    private final String managingOrgainsationOdsCode;
+    private final String managingOrganisationOdsCode;
 
-    public ManagingOrganisationPublisherMessage(@JsonProperty("nhsNumber") String nhsNumber, @JsonProperty("managingOrgainsationOdsCode")
-            String managingOrgainsationOdsCode) {
+    public ManagingOrganisationPublisherMessage(@JsonProperty("nhsNumber") String nhsNumber, @JsonProperty("managingOrganisationOdsCode")
+            String managingOrganisationOdsCode) {
         this.nhsNumber = nhsNumber;
-        this.managingOrgainsationOdsCode = managingOrgainsationOdsCode;
+        this.managingOrganisationOdsCode = managingOrganisationOdsCode;
     }
 }

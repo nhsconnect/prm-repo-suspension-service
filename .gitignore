@@ -40,6 +40,8 @@ out/
 **/.terraform/*
 /terraform/nhs_deployment.tfplan
 /terraform/tf-out.json
+/terraform/.terraform.lock.hcl
+
 /utils/*
 
 # misc

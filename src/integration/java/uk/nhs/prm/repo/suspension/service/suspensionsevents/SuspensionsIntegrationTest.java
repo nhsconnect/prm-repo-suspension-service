@@ -41,22 +41,22 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.mofUpdatedQueueName}")
     private String mofUpdatedQueueName;
 
-    private WireMockServer wireMockServer;
+    private WireMockServer stubPdsAdaptor;
 
     @BeforeEach
     public void setUp(){
-        wireMockServer = initializeWebServer();
+        stubPdsAdaptor = initializeWebServer();
     }
 
     @AfterEach
     public void tearDown(){
-        wireMockServer.stop();
+        stubPdsAdaptor.stop();
     }
 
     private String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}\",\"environment\":\"local\"}";
 
     private WireMockServer initializeWebServer() {
-        WireMockServer wireMockServer = new WireMockServer(8080);
+        final WireMockServer wireMockServer = new WireMockServer(8080);
         wireMockServer.start();
 
         return wireMockServer;
@@ -66,8 +66,6 @@ public class SuspensionsIntegrationTest {
     void shouldSendMessageToNotSuspendedSNSTopic(){
 
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
-                .inScenario("Get PDS Record")
-                .whenScenarioStateIs("Started")
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
@@ -75,23 +73,11 @@ public class SuspensionsIntegrationTest {
 
         String queueUrl = amazonSQSAsync.getQueueUrl(suspensionsQueueName).getQueueUrl();
         String notSuspendedQueueUrl = amazonSQSAsync.getQueueUrl(notSuspendedQueueName).getQueueUrl();
-        System.out.println("queue url is: " + queueUrl);
         amazonSQSAsync.sendMessage(queueUrl, sampleMessage);
 
         Message[] receivedMessageHolder = new Message[1];
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            System.out.println("checking sqs queue: " + notSuspendedQueueUrl);
-
-            ReceiveMessageRequest requestForMessagesWithAttributes
-                    = new ReceiveMessageRequest().withQueueUrl(notSuspendedQueueUrl)
-                    .withMessageAttributeNames("traceId");
-            List<Message> messages = amazonSQSAsync.receiveMessage(requestForMessagesWithAttributes).getMessages();
-            System.out.println("messages: " + messages.size());
-            assertThat(messages).hasSize(1);
-            receivedMessageHolder[0] = messages.get(0);
-            System.out.println("message: " + messages.get(0).getBody());
-            System.out.println("message attributes: " + messages.get(0).getMessageAttributes());
-            System.out.println("message attributes empty: " + messages.get(0).getMessageAttributes().isEmpty());
+            checkMessageInRelatedQueue(notSuspendedQueueUrl, receivedMessageHolder);
 
             assertTrue(receivedMessageHolder[0].getBody().contains("lastUpdated"));
             assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
@@ -103,15 +89,11 @@ public class SuspensionsIntegrationTest {
     void shouldSendMessageToMofUpdatedSNSTopic(){
 
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
-                .inScenario("Get PDS Record")
-                .whenScenarioStateIs("Started")
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(getSuspendedResponse())));
         stubFor(put(urlMatching("/suspended-patient-status/9912003888"))
-                .inScenario("Get PDS Record")
-                .whenScenarioStateIs("Started")
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
@@ -119,23 +101,11 @@ public class SuspensionsIntegrationTest {
 
         String queueUrl = amazonSQSAsync.getQueueUrl(suspensionsQueueName).getQueueUrl();
         String mofUpdatedQueueUrl = amazonSQSAsync.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
-        System.out.println("queue url is: " + queueUrl);
         amazonSQSAsync.sendMessage(queueUrl, sampleMessage);
 
         Message[] receivedMessageHolder = new Message[1];
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            System.out.println("checking sqs queue: " + mofUpdatedQueueUrl);
-
-            ReceiveMessageRequest requestForMessagesWithAttributes
-                    = new ReceiveMessageRequest().withQueueUrl(mofUpdatedQueueUrl)
-                    .withMessageAttributeNames("traceId");
-            List<Message> messages = amazonSQSAsync.receiveMessage(requestForMessagesWithAttributes).getMessages();
-            System.out.println("messages: " + messages.size());
-            assertThat(messages).hasSize(1);
-            receivedMessageHolder[0] = messages.get(0);
-            System.out.println("message: " + messages.get(0).getBody());
-            System.out.println("message attributes: " + messages.get(0).getMessageAttributes());
-            System.out.println("message attributes empty: " + messages.get(0).getMessageAttributes().isEmpty());
+            checkMessageInRelatedQueue(mofUpdatedQueueUrl, receivedMessageHolder);
 
             assertTrue(receivedMessageHolder[0].getBody().contains("nhsNumber"));
             assertTrue(receivedMessageHolder[0].getBody().contains("9912003888"));
@@ -143,6 +113,17 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder[0].getBody().contains("B1234"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
+    }
+
+    private void checkMessageInRelatedQueue(String queueUrl, Message[] receivedMessageHolder) {
+        System.out.println("checking sqs queue: " + queueUrl);
+
+        ReceiveMessageRequest requestForMessagesWithAttributes
+                = new ReceiveMessageRequest().withQueueUrl(queueUrl)
+                .withMessageAttributeNames("traceId");
+        List<Message> messages = amazonSQSAsync.receiveMessage(requestForMessagesWithAttributes).getMessages();
+        assertThat(messages).hasSize(1);
+        receivedMessageHolder[0] = messages.get(0);
     }
 
     private String getNotSuspendedResponse() {
