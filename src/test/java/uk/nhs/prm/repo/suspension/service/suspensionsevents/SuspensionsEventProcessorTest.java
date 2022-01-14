@@ -30,14 +30,14 @@ public class SuspensionsEventProcessorTest {
     private PdsService pdsService;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         suspensionsEventProcessor = new SuspensionMessageProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
                 mofNotUpdatedEventPublisher, pdsService, new SuspensionEventParser());
     }
 
 
     @Test
-    void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended(){
+    void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended() {
         String notSuspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -61,7 +61,7 @@ public class SuspensionsEventProcessorTest {
                 "\"nhsNumber\":\"9692294951\"}\"," +
                 "\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, "12345","NEW_ODS_CODE", "");
+                = new PdsAdaptorSuspensionStatusResponse(true, "12345", "NEW_ODS_CODE", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "ORIGINAL_ODS_CODE", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
@@ -76,14 +76,14 @@ public class SuspensionsEventProcessorTest {
     }
 
     @Test
-    void shouldUpdateMofWhenPatientIsConfirmedSuspended(){
+    void shouldUpdateMofWhenPatientIsConfirmedSuspended() {
         String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"}\"," +
                 "\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, "12345","", "W/\"5\"");
+                = new PdsAdaptorSuspensionStatusResponse(true, "12345", "", "W/\"5\"");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "B85612", "W/\"5\"")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
@@ -99,10 +99,10 @@ public class SuspensionsEventProcessorTest {
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorLookUpSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, null,"EXISTING_MOF_ODS_CODE", "");
+                = new PdsAdaptorSuspensionStatusResponse(true, null, "EXISTING_MOF_ODS_CODE", "");
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorUpdateSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, null,"LAST_GP_BEFORE_SUSPENSION_ODS_CODE", "");
+                = new PdsAdaptorSuspensionStatusResponse(true, null, "LAST_GP_BEFORE_SUSPENSION_ODS_CODE", "");
 
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorLookUpSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "LAST_GP_BEFORE_SUSPENSION_ODS_CODE", "")).thenReturn(pdsAdaptorUpdateSuspensionStatusResponse);
@@ -116,7 +116,7 @@ public class SuspensionsEventProcessorTest {
     }
 
     @Test
-    void shouldPublishSuspendedMessageToMofNotUpdatedSnsTopicWhenPatientMofAlreadySetToCorrectValue(){
+    void shouldPublishSuspendedMessageToMofNotUpdatedSnsTopicWhenPatientMofAlreadySetToCorrectValue() {
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -124,7 +124,7 @@ public class SuspensionsEventProcessorTest {
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, null,"B85612", "");
+                = new PdsAdaptorSuspensionStatusResponse(true, null, "B85612", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
@@ -135,7 +135,45 @@ public class SuspensionsEventProcessorTest {
     }
 
     @Test
-    void shouldNotProcessMessagesWhichAreNotInCorrectFormat(){
+    void shouldParsePdsResponseWhenMofFieldNull() {
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(false, "B86041", null, "");
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+
+        verify(notSuspendedEventPublisher).sendMessage(sampleMessage);
+        verify(mofUpdatedEventPublisher, never()).sendMessage(any());
+        verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
+
+    }
+
+    @Test
+    void shouldParsePdsResponseWhenCurrentOdsCodeFieldNull() {
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(true, null, "B85612", "");
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+
+        verify(mofNotUpdatedEventPublisher).sendMessage(sampleMessage);
+        verify(mofUpdatedEventPublisher, never()).sendMessage(any());
+        verify(notSuspendedEventPublisher, never()).sendMessage(any());
+
+    }
+
+    @Test
+    void shouldNotProcessMessagesWhichAreNotInCorrectFormat() {
         String message = "invalid message";
         Assertions.assertThrows(Exception.class, () -> suspensionsEventProcessor.processSuspensionEvent(message));
     }
