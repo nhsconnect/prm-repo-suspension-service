@@ -39,7 +39,7 @@ public class SuspensionMessageProcessor {
     }
 
     private void updateMof(String recordETag, String newManagingOrganisation, String suspensionMessage, SuspensionEvent suspensionEvent) throws JsonProcessingException {
-        if (!newManagingOrganisation.equals(suspensionEvent.previousOdsCode())) {
+        if (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode())) {
             PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsService.updateMof(suspensionEvent.nhsNumber(), suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
             publishMofUpdateMessage(suspensionEvent.nhsNumber(), updateMofResponse);

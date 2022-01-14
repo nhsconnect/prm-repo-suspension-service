@@ -51,6 +51,23 @@ class PdsAdaptorSuspensionStatusResponseParserTest {
     }
 
     @Test
+    public void shouldParseStatusOfASuspendedPatientWithNullMOF() {
+        String suspendedResponseBody = "{\n" +
+                "    \"isSuspended\": true,\n" +
+                "    \"currentOdsCode\": null,\n" +
+                "    \"managingOrganisation\": null,\n" +
+                "    \"recordETag\": \"foo\"\n" +
+                "}";
+
+        var status = parser.parse(suspendedResponseBody);
+
+        assertThat(status.getIsSuspended()).isTrue();
+        assertThat(status.getCurrentOdsCode()).isNull();
+        assertThat(status.getManagingOrganisation()).isNull();
+        assertThat(status.getRecordETag()).isEqualTo("foo");
+    }
+
+    @Test
     public void shouldThrowIfThereIsNoResponseBodyToParse() {
         assertThrows(UnexpectedPdsAdaptorResponseException.class, () -> parser.parse(null));
     }

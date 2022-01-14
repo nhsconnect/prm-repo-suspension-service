@@ -173,6 +173,27 @@ public class SuspensionsEventProcessorTest {
     }
 
     @Test
+    void shouldParseSuspendedPdsResponseWhenMofFieldNull() {
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(true, null, null, "");
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.updateMof("9692294951", "B85612", ""))
+                .thenReturn(new PdsAdaptorSuspensionStatusResponse(true, null, "B85612", ""));
+        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+
+        verify(mofUpdatedEventPublisher).sendMessage("{\"nhsNumber\":\"9692294951\",\"managingOrganisationOdsCode\":\"B85612\"}");
+        verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
+        verify(notSuspendedEventPublisher, never()).sendMessage(any());
+
+    }
+
+    @Test
     void shouldNotProcessMessagesWhichAreNotInCorrectFormat() {
         String message = "invalid message";
         Assertions.assertThrows(Exception.class, () -> suspensionsEventProcessor.processSuspensionEvent(message));
