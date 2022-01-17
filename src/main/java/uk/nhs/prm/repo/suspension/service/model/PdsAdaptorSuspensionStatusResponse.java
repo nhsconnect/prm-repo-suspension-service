@@ -1,9 +1,11 @@
 package uk.nhs.prm.repo.suspension.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PdsAdaptorSuspensionStatusResponse {
         private final Boolean isSuspended;
         private final String currentOdsCode;
