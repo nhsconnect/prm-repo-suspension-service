@@ -23,13 +23,12 @@ public class SuspensionMessageProcessor {
     private final SuspensionEventParser parser;
 
     public void processSuspensionEvent(String suspensionMessage) {
-
         SuspensionEvent suspensionEvent = parser.parse(suspensionMessage, this);
-        PdsAdaptorSuspensionStatusResponse response = pdsService.isSuspended(suspensionEvent.nhsNumber());
+        PdsAdaptorSuspensionStatusResponse response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
 
         if (Boolean.TRUE.equals(response.getIsSuspended())){
             try {
-                updateMof(response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage, suspensionEvent);
+                updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage, suspensionEvent);
             } catch (JsonProcessingException e) {
                 log.error(e.getMessage());
             }
@@ -38,11 +37,21 @@ public class SuspensionMessageProcessor {
         }
     }
 
-    private void updateMof(String recordETag, String newManagingOrganisation, String suspensionMessage, SuspensionEvent suspensionEvent) throws JsonProcessingException {
+    private PdsAdaptorSuspensionStatusResponse getPdsAdaptorSuspensionStatusResponse(SuspensionEvent suspensionEvent) {
+        PdsAdaptorSuspensionStatusResponse response = pdsService.isSuspended(suspensionEvent.nhsNumber());
+        if (!suspensionEvent.nhsNumber().equals(response.getNhsNumber())) {
+            log.info("Processing a superseded record");
+            var supersededNhsNumber = response.getNhsNumber();
+            response = pdsService.isSuspended(supersededNhsNumber);
+        }
+        return response;
+    }
+
+    private void updateMof(String nhsNumber, String recordETag, String newManagingOrganisation, String suspensionMessage, SuspensionEvent suspensionEvent) throws JsonProcessingException {
         if (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode())) {
-            PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsService.updateMof(suspensionEvent.nhsNumber(), suspensionEvent.previousOdsCode(), recordETag);
+            PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
-            publishMofUpdateMessage(suspensionEvent.nhsNumber(), updateMofResponse);
+            publishMofUpdateMessage(nhsNumber, updateMofResponse);
         } else {
             log.info("Managing Organisation field is already set to previous GP");
             mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);

@@ -44,12 +44,12 @@ public class SuspensionsIntegrationTest {
     private WireMockServer stubPdsAdaptor;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         stubPdsAdaptor = initializeWebServer();
     }
 
     @AfterEach
-    public void tearDown(){
+    public void tearDown() {
         stubPdsAdaptor.stop();
     }
 
@@ -63,7 +63,7 @@ public class SuspensionsIntegrationTest {
     }
 
     @Test
-    void shouldSendMessageToNotSuspendedSNSTopic(){
+    void shouldSendMessageToNotSuspendedSNSTopic() {
 
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
@@ -86,7 +86,7 @@ public class SuspensionsIntegrationTest {
     }
 
     @Test
-    void shouldSendMessageToMofUpdatedSNSTopic(){
+    void shouldSendMessageToMofUpdatedSNSTopic() {
 
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
@@ -128,6 +128,7 @@ public class SuspensionsIntegrationTest {
 
     private String getNotSuspendedResponse() {
         return "{\n" +
+            "    \"nhsNumber\": \"9912003888\",\n" +
             "    \"isSuspended\": false,\n" +
             "    \"currentOdsCode\": \"N85027\"\n" +
             "}";
@@ -135,6 +136,7 @@ public class SuspensionsIntegrationTest {
 
     private String getSuspendedResponse() {
         return "{\n" +
+                "    \"nhsNumber\": \"9912003888\",\n" +
                 "    \"isSuspended\": true,\n" +
                 "    \"currentOdsCode\": null,\n" +
                 "    \"managingOrganisation\": \"B1234\",\n" +

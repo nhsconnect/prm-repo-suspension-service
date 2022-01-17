@@ -35,7 +35,6 @@ public class SuspensionsEventProcessorTest {
                 mofNotUpdatedEventPublisher, pdsService, new SuspensionEventParser());
     }
 
-
     @Test
     void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended() {
         String notSuspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
@@ -44,7 +43,7 @@ public class SuspensionsEventProcessorTest {
                 "\"nhsNumber\":\"9692294951\"}\"," +
                 "\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(false, "null", "", "");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", false, "null", "", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionsEventProcessor.processSuspensionEvent(notSuspendedMessage);
@@ -61,7 +60,7 @@ public class SuspensionsEventProcessorTest {
                 "\"nhsNumber\":\"9692294951\"}\"," +
                 "\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, "12345", "NEW_ODS_CODE", "");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, "12345", "NEW_ODS_CODE", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "ORIGINAL_ODS_CODE", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
@@ -72,7 +71,31 @@ public class SuspensionsEventProcessorTest {
 
         verify(mofUpdatedEventPublisher).sendMessage(messageJson);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
+    }
 
+    @Test
+    void shouldPublishSuspendedMessageToMofUpdatedSnsTopicWhenPatientIsConfirmedSuspendedAndSuperseded() throws JsonProcessingException {
+        final var ORIGINAL_NHS_NUMBER = "9692294951";
+        final var SUPERSEDED_NHS_NUMBER = "1234567890";
+
+        String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"ORIGINAL_ODS_CODE\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"" + ORIGINAL_NHS_NUMBER + "\"}\"," +
+                "\"environment\":\"local\"}";
+        var pdsAdaptorSuspensionStatusResponse = new PdsAdaptorSuspensionStatusResponse(SUPERSEDED_NHS_NUMBER, true, "12345", "NEW_ODS_CODE", "ORIGINAL_E_TAG");
+        var pdsAdaptorSuspensionStatusResponseSuperseded = new PdsAdaptorSuspensionStatusResponse(SUPERSEDED_NHS_NUMBER, true, null, "NEW_ODS_CODE", "SUPERSEDED_E_TAG");
+        when(pdsService.isSuspended(ORIGINAL_NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.isSuspended(SUPERSEDED_NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponseSuperseded);
+        when(pdsService.updateMof(SUPERSEDED_NHS_NUMBER, "ORIGINAL_ODS_CODE", "SUPERSEDED_E_TAG")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
+        String messageJson = "{\"nhsNumber\":\"" + SUPERSEDED_NHS_NUMBER + "\"," +
+                "\"managingOrganisationOdsCode\":\"NEW_ODS_CODE\"}";
+
+        suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
+
+        verify(mofUpdatedEventPublisher).sendMessage(messageJson);
+        verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
 
     @Test
@@ -83,7 +106,7 @@ public class SuspensionsEventProcessorTest {
                 "\"nhsNumber\":\"9692294951\"}\"," +
                 "\"environment\":\"local\"}";
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, "12345", "", "W/\"5\"");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, "12345", "", "W/\"5\"");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "B85612", "W/\"5\"")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
@@ -99,10 +122,10 @@ public class SuspensionsEventProcessorTest {
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorLookUpSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, null, "EXISTING_MOF_ODS_CODE", "");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "EXISTING_MOF_ODS_CODE", "");
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorUpdateSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, null, "LAST_GP_BEFORE_SUSPENSION_ODS_CODE", "");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "LAST_GP_BEFORE_SUSPENSION_ODS_CODE", "");
 
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorLookUpSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "LAST_GP_BEFORE_SUSPENSION_ODS_CODE", "")).thenReturn(pdsAdaptorUpdateSuspensionStatusResponse);
@@ -124,14 +147,13 @@ public class SuspensionsEventProcessorTest {
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, null, "B85612", "");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "B85612", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofNotUpdatedEventPublisher).sendMessage(sampleMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
-
     }
 
     @Test
@@ -143,14 +165,13 @@ public class SuspensionsEventProcessorTest {
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(false, "B86041", null, "");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", false, "B86041", null, "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
         verify(notSuspendedEventPublisher).sendMessage(sampleMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
-
     }
 
     @Test
@@ -162,14 +183,13 @@ public class SuspensionsEventProcessorTest {
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, null, "B85612", "");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "B85612", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofNotUpdatedEventPublisher).sendMessage(sampleMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
-
     }
 
     @Test
@@ -181,16 +201,15 @@ public class SuspensionsEventProcessorTest {
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(true, null, null, "");
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, null, "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "B85612", ""))
-                .thenReturn(new PdsAdaptorSuspensionStatusResponse(true, null, "B85612", ""));
+                .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "B85612", ""));
         suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage("{\"nhsNumber\":\"9692294951\",\"managingOrganisationOdsCode\":\"B85612\"}");
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
-
     }
 
     @Test

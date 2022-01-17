@@ -19,6 +19,7 @@ class PdsAdaptorSuspensionStatusResponseParserTest {
     @Test
     public void shouldParseStatusOfARegisteredPatientCorrectly() {
         String nonSuspendedResponseBody = "{\n" +
+                "    \"nhsNumber\": \"1234567890\",\n" +
                 "    \"isSuspended\": false,\n" +
                 "    \"currentOdsCode\": \"B86041\",\n" +
                 "    \"managingOrganisation\": null,\n" +
@@ -36,6 +37,7 @@ class PdsAdaptorSuspensionStatusResponseParserTest {
     @Test
     public void shouldParseStatusOfASuspendedPatient() {
         String suspendedResponseBody = "{\n" +
+                "    \"nhsNumber\": \"1234567890\",\n" +
                 "    \"isSuspended\": true,\n" +
                 "    \"currentOdsCode\": null,\n" +
                 "    \"managingOrganisation\": \"B86042\",\n" +
@@ -53,6 +55,7 @@ class PdsAdaptorSuspensionStatusResponseParserTest {
     @Test
     public void shouldParseStatusOfASuspendedPatientWithNullMOF() {
         String suspendedResponseBody = "{\n" +
+                "    \"nhsNumber\": \"1234567890\",\n" +
                 "    \"isSuspended\": true,\n" +
                 "    \"currentOdsCode\": null,\n" +
                 "    \"managingOrganisation\": null,\n" +

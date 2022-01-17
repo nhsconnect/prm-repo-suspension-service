@@ -7,14 +7,18 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PdsAdaptorSuspensionStatusResponse {
+        private final String nhsNumber;
         private final Boolean isSuspended;
         private final String currentOdsCode;
         private final String managingOrganisation;
         private final String recordETag;
 
-
-        public PdsAdaptorSuspensionStatusResponse(@JsonProperty("isSuspended") Boolean isSuspended, @JsonProperty("currentOdsCode")
-                String currentOdsCode, @JsonProperty("managingOrganisation") String managingOrganisation, @JsonProperty("recordETag")String recordETag) {
+        public PdsAdaptorSuspensionStatusResponse(@JsonProperty("nhsNumber") String nhsNumber,
+                                                  @JsonProperty("isSuspended") Boolean isSuspended,
+                                                  @JsonProperty("currentOdsCode") String currentOdsCode,
+                                                  @JsonProperty("managingOrganisation") String managingOrganisation,
+                                                  @JsonProperty("recordETag") String recordETag) {
+                this.nhsNumber = nhsNumber;
                 this.isSuspended = isSuspended;
                 this.currentOdsCode = currentOdsCode;
                 this.managingOrganisation = managingOrganisation;
