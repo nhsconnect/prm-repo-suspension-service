@@ -86,7 +86,7 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_ratio_of_received_to_a
   alarm_name                = "${var.environment}-suspensions-queue-ratio-of-received-to-acknowledgement"
   comparison_operator       = "LessThanOrEqualToThreshold"
   evaluation_periods        = "1"
-  threshold                 = "90"
+  threshold                 = "80"
   alarm_description         = "Received message ratio to acknowledgement exceeds %20"
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 
