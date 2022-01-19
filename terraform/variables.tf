@@ -46,3 +46,9 @@ variable "threshold_for_suspensions_queue_age_of_message" {
 variable "period_of_age_of_message_metric" {
   default = "1800"
 }
+
+variable "process_only_synthetic_patients" {
+  default = true
+}
+
+variable "synthetic_patient_prefix" {}

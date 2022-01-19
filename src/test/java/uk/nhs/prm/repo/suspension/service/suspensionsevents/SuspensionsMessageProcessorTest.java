@@ -13,9 +13,9 @@ import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class SuspensionsEventProcessorTest {
+public class SuspensionsMessageProcessorTest {
 
-    private SuspensionMessageProcessor suspensionsEventProcessor;
+    private SuspensionMessageProcessor suspensionMessageProcessor;
 
     @Mock
     private NotSuspendedEventPublisher notSuspendedEventPublisher;
@@ -31,7 +31,7 @@ public class SuspensionsEventProcessorTest {
 
     @BeforeEach
     public void setUp() {
-        suspensionsEventProcessor = new SuspensionMessageProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
+        suspensionMessageProcessor = new SuspensionMessageProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
                 mofNotUpdatedEventPublisher, pdsService, new SuspensionEventParser());
     }
 
@@ -46,7 +46,7 @@ public class SuspensionsEventProcessorTest {
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", false, "null", "", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
-        suspensionsEventProcessor.processSuspensionEvent(notSuspendedMessage);
+        suspensionMessageProcessor.processSuspensionEvent(notSuspendedMessage);
 
         verify(notSuspendedEventPublisher).sendMessage(notSuspendedMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
@@ -67,7 +67,7 @@ public class SuspensionsEventProcessorTest {
         String messageJson = "{\"nhsNumber\":\"9692294951\"," +
                 "\"managingOrganisationOdsCode\":\"NEW_ODS_CODE\"}";
 
-        suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
+        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage(messageJson);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
@@ -92,7 +92,7 @@ public class SuspensionsEventProcessorTest {
         String messageJson = "{\"nhsNumber\":\"" + SUPERSEDED_NHS_NUMBER + "\"," +
                 "\"managingOrganisationOdsCode\":\"NEW_ODS_CODE\"}";
 
-        suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
+        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage(messageJson);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
@@ -109,7 +109,7 @@ public class SuspensionsEventProcessorTest {
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", true, "12345", "", "W/\"5\"");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "B85612", "W/\"5\"")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
+        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
         verify(pdsService).updateMof("9692294951", "B85612", "W/\"5\"");
     }
 
@@ -130,7 +130,7 @@ public class SuspensionsEventProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorLookUpSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "LAST_GP_BEFORE_SUSPENSION_ODS_CODE", "")).thenReturn(pdsAdaptorUpdateSuspensionStatusResponse);
 
-        suspensionsEventProcessor.processSuspensionEvent(suspendedMessage);
+        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage("{\"nhsNumber\":\"9692294951\"," +
                 "\"managingOrganisationOdsCode\":\"LAST_GP_BEFORE_SUSPENSION_ODS_CODE\"}");
@@ -149,7 +149,7 @@ public class SuspensionsEventProcessorTest {
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "B85612", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+        suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofNotUpdatedEventPublisher).sendMessage(sampleMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
@@ -167,7 +167,7 @@ public class SuspensionsEventProcessorTest {
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", false, "B86041", null, "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+        suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
 
         verify(notSuspendedEventPublisher).sendMessage(sampleMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
@@ -185,7 +185,7 @@ public class SuspensionsEventProcessorTest {
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "B85612", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+        suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofNotUpdatedEventPublisher).sendMessage(sampleMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
@@ -205,7 +205,7 @@ public class SuspensionsEventProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "B85612", ""))
                 .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "B85612", ""));
-        suspensionsEventProcessor.processSuspensionEvent(sampleMessage);
+        suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage("{\"nhsNumber\":\"9692294951\",\"managingOrganisationOdsCode\":\"B85612\"}");
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
@@ -215,6 +215,6 @@ public class SuspensionsEventProcessorTest {
     @Test
     void shouldNotProcessMessagesWhichAreNotInCorrectFormat() {
         String message = "invalid message";
-        Assertions.assertThrows(Exception.class, () -> suspensionsEventProcessor.processSuspensionEvent(message));
+        Assertions.assertThrows(Exception.class, () -> suspensionMessageProcessor.processSuspensionEvent(message));
     }
 }
