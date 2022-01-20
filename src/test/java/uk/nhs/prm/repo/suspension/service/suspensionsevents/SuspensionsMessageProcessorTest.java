@@ -37,7 +37,7 @@ public class SuspensionsMessageProcessorTest {
     }
 
     @Test
-    void shouldFilterOnlySyntheticPatientsWhenToggleIsOn() {
+    void shouldUpdateMofForSyntheticPatientsWhenToggleIsOn() {
         String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -63,22 +63,59 @@ public class SuspensionsMessageProcessorTest {
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
 
-//    @Test
-//    void shouldFilterRealAndSyntheticPatientsWhenToggleIsOff(){
-//        String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
-//                "\"previousOdsCode\":\"ORIGINAL_ODS_CODE\"," +
-//                "\"eventType\":\"SUSPENSION\"," +
-//                "\"nhsNumber\":\"9692294951\"}\"," +
-//                "\"environment\":\"local\"}";
-//        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-//                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, "ORIGINAL_ODS_CODE", "", "");
-//        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-//
-//        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
-//
-//        verify(notSuspendedEventPublisher).sendMessage(suspendedMessage);
-//        verify(mofUpdatedEventPublisher, never()).sendMessage(any());
-//    }
+    @Test
+    void shouldUpdateMofForNonSyntheticPatientsWhenToggleIsOff(){
+        String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        setField(suspensionMessageProcessor, "processOnlySyntheticPatients", "false");
+        setField(suspensionMessageProcessor, "syntheticPatientPrefix", "999");
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, null, "");
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorMofUpdatedResponse
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "PREVIOUS_ODS_CODE", "");
+
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.updateMof("9692294951", "PREVIOUS_ODS_CODE", "")).thenReturn(pdsAdaptorMofUpdatedResponse);
+
+        String messageJson = "{\"nhsNumber\":\"9692294951\"," +
+                "\"managingOrganisationOdsCode\":\"PREVIOUS_ODS_CODE\"}";
+
+        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
+
+        verify(mofUpdatedEventPublisher).sendMessage(messageJson);
+        verify(notSuspendedEventPublisher, never()).sendMessage(any());
+    }
+
+    @Test
+    void shouldUpdateMofForSyntheticPatientsWhenToggleIsOff(){
+        String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        setField(suspensionMessageProcessor, "processOnlySyntheticPatients", "false");
+        setField(suspensionMessageProcessor, "syntheticPatientPrefix", "969");
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, null, "");
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorMofUpdatedResponse
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "PREVIOUS_ODS_CODE", "");
+
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+        when(pdsService.updateMof("9692294951", "PREVIOUS_ODS_CODE", "")).thenReturn(pdsAdaptorMofUpdatedResponse);
+
+        String messageJson = "{\"nhsNumber\":\"9692294951\"," +
+                "\"managingOrganisationOdsCode\":\"PREVIOUS_ODS_CODE\"}";
+
+        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
+
+        verify(mofUpdatedEventPublisher).sendMessage(messageJson);
+        verify(notSuspendedEventPublisher, never()).sendMessage(any());
+    }
 
     @Test
     void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended() {
