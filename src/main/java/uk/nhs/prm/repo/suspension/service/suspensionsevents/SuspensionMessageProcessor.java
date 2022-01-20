@@ -26,17 +26,15 @@ public class SuspensionMessageProcessor {
     private String syntheticPatientPrefix;
 
     private final ObjectMapper mapper = new ObjectMapper();
-
     private final SuspensionEventParser parser;
 
     public void processSuspensionEvent(String suspensionMessage) {
         SuspensionEvent suspensionEvent = parser.parse(suspensionMessage, this);
         PdsAdaptorSuspensionStatusResponse response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
-        if (syntheticPatientToggleOn()){
-            if(!suspensionEvent.nhsNumber().startsWith(syntheticPatientPrefix)){
-                mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
-                return;
-            }
+
+        if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
+            mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
+            return;
         }
 
         if (Boolean.TRUE.equals(response.getIsSuspended())){
@@ -50,7 +48,14 @@ public class SuspensionMessageProcessor {
         }
     }
 
-    private boolean syntheticPatientToggleOn() {
+    private boolean patientIsNonSynthetic(SuspensionEvent suspensionEvent) {
+        boolean isNonSynthetic = !suspensionEvent.nhsNumber().startsWith(syntheticPatientPrefix);
+        log.info(isNonSynthetic ? "Processing Non-Synthetic Patient" : "Processing Synthetic Patient");
+        return isNonSynthetic;
+    }
+
+    private boolean processingOnlySyntheticPatients() {
+        log.info("Process only synthetic patients: " + processOnlySyntheticPatients);
         return Boolean.parseBoolean(processOnlySyntheticPatients);
     }
 
