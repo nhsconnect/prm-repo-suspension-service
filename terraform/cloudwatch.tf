@@ -147,3 +147,22 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_age_of_message" {
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
+
+resource "aws_cloudwatch_metric_alarm" "suspensions_queue_number_of_empty_receives" {
+  count = var.environment == "dev" ? 1 : 0
+  alarm_name                = "${var.environment}-${var.component_name}-queue-number-of-empty-receives"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 =  10
+  evaluation_periods        = "1"
+  metric_name               = "NumberOfEmptyReceives"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm to alert when all events are processed in the queue"
+  statistic                 = "Sum"
+  period                    = 180
+  dimensions = {
+    QueueName = aws_sqs_queue.suspensions.name
+  }
+  treat_missing_data        = "notBreaching"
+  actions_enabled           = "true"
+  alarm_actions             = [aws_appautoscaling_policy.ecs_policy[0].arn]
+}
