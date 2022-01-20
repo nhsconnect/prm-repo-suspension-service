@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationPublisherMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
@@ -18,6 +19,12 @@ public class SuspensionMessageProcessor {
     private final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
     private final PdsService pdsService;
 
+    @Value("${process_only_synthetic_patients}")
+    private String processOnlySyntheticPatients;
+
+    @Value("${synthetic_patient_prefix}")
+    private String syntheticPatientPrefix;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final SuspensionEventParser parser;
@@ -25,6 +32,11 @@ public class SuspensionMessageProcessor {
     public void processSuspensionEvent(String suspensionMessage) {
         SuspensionEvent suspensionEvent = parser.parse(suspensionMessage, this);
         PdsAdaptorSuspensionStatusResponse response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
+        if (Boolean.parseBoolean(processOnlySyntheticPatients)){
+            if(!suspensionEvent.nhsNumber().startsWith(syntheticPatientPrefix)){
+                return;
+            }
+        }
 
         if (Boolean.TRUE.equals(response.getIsSuspended())){
             try {
