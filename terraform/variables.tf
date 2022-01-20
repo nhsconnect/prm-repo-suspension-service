@@ -55,5 +55,5 @@ variable "synthetic_patient_prefix" {}
 
 variable "suspension_service_start_schedule_expression" {
   # TODO: what will be the time for testprod?
-  default = "cron(0 6 * * *)"
+  default = "cron(0 6 ? * MON-FRI *)"
 }
