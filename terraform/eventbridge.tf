@@ -1,7 +1,8 @@
 resource "aws_cloudwatch_event_rule" "suspension_service_start_event" {
   name        = "${var.environment}-${var.component_name}-start-event"
   description = "Eventbridge (formerly Cloudwatch event) rule to start Suspension Service"
-  schedule_expression = "cron(45 11 ? * MON-FRI *)"
+  schedule_expression = var.suspension_service_start_schedule_expression
+  # TODO: this flag will be deleted when ready in all envs
   is_enabled = var.environment == "dev" ? true : false
 }
 
