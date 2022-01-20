@@ -32,8 +32,9 @@ public class SuspensionMessageProcessor {
     public void processSuspensionEvent(String suspensionMessage) {
         SuspensionEvent suspensionEvent = parser.parse(suspensionMessage, this);
         PdsAdaptorSuspensionStatusResponse response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
-        if (Boolean.parseBoolean(processOnlySyntheticPatients)){
+        if (syntheticPatientToggleOn()){
             if(!suspensionEvent.nhsNumber().startsWith(syntheticPatientPrefix)){
+                mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
                 return;
             }
         }
@@ -47,6 +48,10 @@ public class SuspensionMessageProcessor {
         } else {
             notSuspendedEventPublisher.sendMessage(suspensionMessage);
         }
+    }
+
+    private boolean syntheticPatientToggleOn() {
+        return Boolean.parseBoolean(processOnlySyntheticPatients);
     }
 
     private PdsAdaptorSuspensionStatusResponse getPdsAdaptorSuspensionStatusResponse(SuspensionEvent suspensionEvent) {

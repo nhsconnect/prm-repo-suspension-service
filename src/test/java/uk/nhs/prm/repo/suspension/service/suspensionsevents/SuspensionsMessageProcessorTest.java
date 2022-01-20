@@ -118,6 +118,27 @@ public class SuspensionsMessageProcessorTest {
     }
 
     @Test
+    void shouldNotUpdateMofForNonSyntheticPatientsWhenToggleIsOn() {
+        String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        setField(suspensionMessageProcessor, "processOnlySyntheticPatients", "true");
+        setField(suspensionMessageProcessor, "syntheticPatientPrefix", "929");
+        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, null, "");
+        when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
+        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
+
+        verify(mofNotUpdatedEventPublisher).sendMessage(suspendedMessage);
+        verify(mofUpdatedEventPublisher, never()).sendMessage(any());
+        verify(notSuspendedEventPublisher, never()).sendMessage(any());
+    }
+
+    @Test
     void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended() {
         String notSuspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
