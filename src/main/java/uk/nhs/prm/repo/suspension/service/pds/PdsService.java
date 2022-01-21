@@ -31,12 +31,12 @@ public class PdsService {
 
     public PdsAdaptorSuspensionStatusResponse isSuspended(String nhsNumber) {
         final String url = getPatientUrl(nhsNumber);
-
         String responseBody = httpClient.get(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
         return responseParser.parse(responseBody);
     }
 
     public PdsAdaptorSuspensionStatusResponse updateMof(String nhsNumber, String previousOdsCode, String recordETag) {
+        log.info("Making request to update Managing Organization field");
         final String url = getPatientUrl(nhsNumber);
         final UpdateManagingOrganisationRequest requestPayload = new UpdateManagingOrganisationRequest(previousOdsCode, recordETag);
 

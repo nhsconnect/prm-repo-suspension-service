@@ -38,6 +38,7 @@ public class SuspensionMessageProcessor {
         }
 
         if (Boolean.TRUE.equals(response.getIsSuspended())){
+            log.info("Patient is Suspended");
             try {
                 updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage, suspensionEvent);
             } catch (JsonProcessingException e) {
@@ -60,6 +61,7 @@ public class SuspensionMessageProcessor {
     }
 
     private PdsAdaptorSuspensionStatusResponse getPdsAdaptorSuspensionStatusResponse(SuspensionEvent suspensionEvent) {
+        log.info("Checking patient's suspension status on PDS");
         PdsAdaptorSuspensionStatusResponse response = pdsService.isSuspended(suspensionEvent.nhsNumber());
         if (!suspensionEvent.nhsNumber().equals(response.getNhsNumber())) {
             log.info("Processing a superseded record");
