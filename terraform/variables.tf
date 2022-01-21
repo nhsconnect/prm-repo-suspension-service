@@ -48,7 +48,7 @@ variable "period_of_age_of_message_metric" {
 }
 
 variable "process_only_synthetic_patients" {
-  default = false
+  default = true
 }
 
 variable "synthetic_patient_prefix" {}
