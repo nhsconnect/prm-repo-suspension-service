@@ -22,7 +22,6 @@ resource "aws_ecs_service" "ecs-service" {
 }
 
 resource "aws_appautoscaling_target" "ecs_target" {
-  count = var.environment == "dev" ? 1 : 0
   max_capacity       = 2
   min_capacity       = 0
   resource_id = "service/${aws_ecs_cluster.ecs-cluster.name}/${aws_ecs_service.ecs-service.name}"
@@ -30,13 +29,12 @@ resource "aws_appautoscaling_target" "ecs_target" {
   service_namespace  = "ecs"
 }
 
-resource "aws_appautoscaling_policy" "ecs_policy" {
-  count = var.environment == "dev" ? 1 : 0
+resource "aws_appautoscaling_policy" "scale_down" {
   name               = "scale-down"
   policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_target[0].resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_target[0].scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_target[0].service_namespace
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
@@ -44,8 +42,26 @@ resource "aws_appautoscaling_policy" "ecs_policy" {
     metric_aggregation_type = "Maximum"
 
     step_adjustment {
-      metric_interval_lower_bound = 10
       scaling_adjustment          = -1
+    }
+  }
+}
+
+
+resource "aws_appautoscaling_policy" "scale_up" {
+  name               = "scale-up"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = 60
+    metric_aggregation_type = "Maximum"
+
+    step_adjustment {
+      scaling_adjustment          = 1
     }
   }
 }

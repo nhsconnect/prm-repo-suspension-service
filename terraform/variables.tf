@@ -57,3 +57,7 @@ variable "suspension_service_start_schedule_expression" {
   # TODO: what will be the time for testprod?
   default = "cron(0 6 ? * MON-FRI *)"
 }
+
+variable "scale_up_expression" {
+  type = string
+}
