@@ -155,7 +155,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
   evaluation_periods        = "1"
   threshold                 = "10"
   alarm_description         = "Scale up alarm for suspension-service"
-  actions_enabled           = var.enable_scale_action
+  actions_enabled           = true
   alarm_actions             = [aws_appautoscaling_policy.scale_up.arn]
 
   metric_query {
