@@ -183,7 +183,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspensions_queue_number_of_empty_receives" {
-  alarm_name                = "${var.environment}-${var.component_name}-queue-number-of-empty-receives"
+  alarm_name                = "${var.environment}-${var.component_name}-scale-down"
   comparison_operator       = "GreaterThanThreshold"
   threshold                 =  10
   evaluation_periods        = "1"
@@ -191,7 +191,7 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_number_of_empty_receiv
   namespace                 = local.sqs_namespace
   alarm_description         = "Alarm to alert when all events are processed in the queue"
   statistic                 = "Sum"
-  period                    = 180
+  period                    = 300
   dimensions = {
     QueueName = aws_sqs_queue.suspensions.name
   }
