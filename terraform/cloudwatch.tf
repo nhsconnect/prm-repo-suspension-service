@@ -155,7 +155,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
   evaluation_periods        = "1"
   threshold                 = "10"
   alarm_description         = "Scale up alarm for suspension-service"
-  actions_enabled           = true
+  actions_enabled           = var.enable_scale_action
   alarm_actions             = [aws_appautoscaling_policy.scale_up.arn]
 
   metric_query {
@@ -182,7 +182,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "suspensions_queue_number_of_empty_receives" {
+resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_down_alarm" {
   alarm_name                = "${var.environment}-${var.component_name}-scale-down"
   comparison_operator       = "GreaterThanThreshold"
   threshold                 =  10
@@ -196,6 +196,6 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_number_of_empty_receiv
     QueueName = aws_sqs_queue.suspensions.name
   }
   treat_missing_data        = "notBreaching"
-  actions_enabled           = "true"
+  actions_enabled           = var.enable_scale_action
   alarm_actions             = [aws_appautoscaling_policy.scale_down.arn]
 }
