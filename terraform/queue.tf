@@ -10,6 +10,7 @@ resource "aws_sqs_queue" "suspensions" {
   name                       = local.suspensions_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = data.aws_ssm_parameter.suspensions_kms_key_id.value
+  receive_wait_time_seconds = 20
 
   tags = {
     Name = local.suspensions_queue_name
