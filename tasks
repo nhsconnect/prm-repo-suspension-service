@@ -43,6 +43,7 @@ function get_aws_account_id {
 
 function configure_envs {
   export AWS_REGION=${AWS_DEFAULT_REGION}
+  export LOCALSTACK_URL="http://localstack:4566"
 }
 
 
@@ -167,13 +168,6 @@ case "${command}" in
   code_quality)
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
-  _test_integration)
-      gradle --info integration
-      ;;
-  test_integration)
-      configure_local_envs
-      dojo -c Dojofile-itest "./tasks _test_integration"
-      ;;
   _test_all)
       gradle test integration jacocoTestCoverageVerification check
       ;;
@@ -184,6 +178,9 @@ case "${command}" in
   run_local)
       configure_envs
       ./gradlew bootRun
+      ;;
+  run_localstack_local)
+      docker-compose -f docker-compose.localstack-local.yaml up -d
       ;;
   _dep)
       gradle dependencyCheckAnalyze

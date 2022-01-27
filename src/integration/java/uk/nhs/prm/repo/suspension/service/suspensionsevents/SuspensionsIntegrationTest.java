@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.*;
@@ -83,6 +84,7 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
+        purgeQueue(notSuspendedQueueUrl);
     }
 
     @Test
@@ -113,6 +115,7 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder[0].getBody().contains("B1234"));
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
+        purgeQueue(mofUpdatedQueueUrl);
     }
 
     private void checkMessageInRelatedQueue(String queueUrl, Message[] receivedMessageHolder) {
@@ -142,5 +145,10 @@ public class SuspensionsIntegrationTest {
                 "    \"managingOrganisation\": \"B1234\",\n" +
                 "    \"recordETag\": \"W/\\\"5\\\"\"\n" +
                 "}";
+    }
+
+    private void purgeQueue(String queueUrl) {
+        System.out.println("Purging queue url: " + queueUrl);
+        amazonSQSAsync.purgeQueue(new PurgeQueueRequest(queueUrl));
     }
 }

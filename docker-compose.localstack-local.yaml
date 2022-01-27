@@ -1,16 +1,17 @@
-version: "2.2"
+version: "3.8"
+
 services:
-  default:
-    links:
-      - localstack:localstack
   localstack:
+    container_name: "localstack-suspension-service"
     image: localstack/localstack
+    network_mode: bridge
     ports:
-      - "4566:4566"
+      - "127.0.0.1:4588:4588"
     environment:
       - SERVICES=sqs,sns
       - DEFAULT_REGION=eu-west-2
-      - HOSTNAME_EXTERNAL=localstack
+      - HOSTNAME_EXTERNAL=localhost
+      - EDGE_PORT=4588
     volumes:
       - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"

@@ -45,17 +45,17 @@ public class LocalStackAwsConfig {
     private String mofUpdatedQueueName;
 
     @Bean
-    public static AmazonSQSAsync amazonSQSAsync() {
+    public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
         return AmazonSQSAsyncClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("http://localstack:4566", "eu-west-2"))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
                 .build();
     }
 
     @Bean
-    public static SnsClient snsClient() {
+    public static SnsClient snsClient(@Value("${localstack.url}") String localstackUrl) {
         return SnsClient.builder()
-                .endpointOverride(URI.create("http://localstack:4566"))
+                .endpointOverride(URI.create(localstackUrl))
                 .region(Region.EU_WEST_2)
                 .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
                     @Override
