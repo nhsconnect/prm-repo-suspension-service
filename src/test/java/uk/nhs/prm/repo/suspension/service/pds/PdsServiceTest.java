@@ -1,11 +1,14 @@
 package uk.nhs.prm.repo.suspension.service.pds;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationRequest;
@@ -28,13 +31,12 @@ class PdsServiceTest {
     @BeforeEach
     public void setUp() {
         pdsService = new PdsService(responseParser, client);
+        setField(pdsService, "serviceUrl", "http://pds-adaptor"); // @todo fertling :/
+        setField(pdsService, "suspensionServicePassword", "PASS");
     }
 
     @Test
     public void shouldGetPatientStatusFromPdsServiceUrlAndParseResponse() {
-        setField(pdsService, "serviceUrl", "http://pds-adaptor"); // @todo fertling :/
-        setField(pdsService, "suspensionServicePassword", "PASS");
-
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
         var parsedStatus = aStatus();
 
@@ -49,9 +51,6 @@ class PdsServiceTest {
 
     @Test
     public void shouldUpdatePatientStatusFromPdsServiceUrlAndParseResponse() {
-        setField(pdsService, "serviceUrl", "http://pds-adaptor"); // @todo fertling :/
-        setField(pdsService, "suspensionServicePassword", "PASS");
-
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
         var parsedStatus = aStatus();
         var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
@@ -63,6 +62,43 @@ class PdsServiceTest {
         var status = pdsService.updateMof("1234567890", "hello", "bob");
         assertThat(status).isEqualTo(parsedStatus);
     }
+
+    @Test
+    public void shouldThrowExceptionWhenPdsReturn400() {
+        String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
+
+        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
+                .thenThrow(HttpClientErrorException.class);
+
+        InvalidPdsRequestException thrown = Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
+            pdsService.isSuspended("1234567890");
+        });
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPdsReturn500() {
+        String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
+
+        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
+                .thenThrow(HttpServerErrorException.class);
+
+        IntermittentErrorPdsException thrown = Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+            pdsService.isSuspended("1234567890");
+        });
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPdsConnectionFails() {
+        String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
+
+        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
+                .thenThrow(RuntimeException.class);
+
+        IntermittentErrorPdsException thrown = Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+            pdsService.isSuspended("1234567890");
+        });
+    }
+
 
     private PdsAdaptorSuspensionStatusResponse aStatus() {
         return new PdsAdaptorSuspensionStatusResponse("9692294951", true, "ODS123", "ODS456", "v1");

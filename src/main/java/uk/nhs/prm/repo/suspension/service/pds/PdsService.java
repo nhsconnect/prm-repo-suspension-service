@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationRequest;
@@ -32,8 +33,16 @@ public class PdsService {
 
     public PdsAdaptorSuspensionStatusResponse isSuspended(String nhsNumber) {
         final String url = getPatientUrl(nhsNumber);
-        ResponseEntity<String> response = httpClient.getWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
-        return responseParser.parse(response.getBody());
+        try {
+            ResponseEntity<String> response = httpClient.getWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
+            return responseParser.parse(response.getBody());
+        } catch (HttpClientErrorException e) {
+            log.error("Got client error");
+            throw new InvalidPdsRequestException("Got client error", e);
+        } catch (Exception e) {
+            log.error("Got server error");
+            throw new IntermittentErrorPdsException("Got server error", e);
+        }
     }
 
     public PdsAdaptorSuspensionStatusResponse updateMof(String nhsNumber, String previousOdsCode, String recordETag) {

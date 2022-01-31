@@ -2,18 +2,33 @@ package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.core.IntervalFunction;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationPublisherMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
+import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
+
+import java.util.function.Function;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class SuspensionMessageProcessor {
+    @Value("${suspension.processor.retry.max.attempts}")
+    private int maxAttempts;
+
+    @Value("${suspension.processor.initial.interval.millisecond}")
+    private int initialIntervalMillis;
+
+    @Value("${suspension.processor.initial.interval.multiplier}")
+    private double multiplier;
+
     private final NotSuspendedEventPublisher notSuspendedEventPublisher;
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
     private final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
@@ -28,16 +43,30 @@ public class SuspensionMessageProcessor {
     private final ObjectMapper mapper = new ObjectMapper();
     private final SuspensionEventParser parser;
 
-    public void processSuspensionEvent(String suspensionMessage) {
+    public void processSuspensionEvent(String message) {
+        Function<String, String> retryableProcessEvent = Retry
+                .decorateFunction(Retry.of("retryableSuspension", createRetryConfig()), this::processSuspensionEventOnce);
+        retryableProcessEvent.apply(message);
+    }
+
+    private RetryConfig createRetryConfig() {
+        return RetryConfig.custom()
+                .maxAttempts(maxAttempts)
+                .intervalFunction(IntervalFunction.ofExponentialBackoff(initialIntervalMillis, multiplier))
+                .retryExceptions(IntermittentErrorPdsException.class)
+                .build();
+    }
+
+    private String processSuspensionEventOnce(String suspensionMessage) {
         SuspensionEvent suspensionEvent = parser.parse(suspensionMessage, this);
         PdsAdaptorSuspensionStatusResponse response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
 
         if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
             mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
-            return;
+            return suspensionMessage;
         }
 
-        if (Boolean.TRUE.equals(response.getIsSuspended())){
+        if (Boolean.TRUE.equals(response.getIsSuspended())) {
             log.info("Patient is Suspended");
             try {
                 updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage, suspensionEvent);
@@ -47,6 +76,7 @@ public class SuspensionMessageProcessor {
         } else {
             notSuspendedEventPublisher.sendMessage(suspensionMessage);
         }
+        return suspensionMessage;
     }
 
     private boolean patientIsNonSynthetic(SuspensionEvent suspensionEvent) {

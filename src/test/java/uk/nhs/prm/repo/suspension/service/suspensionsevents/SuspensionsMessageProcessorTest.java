@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
+import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
+import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
 import static org.mockito.Mockito.*;
@@ -34,6 +36,9 @@ public class SuspensionsMessageProcessorTest {
     public void setUp() {
         suspensionMessageProcessor = new SuspensionMessageProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
                 mofNotUpdatedEventPublisher, pdsService, new SuspensionEventParser());
+        setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
+        setField(suspensionMessageProcessor, "maxAttempts", 5);
+        setField(suspensionMessageProcessor, "multiplier", 2.0);
     }
 
     @Test
@@ -64,7 +69,7 @@ public class SuspensionsMessageProcessorTest {
     }
 
     @Test
-    void shouldUpdateMofForNonSyntheticPatientsWhenToggleIsOff(){
+    void shouldUpdateMofForNonSyntheticPatientsWhenToggleIsOff() {
         String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -91,7 +96,7 @@ public class SuspensionsMessageProcessorTest {
     }
 
     @Test
-    void shouldUpdateMofForSyntheticPatientsWhenToggleIsOff(){
+    void shouldUpdateMofForSyntheticPatientsWhenToggleIsOff() {
         String suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -313,6 +318,63 @@ public class SuspensionsMessageProcessorTest {
         verify(mofUpdatedEventPublisher).sendMessage("{\"nhsNumber\":\"9692294951\",\"managingOrganisationOdsCode\":\"B85612\"}");
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
+    }
+
+    @Test
+    void shouldRetryAsMaxAttemptNumber() {
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        when(pdsService.isSuspended("9692294951")).thenThrow(IntermittentErrorPdsException.class);
+
+
+        Assertions.assertThrows(IntermittentErrorPdsException.class, () ->
+                suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
+
+        int numberOfInvocations = 5;
+
+        verify(pdsService, times(numberOfInvocations)).isSuspended("9692294951");
+
+    }
+
+    @Test
+    void shouldNotRetryIfNotGetException() {
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        when(pdsService.isSuspended("9692294951")).thenThrow(IntermittentErrorPdsException.class)
+                .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", false, null, null, ""));
+
+        suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
+
+
+        int numberOfInvocations = 2;
+
+        verify(pdsService, times(numberOfInvocations)).isSuspended("9692294951");
+
+    }
+
+    @Test
+    void shouldNotRetryWhenGotInvalidPdsRequestException() {
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+
+        when(pdsService.isSuspended("9692294951")).thenThrow(InvalidPdsRequestException.class);
+
+        Assertions.assertThrows(InvalidPdsRequestException.class, () ->
+                suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
+
+        verify(pdsService, times(1)).isSuspended("9692294951");
+
     }
 
     @Test
