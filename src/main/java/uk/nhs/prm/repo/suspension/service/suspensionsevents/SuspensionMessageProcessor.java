@@ -58,7 +58,7 @@ public class SuspensionMessageProcessor {
     }
 
     private String processSuspensionEventOnce(String suspensionMessage) {
-        SuspensionEvent suspensionEvent = parser.parse(suspensionMessage, this);
+        SuspensionEvent suspensionEvent = parser.parse(suspensionMessage);
         PdsAdaptorSuspensionStatusResponse response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
 
         if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
