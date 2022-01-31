@@ -5,7 +5,6 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import org.assertj.core.api.AbstractStringAssert;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,16 +54,15 @@ public class SuspensionsIntegrationTest {
         stubPdsAdaptor.stop();
     }
 
-    private String sampleMessage = "{" +
-            "\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
-            "\"previousOdsCode\":\"B85612\"," +
-            "\"eventType\":\"SUSPENSION\"," +
-            "\"nhsNumber\":\"9912003888\"," +
-            "\"nemsMessageId\":\"TEST-NEMS-ID\"," +
-            "\"environment\":\"local\"" +
-            "}";
-
-    private WireMockServer initializeWebServer() {
+    private String suspensionEvent = new SuspensionEventBuilder()
+            .lastUpdated("2017-11-01T15:00:33+00:00")
+            .previousOdsCode("B85612")
+            .eventType("SUSPENSION")
+            .nhsNumber("9912003888")
+            .nemsMessageId("TEST-NEMS-ID")
+            .environment("local").buildJson();
+    
+     private WireMockServer initializeWebServer() {
         final WireMockServer wireMockServer = new WireMockServer(8080);
         wireMockServer.start();
 
@@ -72,8 +70,7 @@ public class SuspensionsIntegrationTest {
     }
 
     @Test
-    void shouldSendMessageToNotSuspendedSNSTopic() {
-
+    void shouldSendSuspensionMessageToNotSuspendedSNSTopicIfNoLongerSuspendedInPDS() {
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
@@ -82,7 +79,7 @@ public class SuspensionsIntegrationTest {
 
         String queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         String notSuspendedQueueUrl = sqs.getQueueUrl(notSuspendedQueueName).getQueueUrl();
-        sqs.sendMessage(queueUrl, sampleMessage);
+        sqs.sendMessage(queueUrl, suspensionEvent);
 
         Message[] receivedMessageHolder = new Message[1];
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -96,8 +93,7 @@ public class SuspensionsIntegrationTest {
     }
 
     @Test
-    void shouldSendMessageToMofUpdatedSNSTopic() {
-
+    void shouldUpdateManagingOrganisationAndSendMessageToMofUpdatedSNSTopicForSuspendedPatient() {
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
@@ -111,7 +107,7 @@ public class SuspensionsIntegrationTest {
 
         String queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         String mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
-        sqs.sendMessage(queueUrl, sampleMessage);
+        sqs.sendMessage(queueUrl, suspensionEvent);
 
         Message[] receivedMessageHolder = new Message[1];
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
