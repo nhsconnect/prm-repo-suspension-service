@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SuspensionsIntegrationTest {
 
     @Autowired
-    private AmazonSQSAsync amazonSQSAsync;
+    private AmazonSQSAsync sqs;
 
     @Value("${aws.suspensionsQueueName}")
     private String suspensionsQueueName;
@@ -54,9 +54,15 @@ public class SuspensionsIntegrationTest {
         stubPdsAdaptor.stop();
     }
 
-    private String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}\",\"environment\":\"local\"}";
-
-    private WireMockServer initializeWebServer() {
+    private String suspensionEvent = new SuspensionEventBuilder()
+            .lastUpdated("2017-11-01T15:00:33+00:00")
+            .previousOdsCode("B85612")
+            .eventType("SUSPENSION")
+            .nhsNumber("9912003888")
+            .nemsMessageId("TEST-NEMS-ID")
+            .environment("local").buildJson();
+    
+     private WireMockServer initializeWebServer() {
         final WireMockServer wireMockServer = new WireMockServer(8080);
         wireMockServer.start();
 
@@ -64,17 +70,16 @@ public class SuspensionsIntegrationTest {
     }
 
     @Test
-    void shouldSendMessageToNotSuspendedSNSTopic() {
-
+    void shouldSendSuspensionMessageToNotSuspendedSNSTopicIfNoLongerSuspendedInPDS() {
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(getNotSuspendedResponse())));
 
-        String queueUrl = amazonSQSAsync.getQueueUrl(suspensionsQueueName).getQueueUrl();
-        String notSuspendedQueueUrl = amazonSQSAsync.getQueueUrl(notSuspendedQueueName).getQueueUrl();
-        amazonSQSAsync.sendMessage(queueUrl, sampleMessage);
+        String queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        String notSuspendedQueueUrl = sqs.getQueueUrl(notSuspendedQueueName).getQueueUrl();
+        sqs.sendMessage(queueUrl, suspensionEvent);
 
         Message[] receivedMessageHolder = new Message[1];
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -88,8 +93,7 @@ public class SuspensionsIntegrationTest {
     }
 
     @Test
-    void shouldSendMessageToMofUpdatedSNSTopic() {
-
+    void shouldUpdateManagingOrganisationAndSendMessageToMofUpdatedSNSTopicForSuspendedPatient() {
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
@@ -101,9 +105,9 @@ public class SuspensionsIntegrationTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody(getSuspendedResponse())));
 
-        String queueUrl = amazonSQSAsync.getQueueUrl(suspensionsQueueName).getQueueUrl();
-        String mofUpdatedQueueUrl = amazonSQSAsync.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
-        amazonSQSAsync.sendMessage(queueUrl, sampleMessage);
+        String queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        String mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
+        sqs.sendMessage(queueUrl, suspensionEvent);
 
         Message[] receivedMessageHolder = new Message[1];
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -124,7 +128,7 @@ public class SuspensionsIntegrationTest {
         ReceiveMessageRequest requestForMessagesWithAttributes
                 = new ReceiveMessageRequest().withQueueUrl(queueUrl)
                 .withMessageAttributeNames("traceId");
-        List<Message> messages = amazonSQSAsync.receiveMessage(requestForMessagesWithAttributes).getMessages();
+        List<Message> messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
         assertThat(messages).hasSize(1);
         receivedMessageHolder[0] = messages.get(0);
     }
@@ -149,6 +153,6 @@ public class SuspensionsIntegrationTest {
 
     private void purgeQueue(String queueUrl) {
         System.out.println("Purging queue url: " + queueUrl);
-        amazonSQSAsync.purgeQueue(new PurgeQueueRequest(queueUrl));
+        sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
     }
 }

@@ -7,7 +7,6 @@ public class SuspensionEvent {
     private HashMap<String, Object> fields;
 
     public SuspensionEvent(HashMap<String, Object> fields) {
-
         this.fields = fields;
     }
 
@@ -17,5 +16,9 @@ public class SuspensionEvent {
 
     public String previousOdsCode() {
         return fields.get("previousOdsCode").toString();
+    }
+
+    public String nemsMessageId() {
+        return fields.get("nemsMessageId").toString();
     }
 }

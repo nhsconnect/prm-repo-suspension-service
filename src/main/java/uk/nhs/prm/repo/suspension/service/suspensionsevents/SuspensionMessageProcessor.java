@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationPublisherMessage;
+import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
@@ -101,25 +101,32 @@ public class SuspensionMessageProcessor {
         return response;
     }
 
-    private void updateMof(String nhsNumber, String recordETag, String newManagingOrganisation, String suspensionMessage, SuspensionEvent suspensionEvent) throws JsonProcessingException {
+    private void updateMof(String nhsNumber,
+                           String recordETag,
+                           String newManagingOrganisation,
+                           String suspensionMessage,
+                           SuspensionEvent suspensionEvent) throws JsonProcessingException {
         if (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode())) {
-            PdsAdaptorSuspensionStatusResponse updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
+            var updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
-            publishMofUpdateMessage(nhsNumber, updateMofResponse);
+            publishMofUpdateMessage(nhsNumber, updateMofResponse, suspensionEvent.nemsMessageId());
         } else {
             log.info("Managing Organisation field is already set to previous GP");
             mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
         }
     }
 
-    private void publishMofUpdateMessage(String nhsNumber, PdsAdaptorSuspensionStatusResponse updateMofResponse) {
-        ManagingOrganisationPublisherMessage managingOrganisationPublisherMessage = new ManagingOrganisationPublisherMessage(nhsNumber,
-                updateMofResponse.getManagingOrganisation());
+    private void publishMofUpdateMessage(String nhsNumber,
+                                         PdsAdaptorSuspensionStatusResponse updateMofResponse,
+                                         String nemsMessageId) {
+        var managingOrganisationPublisherMessage = new ManagingOrganisationUpdatedMessage(
+                nhsNumber,
+                updateMofResponse.getManagingOrganisation(),
+                nemsMessageId);
         try {
             mofUpdatedEventPublisher.sendMessage(mapper.writeValueAsString(managingOrganisationPublisherMessage));
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
     }
-
 }
