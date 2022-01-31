@@ -27,9 +27,24 @@ public class HttpServiceClient {
         return exchange(HttpMethod.PUT, url, requestEntity);
     }
 
+    public ResponseEntity<String> getWithStatusCode (String url, String username, String password) {
+        var requestEntity = new HttpEntity<>(createSharedHeaders(username, password));
+        return exchangeWithStatusCode(HttpMethod.GET, url, requestEntity);
+    }
+
+    public ResponseEntity<String> putWithStatusCode(String url, String username, String password, Object requestPayload) {
+        var requestEntity = new HttpEntity<>(requestPayload, createSharedHeaders(username, password));
+        return exchangeWithStatusCode(HttpMethod.PUT, url, requestEntity);
+    }
+
     private String exchange(HttpMethod method, String url, HttpEntity requestEntity) {
         ResponseEntity<String> responseEntity = restTemplate.exchange(url, method, requestEntity, String.class);
         return responseEntity.getBody();
+    }
+
+    private ResponseEntity<String> exchangeWithStatusCode(HttpMethod method, String url, HttpEntity requestEntity) {
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, method, requestEntity, String.class);
+        return responseEntity;
     }
 
     private HttpHeaders createSharedHeaders(String username, String password) {
