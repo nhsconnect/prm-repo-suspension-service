@@ -13,7 +13,7 @@ import java.util.HashMap;
 public class SuspensionEventParser {
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public SuspensionEvent parse(String suspensionMessage, SuspensionMessageProcessor suspensionsEventProcessor) {
+    public SuspensionEvent parse(String suspensionMessage) {
         return new SuspensionEvent(parseIntoMap(suspensionMessage));
     }
 
