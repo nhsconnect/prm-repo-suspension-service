@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationRequest;
@@ -37,7 +38,9 @@ class PdsServiceTest {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
         var parsedStatus = aStatus();
 
-        when(client.get(expectedUrl, "suspension-service", "PASS")).thenReturn("some status");
+        ResponseEntity<String> response = ResponseEntity.ok("some status");
+        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
+                .thenReturn(response);
         when(responseParser.parse("some status")).thenReturn(parsedStatus);
 
         var status = pdsService.isSuspended("1234567890");
@@ -53,7 +56,8 @@ class PdsServiceTest {
         var parsedStatus = aStatus();
         var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
 
-        when(client.put(expectedUrl, "suspension-service", "PASS", requestPayload)).thenReturn("some status");
+        ResponseEntity<String> response = ResponseEntity.ok("some status");
+        when(client.putWithStatusCode(expectedUrl, "suspension-service", "PASS", requestPayload)).thenReturn(response);
         when(responseParser.parse("some status")).thenReturn(parsedStatus);
 
         var status = pdsService.updateMof("1234567890", "hello", "bob");

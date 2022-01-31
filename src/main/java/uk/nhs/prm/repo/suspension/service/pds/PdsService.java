@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.suspension.service.pds;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
@@ -31,8 +32,8 @@ public class PdsService {
 
     public PdsAdaptorSuspensionStatusResponse isSuspended(String nhsNumber) {
         final String url = getPatientUrl(nhsNumber);
-        String responseBody = httpClient.get(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
-        return responseParser.parse(responseBody);
+        ResponseEntity<String> response = httpClient.getWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
+        return responseParser.parse(response.getBody());
     }
 
     public PdsAdaptorSuspensionStatusResponse updateMof(String nhsNumber, String previousOdsCode, String recordETag) {
@@ -40,8 +41,8 @@ public class PdsService {
         final String url = getPatientUrl(nhsNumber);
         final UpdateManagingOrganisationRequest requestPayload = new UpdateManagingOrganisationRequest(previousOdsCode, recordETag);
 
-        String responseBody = httpClient.put(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, requestPayload);
-        return responseParser.parse(responseBody);
+        ResponseEntity<String> response = httpClient.putWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, requestPayload);
+        return responseParser.parse(response.getBody());
     }
 
     private String getPatientUrl(String nhsNumber) {

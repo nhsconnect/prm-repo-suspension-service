@@ -17,16 +17,6 @@ public class HttpServiceClient {
     private RestTemplate restTemplate;
     private final Tracer tracer;
 
-    public String get(String url, String username, String password) {
-        var requestEntity = new HttpEntity<>(createSharedHeaders(username, password));
-        return exchange(HttpMethod.GET, url, requestEntity);
-    }
-
-    public String put(String url, String username, String password, Object requestPayload) {
-        var requestEntity = new HttpEntity<>(requestPayload, createSharedHeaders(username, password));
-        return exchange(HttpMethod.PUT, url, requestEntity);
-    }
-
     public ResponseEntity<String> getWithStatusCode (String url, String username, String password) {
         var requestEntity = new HttpEntity<>(createSharedHeaders(username, password));
         return exchangeWithStatusCode(HttpMethod.GET, url, requestEntity);

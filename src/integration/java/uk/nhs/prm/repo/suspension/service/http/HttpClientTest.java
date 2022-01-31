@@ -32,40 +32,6 @@ public class HttpClientTest {
     }
 
     @Test
-    void shouldPerformGetWithAuthAndReturnBody() {
-        stubFor(get(urlMatching("/get-path"))
-                .withHeader("Authorization", matching("Basic " + BOB_BANANA_AUTH_TOKEN))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("response body")));
-
-        String responsePayload = httpServiceClient.get(
-                "http://localhost:8080/get-path",
-                "bob",
-                "banana");
-
-        assertThat(responsePayload).isEqualTo("response body");
-    }
-
-    @Test
-    void shouldPerformPutWithAuthAndReturnBody() {
-        stubFor(put(urlMatching("/put-path"))
-                .withHeader("Authorization", matching("Basic " + BOB_BANANA_AUTH_TOKEN))
-                .withRequestBody(equalTo("some request payload"))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("some body")));
-
-        String responsePayload = httpServiceClient.put(
-                "http://localhost:8080/put-path",
-                "bob",
-                "banana",
-                "some request payload");
-
-        assertThat(responsePayload).isEqualTo("some body");
-    }
-
-    @Test
     void shouldPerformPutWithAuthAndReturnBodyAndResponseCode() {
         stubFor(put(urlMatching("/put-path"))
                 .withHeader("Authorization", matching("Basic " + BOB_BANANA_AUTH_TOKEN))
@@ -73,6 +39,7 @@ public class HttpClientTest {
                 .willReturn(aResponse()
                         .withStatus(203)
                         .withHeader("Content-Type", "application/json")
+                        .withHeader("Connection", "close")
                         .withBody("some body")));
 
         ResponseEntity<String> responsePayload = httpServiceClient.putWithStatusCode(
@@ -92,6 +59,7 @@ public class HttpClientTest {
                 .willReturn(aResponse()
                         .withStatus(202)
                         .withHeader("Content-Type", "application/json")
+                        .withHeader("Connection", "close")
                         .withBody("some body")));
 
         ResponseEntity<String> response = httpServiceClient.getWithStatusCode(
