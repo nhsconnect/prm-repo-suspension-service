@@ -63,6 +63,7 @@ class PdsServiceTest {
         assertThat(status).isEqualTo(parsedStatus);
     }
 
+
     @Test
     public void shouldThrowExceptionWhenPdsReturn400() {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
@@ -72,6 +73,19 @@ class PdsServiceTest {
 
         Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
             pdsService.isSuspended("1234567890");
+        });
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPdsReturn400ForMofUpdate() {
+        String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
+        var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
+
+        when(client.putWithStatusCode(expectedUrl, "suspension-service", "PASS", requestPayload ))
+                .thenThrow(HttpClientErrorException.class);
+
+        Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
+            pdsService.updateMof("1234567890", "hello", "bob");
         });
     }
 
@@ -88,6 +102,19 @@ class PdsServiceTest {
     }
 
     @Test
+    public void shouldThrowExceptionWhenPdsReturn500ForMofUpdate() {
+        String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
+        var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
+
+        when(client.putWithStatusCode(expectedUrl, "suspension-service", "PASS", requestPayload ))
+                .thenThrow(HttpServerErrorException.class);
+
+        Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+            pdsService.updateMof("1234567890", "hello", "bob");
+        });
+    }
+
+    @Test
     public void shouldThrowExceptionWhenPdsConnectionFails() {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
 
@@ -96,6 +123,19 @@ class PdsServiceTest {
 
         Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
             pdsService.isSuspended("1234567890");
+        });
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPdsConnectionFailsForMofUpdate() {
+        String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
+        var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
+
+        when(client.putWithStatusCode(expectedUrl, "suspension-service", "PASS", requestPayload ))
+                .thenThrow(RuntimeException.class);
+
+        Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+            pdsService.updateMof("1234567890", "hello", "bob");
         });
     }
 

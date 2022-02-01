@@ -49,9 +49,16 @@ public class PdsService {
         log.info("Making request to update Managing Organization field");
         final String url = getPatientUrl(nhsNumber);
         final UpdateManagingOrganisationRequest requestPayload = new UpdateManagingOrganisationRequest(previousOdsCode, recordETag);
-
-        ResponseEntity<String> response = httpClient.putWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, requestPayload);
-        return responseParser.parse(response.getBody());
+        try {
+            ResponseEntity<String> response = httpClient.putWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, requestPayload);
+            return responseParser.parse(response.getBody());
+        } catch (HttpClientErrorException e) {
+            log.error("Got client error");
+            throw new InvalidPdsRequestException("Got client error", e);
+        } catch (Exception e) {
+            log.error("Got server error");
+            throw new IntermittentErrorPdsException("Got server error", e);
+        }
     }
 
     private String getPatientUrl(String nhsNumber) {
