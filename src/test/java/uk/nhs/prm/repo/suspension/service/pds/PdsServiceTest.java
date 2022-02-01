@@ -70,7 +70,7 @@ class PdsServiceTest {
         when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(HttpClientErrorException.class);
 
-        InvalidPdsRequestException thrown = Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
+        Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
             pdsService.isSuspended("1234567890");
         });
     }
@@ -82,7 +82,7 @@ class PdsServiceTest {
         when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(HttpServerErrorException.class);
 
-        IntermittentErrorPdsException thrown = Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+        Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
             pdsService.isSuspended("1234567890");
         });
     }
@@ -94,7 +94,7 @@ class PdsServiceTest {
         when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(RuntimeException.class);
 
-        IntermittentErrorPdsException thrown = Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+        Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
             pdsService.isSuspended("1234567890");
         });
     }
