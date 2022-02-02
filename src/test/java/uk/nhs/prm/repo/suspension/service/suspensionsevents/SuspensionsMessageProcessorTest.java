@@ -438,6 +438,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
                 "\"environment\":\"local\"}";
         when(pdsService.isSuspended("9692294951")).thenThrow(InvalidPdsRequestException.class);
 
@@ -445,10 +446,11 @@ public class SuspensionsMessageProcessorTest {
                 suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
 
         verify(invalidSuspensionPublisher).sendMessage(sampleMessage);
+        verify(invalidSuspensionPublisher).sendNonSensitiveMessage(sampleMessage);
     }
 
     @Test
-    void shouldPutInvalidSuspensionMessageOnDLQWhenMOFUpdateIfSuspensinInvalid(){
+    void shouldPutInvalidSuspensionMessageOnDLQWhenMOFUpdateIfSuspensionInvalid(){
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +

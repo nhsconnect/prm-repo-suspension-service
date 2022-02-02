@@ -16,5 +16,8 @@ public class InvalidSuspensionPublisher {
     public void sendMessage(String message) {
         messagePublisher.sendMessage(this.invalidSuspensionSnsTopicArn, message);
     }
+
+    public void sendNonSensitiveMessage(String sampleNonSensitiveMessage) {
+    }
 }
 

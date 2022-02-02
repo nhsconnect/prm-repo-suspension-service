@@ -66,6 +66,7 @@ public class SuspensionMessageProcessor {
             response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
             invalidSuspensionPublisher.sendMessage(suspensionMessage);
+            invalidSuspensionPublisher.sendNonSensitiveMessage(suspensionMessage);
             throw invalidPdsRequestException;
         }
 
