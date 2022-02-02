@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
+import uk.nhs.prm.repo.suspension.service.model.NonSensitiveInvalidSuspensionMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
@@ -65,9 +66,7 @@ public class SuspensionMessageProcessor {
         try {
             response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
-            invalidSuspensionPublisher.sendMessage(suspensionMessage);
-            invalidSuspensionPublisher.sendNonSensitiveMessage(suspensionMessage);
-            throw invalidPdsRequestException;
+            return publishInvalidSuspension(suspensionMessage, suspensionEvent, invalidPdsRequestException);
         }
 
         if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
@@ -77,18 +76,29 @@ public class SuspensionMessageProcessor {
 
         if (Boolean.TRUE.equals(response.getIsSuspended())) {
             log.info("Patient is Suspended");
-            try {
-                updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage, suspensionEvent);
-            } catch (JsonProcessingException e) {
-                log.error(e.getMessage());
-            } catch (InvalidPdsRequestException invalidPdsRequestException){
-                invalidSuspensionPublisher.sendMessage(suspensionMessage);
-                throw invalidPdsRequestException;
-            }
+            publishMofUpdate(suspensionMessage, suspensionEvent, response);
         } else {
             notSuspendedEventPublisher.sendMessage(suspensionMessage);
         }
         return suspensionMessage;
+    }
+
+    private void publishMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
+        try {
+            updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage, suspensionEvent);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+        } catch (InvalidPdsRequestException invalidPdsRequestException) {
+            publishInvalidSuspension(suspensionMessage, suspensionEvent, invalidPdsRequestException);
+        }
+    }
+
+    private String publishInvalidSuspension(String suspensionMessage, SuspensionEvent suspensionEvent, InvalidPdsRequestException invalidPdsRequestException) {
+        invalidSuspensionPublisher.sendMessage(suspensionMessage);
+        invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveInvalidSuspensionMessage(suspensionEvent.nemsMessageId(),
+                "NO_ACTION:INVALID_SUSPENSION").toJsonString());
+
+        throw invalidPdsRequestException;
     }
 
     private boolean patientIsNonSynthetic(SuspensionEvent suspensionEvent) {

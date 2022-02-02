@@ -73,7 +73,7 @@ public class SuspensionsMessageProcessorTest {
     }
 
     @Test
-    void shouldUpdateMofForNonSyntheticPatientsWhenToggleIsOff(){
+    void shouldUpdateMofForNonSyntheticPatientsWhenToggleIsOff() {
         var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -102,7 +102,7 @@ public class SuspensionsMessageProcessorTest {
     }
 
     @Test
-    void shouldUpdateMofIncludingNemsMessageId(){
+    void shouldUpdateMofIncludingNemsMessageId() {
         var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -131,7 +131,7 @@ public class SuspensionsMessageProcessorTest {
     }
 
     @Test
-    void shouldUpdateMofForSyntheticPatientsWhenToggleIsOff(){
+    void shouldUpdateMofForSyntheticPatientsWhenToggleIsOff() {
         var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -420,7 +420,8 @@ public class SuspensionsMessageProcessorTest {
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
-                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"nhsNumber\":\"9692294951\"," +
+                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
                 "\"environment\":\"local\"}";
 
         when(pdsService.isSuspended("9692294951")).thenThrow(InvalidPdsRequestException.class);
@@ -433,11 +434,11 @@ public class SuspensionsMessageProcessorTest {
     }
 
     @Test
-    void shouldLandOnDlqWhenSuspensionInvalid(){
+    void shouldLandOnDlqWhenSuspensionInvalid() {
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
-                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"nhsNumber\":\"9692294951\"," +
                 "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
                 "\"environment\":\"local\"}";
         when(pdsService.isSuspended("9692294951")).thenThrow(InvalidPdsRequestException.class);
@@ -445,26 +446,54 @@ public class SuspensionsMessageProcessorTest {
         Assertions.assertThrows(InvalidPdsRequestException.class, () ->
                 suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
 
+        String sampleNonSensitiveMessage = "{\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"status\":\"NO_ACTION:INVALID_SUSPENSION\"}";
+
         verify(invalidSuspensionPublisher).sendMessage(sampleMessage);
-        verify(invalidSuspensionPublisher).sendNonSensitiveMessage(sampleMessage);
+        verify(invalidSuspensionPublisher).sendNonSensitiveMessage(sampleNonSensitiveMessage);
     }
 
     @Test
-    void shouldPutInvalidSuspensionMessageOnDLQWhenMOFUpdateIfSuspensionInvalid(){
+    void shouldPutInvalidSuspensionMessageOnDLQWhenMOFUpdateIfSuspensionInvalid() {
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
-                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"nhsNumber\":\"9692294951\"," +
+                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
                 "\"environment\":\"local\"}";
         when(pdsService.isSuspended("9692294951"))
                 .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, null, ""));
-        when(pdsService.updateMof(any(),any(),any())).thenThrow(InvalidPdsRequestException.class);
+        when(pdsService.updateMof(any(), any(), any())).thenThrow(InvalidPdsRequestException.class);
 
         Assertions.assertThrows(InvalidPdsRequestException.class, () ->
                 suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
 
         verify(invalidSuspensionPublisher).sendMessage(sampleMessage);
     }
+
+    @Test
+    void shouldPutNonSensitiveInvalidSuspensionMessageOnDLQWhenMOFUpdateIfSuspensionInvalid() {
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"," +
+                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"environment\":\"local\"}";
+
+        when(pdsService.isSuspended("9692294951"))
+                .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, null, ""));
+        when(pdsService.updateMof(any(), any(), any())).thenThrow(InvalidPdsRequestException.class);
+
+        Assertions.assertThrows(InvalidPdsRequestException.class, () ->
+                suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
+
+        String sampleNonSensitiveMessage = "{\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"status\":\"NO_ACTION:INVALID_SUSPENSION\"}";
+
+        verify(invalidSuspensionPublisher).sendMessage(sampleMessage);
+        verify(invalidSuspensionPublisher).sendNonSensitiveMessage(sampleNonSensitiveMessage);
+    }
+
 
     @Test
     void shouldNotProcessMessagesWhichAreNotInCorrectFormat() {
