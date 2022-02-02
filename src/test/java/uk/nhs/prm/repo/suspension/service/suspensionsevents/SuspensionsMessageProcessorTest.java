@@ -29,12 +29,15 @@ public class SuspensionsMessageProcessorTest {
     private MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
 
     @Mock
+    private InvalidSuspensionPublisher invalidSuspensionPublisher;
+
+    @Mock
     private PdsService pdsService;
 
     @BeforeEach
     public void setUp() {
         suspensionMessageProcessor = new SuspensionMessageProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, pdsService, new SuspensionEventParser());
+                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, pdsService, new SuspensionEventParser());
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
         setField(suspensionMessageProcessor, "maxAttempts", 5);
         setField(suspensionMessageProcessor, "multiplier", 2.0);
@@ -427,6 +430,38 @@ public class SuspensionsMessageProcessorTest {
 
         verify(pdsService, times(1)).isSuspended("9692294951");
 
+    }
+
+    @Test
+    void shouldLandOnDlqWhenSuspensionInvalid(){
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+        when(pdsService.isSuspended("9692294951")).thenThrow(InvalidPdsRequestException.class);
+
+        Assertions.assertThrows(InvalidPdsRequestException.class, () ->
+                suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
+
+        verify(invalidSuspensionPublisher).sendMessage(sampleMessage);
+    }
+
+    @Test
+    void shouldPutInvalidSuspensionMessageOnDLQWhenMOFUpdateIfSuspensinInvalid(){
+        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"environment\":\"local\"}";
+        when(pdsService.isSuspended("9692294951"))
+                .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, null, ""));
+        when(pdsService.updateMof(any(),any(),any())).thenThrow(InvalidPdsRequestException.class);
+
+        Assertions.assertThrows(InvalidPdsRequestException.class, () ->
+                suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
+
+        verify(invalidSuspensionPublisher).sendMessage(sampleMessage);
     }
 
     @Test

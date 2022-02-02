@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
+import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
 import java.util.function.Function;
@@ -32,6 +33,7 @@ public class SuspensionMessageProcessor {
     private final NotSuspendedEventPublisher notSuspendedEventPublisher;
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
     private final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
+    private final InvalidSuspensionPublisher invalidSuspensionPublisher;
     private final PdsService pdsService;
 
     @Value("${process_only_synthetic_patients}")
@@ -59,7 +61,13 @@ public class SuspensionMessageProcessor {
 
     private String processSuspensionEventOnce(String suspensionMessage) {
         SuspensionEvent suspensionEvent = parser.parse(suspensionMessage);
-        PdsAdaptorSuspensionStatusResponse response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
+        PdsAdaptorSuspensionStatusResponse response;
+        try {
+            response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
+        } catch (InvalidPdsRequestException invalidPdsRequestException) {
+            invalidSuspensionPublisher.sendMessage(suspensionMessage);
+            throw invalidPdsRequestException;
+        }
 
         if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
             mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
@@ -72,6 +80,9 @@ public class SuspensionMessageProcessor {
                 updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage, suspensionEvent);
             } catch (JsonProcessingException e) {
                 log.error(e.getMessage());
+            } catch (InvalidPdsRequestException invalidPdsRequestException){
+                invalidSuspensionPublisher.sendMessage(suspensionMessage);
+                throw invalidPdsRequestException;
             }
         } else {
             notSuspendedEventPublisher.sendMessage(suspensionMessage);
