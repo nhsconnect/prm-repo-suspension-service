@@ -81,9 +81,3 @@ resource "aws_ecs_cluster" "ecs-cluster" {
     Environment = var.environment
   }
 }
-
-resource "aws_ssm_parameter" "ecs-cluster-name" {
-  name  = "/repo/${var.environment}/output/${var.component_name}/suspension-service-ecs-cluster-name"
-  type  = "String"
-  value = aws_ecs_cluster.ecs-cluster.name
-}

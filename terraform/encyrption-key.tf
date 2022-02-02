@@ -90,3 +90,35 @@ resource "aws_kms_alias" "mof_not_updated_encryption" {
   name          = "alias/mof-not-updated-encryption-kms-key"
   target_key_id = aws_kms_key.mof_not_updated.id
 }
+
+resource "aws_kms_key" "invalid_suspension" {
+  description = "Custom KMS Key to enable server side encryption for invalid suspension topic"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+
+  tags = {
+    Name        = "${var.environment}-invalid-suspension-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "invalid_suspension_encryption" {
+  name          = "alias/invalid-suspension-encryption-kms-key"
+  target_key_id = aws_kms_key.invalid_suspension.id
+}
+
+resource "aws_kms_key" "non_sensitive_invalid_suspension" {
+  description = "Custom KMS Key to enable server side encryption for non sensitive invalid suspension topic"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+
+  tags = {
+    Name        = "${var.environment}-non-sensitive-invalid-suspension-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "non_sensitive_invalid_suspension_encryption" {
+  name          = "alias/non-sensitive-invalid-suspension-encryption-kms-key"
+  target_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
+}

@@ -60,10 +60,6 @@ resource "aws_cloudwatch_metric_alarm" "error_log_alarm" {
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
-data "aws_sns_topic" "alarm_notifications" {
-  name = "${var.environment}-alarm-notifications-sns-topic"
-}
-
 resource "aws_cloudwatch_metric_alarm" "not_suspended_sns_topic_error_log_alarm" {
   alarm_name                = "${local.not_suspended_sns_topic_name}-error-logs"
   comparison_operator       = "GreaterThanThreshold"

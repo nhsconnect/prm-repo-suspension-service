@@ -101,7 +101,9 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
       aws_sqs_queue.suspensions.arn,
       aws_sqs_queue.not_suspended_observability.arn,
       aws_sqs_queue.mof_updated.arn,
-      aws_sqs_queue.mof_not_updated.arn
+      aws_sqs_queue.mof_not_updated.arn,
+      aws_sqs_queue.invalid_suspension.arn,
+      aws_sqs_queue.non_sensitive_invalid_suspension.arn
     ]
   }
 }
@@ -233,6 +235,82 @@ resource "aws_sqs_queue_policy" "mof_updated_events_subscription" {
   policy    = data.aws_iam_policy_document.mof_updated_events_policy_doc.json
 }
 
+resource "aws_sqs_queue_policy" "mof_not_updated_events_subscription" {
+  queue_url = aws_sqs_queue.mof_not_updated.id
+  policy    = data.aws_iam_policy_document.mof_not_updated_events_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "not_suspended_events_subscription" {
+  queue_url = aws_sqs_queue.not_suspended_observability.id
+  policy    = data.aws_iam_policy_document.not_suspended_events_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "suspensions_subscription" {
+  queue_url = aws_sqs_queue.suspensions.id
+  policy    = data.aws_iam_policy_document.suspensions_sns_topic_access_to_queue.json
+}
+
+resource "aws_sqs_queue_policy" "invalid_suspension_subscription" {
+  queue_url = aws_sqs_queue.invalid_suspension.id
+  policy    = data.aws_iam_policy_document.invalid_suspension_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "non_sensitive_invalid_suspension_subscription" {
+  queue_url = aws_sqs_queue.non_sensitive_invalid_suspension.id
+  policy    = data.aws_iam_policy_document.invalid_suspension_policy_doc.json
+}
+
+data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.suspensions.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [data.aws_ssm_parameter.suspensions_sns_topic_arn.value]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "not_suspended_events_policy_doc" {
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.not_suspended_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.not_suspended.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
 data "aws_iam_policy_document" "mof_updated_events_policy_doc" {
   statement {
 
@@ -259,11 +337,6 @@ data "aws_iam_policy_document" "mof_updated_events_policy_doc" {
   }
 }
 
-resource "aws_sqs_queue_policy" "mof_not_updated_events_subscription" {
-  queue_url = aws_sqs_queue.mof_not_updated.id
-  policy    = data.aws_iam_policy_document.mof_not_updated_events_policy_doc.json
-}
-
 data "aws_iam_policy_document" "mof_not_updated_events_policy_doc" {
   statement {
 
@@ -285,6 +358,58 @@ data "aws_iam_policy_document" "mof_not_updated_events_policy_doc" {
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.mof_not_updated.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "invalid_suspension_policy_doc" {
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.invalid_suspension.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.invalid_suspension.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "non_sensitive_invalid_suspension_policy_doc" {
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.non_sensitive_invalid_suspension.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.non_sensitive_invalid_suspension.arn]
       variable = "aws:SourceArn"
     }
   }
