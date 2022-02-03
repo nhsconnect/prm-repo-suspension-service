@@ -147,7 +147,6 @@ public class SuspensionsIntegrationTest {
         sqs.sendMessage(queueUrl, suspensionEvent);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            System.out.println("In assertions");
             List<Message> receivedMessageHolderForInvalidSuspensions = checkMessageInRelatedQueue(invalidSuspensionQueueUrl);
             List<Message> receivedMessageHolderForNonSensitiveInvalidSuspensions = checkMessageInRelatedQueue(nonSensitiveInvalidSuspensionQueueUrl);
 
@@ -173,7 +172,6 @@ public class SuspensionsIntegrationTest {
                 = new ReceiveMessageRequest().withQueueUrl(queueUrl)
                 .withMessageAttributeNames("traceId");
         List<Message> messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
-        System.out.println("Assertion queue size: " + messages.size());
         assertThat(messages).hasSize(1);
         return messages;
     }
