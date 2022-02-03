@@ -42,6 +42,12 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.mofUpdatedQueueName}")
     private String mofUpdatedQueueName;
 
+    @Value("${aws.nonSensitiveInvalidSuspensionQueueName}")
+    private String nonSensitiveInvalidSuspensionQueueName;
+
+    @Value("${aws.invalidSuspensionQueueName}")
+    private String invalidSuspensionQueueName;
+
     private WireMockServer stubPdsAdaptor;
 
     @BeforeEach
@@ -120,6 +126,46 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
         });
         purgeQueue(mofUpdatedQueueUrl);
+    }
+
+    @Test
+    void shouldPutDLQsWhenPdsAdaptorReturn400(){
+        stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getSuspendedResponse())));
+        stubFor(put(urlMatching("/suspended-patient-status/9912003888"))
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withStatus(400)
+                        .withHeader("Content-Type", "application/json")));
+
+        String queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        String invalidSuspensionQueueUrl = sqs.getQueueUrl(invalidSuspensionQueueName).getQueueUrl();
+        String nonSensitiveInvalidSuspensionQueueUrl = sqs.getQueueUrl(nonSensitiveInvalidSuspensionQueueName).getQueueUrl();
+        sqs.sendMessage(queueUrl, suspensionEvent);
+
+        Message[] receivedMessageHolderForInvalidSuspensions = new Message[1];
+        Message[] receivedMessageHolderForNonSensitiveInvalidSuspensions = new Message[1];
+
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            checkMessageInRelatedQueue(invalidSuspensionQueueUrl, receivedMessageHolderForInvalidSuspensions);
+            checkMessageInRelatedQueue(nonSensitiveInvalidSuspensionQueueUrl, receivedMessageHolderForNonSensitiveInvalidSuspensions);
+
+            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions[0].getBody().contains("NO_ACTION:INVALID_SUSPENSION"));
+            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions[0].getBody().contains("TEST-NEMS-ID"));
+
+            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getBody().contains("nhsNumber"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getBody().contains("9912003888"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getBody().contains("managingOrganisationOdsCode"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getBody().contains("B1234"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getMessageAttributes().containsKey("traceId"));
+
+        });
+        purgeQueue(invalidSuspensionQueueUrl);
+        purgeQueue(nonSensitiveInvalidSuspensionQueueUrl);
+
     }
 
     private void checkMessageInRelatedQueue(String queueUrl, Message[] receivedMessageHolder) {

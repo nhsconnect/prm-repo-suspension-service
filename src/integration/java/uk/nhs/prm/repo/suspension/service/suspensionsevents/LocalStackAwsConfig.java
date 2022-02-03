@@ -44,6 +44,12 @@ public class LocalStackAwsConfig {
     @Value("${aws.mofUpdatedQueueName}")
     private String mofUpdatedQueueName;
 
+    @Value("${aws.nonSensitiveInvalidSuspensionQueueName}")
+    private String nonSensitiveInvalidSuspensionQueueName;
+
+    @Value("${aws.invalidSuspensionQueueName}")
+    private String invalidSuspensionQueueName;
+
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
         return AmazonSQSAsyncClientBuilder.standard()
@@ -76,11 +82,18 @@ public class LocalStackAwsConfig {
         amazonSQSAsync.createQueue(suspensionsQueueName);
         CreateQueueResult notSuspendedQueue = amazonSQSAsync.createQueue(notSuspendedQueueName);
         CreateQueueResult mofUpdatedQueue = amazonSQSAsync.createQueue(mofUpdatedQueueName);
+        CreateQueueResult invalidSuspensionQueue = amazonSQSAsync.createQueue(invalidSuspensionQueueName);
+        CreateQueueResult nonSensitiveInvalidSuspensionQueue = amazonSQSAsync.createQueue(nonSensitiveInvalidSuspensionQueueName);
+
         CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
         CreateTopicResponse mofUpdatedTopic = snsClient.createTopic(CreateTopicRequest.builder().name("mof_updated_sns_topic").build());
+        CreateTopicResponse invalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("invalid_suspension_topic").build());
+        CreateTopicResponse nonSensitiveInvalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("non_sensitive_invalid_suspension_topic").build());
 
         createSnsTestReceiverSubscription(topic, getQueueArn(notSuspendedQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(mofUpdatedTopic, getQueueArn(mofUpdatedQueue.getQueueUrl()));
+        createSnsTestReceiverSubscription(invalidSuspensionTopic, getQueueArn(invalidSuspensionQueue.getQueueUrl()));
+        createSnsTestReceiverSubscription(nonSensitiveInvalidSuspensionTopic, getQueueArn(nonSensitiveInvalidSuspensionQueue.getQueueUrl()));
     }
 
 
