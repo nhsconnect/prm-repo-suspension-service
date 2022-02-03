@@ -3,6 +3,10 @@ common:
   plan_job: &plan_job
     resources:
       - docker
+    artifacts:
+      - build:
+          source: terraform/nhs_deployment.tfplan
+          destination: terraform/
     tasks:
       - exec:
           command: /bin/bash
@@ -13,6 +17,12 @@ common:
     resources:
       - docker
     tasks:
+      - fetch:
+          stage: plan
+          job: plan
+          source: terraform/nhs_deployment.tfplan
+          destination: terraform/
+          is_file: yes
       - exec:
           command: /bin/bash
           arguments:
@@ -37,7 +47,7 @@ common:
     - plan:
         clean_workspace: true
         jobs:
-          deploy: *plan_job
+          plan: *plan_job
     - deploy:
         clean_workspace: true
         jobs:
@@ -56,7 +66,7 @@ common:
     - plan:
         clean_workspace: true
         jobs:
-          deploy: *plan_job
+          plan: *plan_job
     - deploy:
         approval:
           type: manual
