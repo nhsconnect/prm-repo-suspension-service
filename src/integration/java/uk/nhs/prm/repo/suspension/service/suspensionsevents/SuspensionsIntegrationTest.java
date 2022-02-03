@@ -5,7 +5,9 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,8 +69,8 @@ public class SuspensionsIntegrationTest {
             .nhsNumber("9912003888")
             .nemsMessageId("TEST-NEMS-ID")
             .environment("local").buildJson();
-    
-     private WireMockServer initializeWebServer() {
+
+    private WireMockServer initializeWebServer() {
         final WireMockServer wireMockServer = new WireMockServer(8080);
         wireMockServer.start();
 
@@ -87,13 +89,12 @@ public class SuspensionsIntegrationTest {
         String notSuspendedQueueUrl = sqs.getQueueUrl(notSuspendedQueueName).getQueueUrl();
         sqs.sendMessage(queueUrl, suspensionEvent);
 
-        Message[] receivedMessageHolder = new Message[1];
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            checkMessageInRelatedQueue(notSuspendedQueueUrl, receivedMessageHolder);
+            List<Message> receivedMessageHolder = checkMessageInRelatedQueue(notSuspendedQueueUrl);
 
-            assertTrue(receivedMessageHolder[0].getBody().contains("lastUpdated"));
-            assertTrue(receivedMessageHolder[0].getBody().contains("B85612"));
-            assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("lastUpdated"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
+            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
         });
         purgeQueue(notSuspendedQueueUrl);
     }
@@ -115,21 +116,20 @@ public class SuspensionsIntegrationTest {
         String mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
         sqs.sendMessage(queueUrl, suspensionEvent);
 
-        Message[] receivedMessageHolder = new Message[1];
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            checkMessageInRelatedQueue(mofUpdatedQueueUrl, receivedMessageHolder);
+            List<Message> receivedMessageHolder = checkMessageInRelatedQueue(mofUpdatedQueueUrl);
 
-            assertTrue(receivedMessageHolder[0].getBody().contains("nhsNumber"));
-            assertTrue(receivedMessageHolder[0].getBody().contains("9912003888"));
-            assertTrue(receivedMessageHolder[0].getBody().contains("managingOrganisationOdsCode"));
-            assertTrue(receivedMessageHolder[0].getBody().contains("B1234"));
-            assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("nhsNumber"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("9912003888"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("managingOrganisationOdsCode"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("B1234"));
+            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
         });
         purgeQueue(mofUpdatedQueueUrl);
     }
 
     @Test
-    void shouldPutDLQsWhenPdsAdaptorReturn400(){
+    void shouldPutDLQsWhenPdsAdaptorReturn400() {
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
@@ -146,21 +146,19 @@ public class SuspensionsIntegrationTest {
         String nonSensitiveInvalidSuspensionQueueUrl = sqs.getQueueUrl(nonSensitiveInvalidSuspensionQueueName).getQueueUrl();
         sqs.sendMessage(queueUrl, suspensionEvent);
 
-        Message[] receivedMessageHolderForInvalidSuspensions = new Message[1];
-        Message[] receivedMessageHolderForNonSensitiveInvalidSuspensions = new Message[1];
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            System.out.println("In assertions");
+            List<Message> receivedMessageHolderForInvalidSuspensions = checkMessageInRelatedQueue(invalidSuspensionQueueUrl);
+            List<Message> receivedMessageHolderForNonSensitiveInvalidSuspensions = checkMessageInRelatedQueue(nonSensitiveInvalidSuspensionQueueUrl);
 
-        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
-            checkMessageInRelatedQueue(invalidSuspensionQueueUrl, receivedMessageHolderForInvalidSuspensions);
-            checkMessageInRelatedQueue(nonSensitiveInvalidSuspensionQueueUrl, receivedMessageHolderForNonSensitiveInvalidSuspensions);
+            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions.get(0).getBody().contains("NO_ACTION:INVALID_SUSPENSION"));
+            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions.get(0).getBody().contains("TEST-NEMS-ID"));
 
-            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions[0].getBody().contains("NO_ACTION:INVALID_SUSPENSION"));
-            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions[0].getBody().contains("TEST-NEMS-ID"));
-
-            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getBody().contains("nhsNumber"));
-            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getBody().contains("9912003888"));
-            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getBody().contains("managingOrganisationOdsCode"));
-            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getBody().contains("B1234"));
-            assertTrue(receivedMessageHolderForInvalidSuspensions[0].getMessageAttributes().containsKey("traceId"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions.get(0).getBody().contains("nhsNumber"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions.get(0).getBody().contains("9912003888"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions.get(0).getBody().contains("B85612"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions.get(0).getBody().contains("TEST-NEMS-ID"));
+            assertTrue(receivedMessageHolderForInvalidSuspensions.get(0).getMessageAttributes().containsKey("traceId"));
 
         });
         purgeQueue(invalidSuspensionQueueUrl);
@@ -168,23 +166,24 @@ public class SuspensionsIntegrationTest {
 
     }
 
-    private void checkMessageInRelatedQueue(String queueUrl, Message[] receivedMessageHolder) {
+    private List<Message> checkMessageInRelatedQueue(String queueUrl) {
         System.out.println("checking sqs queue: " + queueUrl);
 
         ReceiveMessageRequest requestForMessagesWithAttributes
                 = new ReceiveMessageRequest().withQueueUrl(queueUrl)
                 .withMessageAttributeNames("traceId");
         List<Message> messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
+        System.out.println("Assertion queue size: " + messages.size());
         assertThat(messages).hasSize(1);
-        receivedMessageHolder[0] = messages.get(0);
+        return messages;
     }
 
     private String getNotSuspendedResponse() {
         return "{\n" +
-            "    \"nhsNumber\": \"9912003888\",\n" +
-            "    \"isSuspended\": false,\n" +
-            "    \"currentOdsCode\": \"N85027\"\n" +
-            "}";
+                "    \"nhsNumber\": \"9912003888\",\n" +
+                "    \"isSuspended\": false,\n" +
+                "    \"currentOdsCode\": \"N85027\"\n" +
+                "}";
     }
 
     private String getSuspendedResponse() {
