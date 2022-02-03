@@ -1,6 +1,6 @@
 format_version: 4
 common:
-  deploy_job: &deploy_job
+  plan_job: &plan_job
     resources:
       - docker
     tasks:
@@ -9,6 +9,10 @@ common:
           arguments:
             - -c
             - ./tasks tf_plan create
+  deploy_job: &deploy_job
+    resources:
+      - docker
+    tasks:
       - exec:
           command: /bin/bash
           arguments:
@@ -30,7 +34,33 @@ common:
               arguments:
                 - -c
                 - ./tasks promote_docker_image
+    - plan:
+        clean_workspace: true
+        jobs:
+          deploy: *plan_job
     - deploy:
+        clean_workspace: true
+        jobs:
+          deploy: *deploy_job
+  prod_stages: &prod_stages
+    - promote_docker_image:
+        resources:
+          - docker
+        clean_workspace: true
+        tasks:
+          - exec:
+              command: /bin/bash
+              arguments:
+                - -c
+                - ./tasks promote_docker_image
+    - plan:
+        clean_workspace: true
+        jobs:
+          deploy: *plan_job
+    - deploy:
+        approval:
+          type: manual
+          allow_only_on_success: true
         clean_workspace: true
         jobs:
           deploy: *deploy_job
@@ -106,4 +136,4 @@ pipelines:
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: prod
-    stages: *common_stages
+    stages: *prod_stages
