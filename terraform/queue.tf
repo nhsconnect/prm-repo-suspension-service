@@ -3,8 +3,8 @@ locals {
   not_suspended_queue_name = "${var.environment}-${var.component_name}-not-suspended-observability-queue"
   mof_updated_queue_name = "${var.environment}-${var.component_name}-mof-updated-queue"
   mof_not_updated_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-queue"
-  invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-queue"
-  non_sensitive_invalid_suspension_queue_name = "${var.environment}-${var.component_name}-non-sensitive-invalid-suspension-queue"
+  invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
+  non_sensitive_invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
 }
 
 resource "aws_sqs_queue" "suspensions" {
