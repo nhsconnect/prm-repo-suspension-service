@@ -126,7 +126,9 @@ data "aws_iam_policy_document" "sns_policy_doc" {
     resources = [
       aws_sns_topic.not_suspended.arn,
       aws_sns_topic.mof_updated.arn,
-      aws_sns_topic.mof_not_updated.arn
+      aws_sns_topic.mof_not_updated.arn,
+      aws_sns_topic.invalid_suspension.arn,
+      aws_sns_topic.non_sensitive_invalid_suspension.arn
     ]
   }
 }
