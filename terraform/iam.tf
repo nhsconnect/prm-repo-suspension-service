@@ -259,7 +259,7 @@ resource "aws_sqs_queue_policy" "invalid_suspension_subscription" {
 
 resource "aws_sqs_queue_policy" "non_sensitive_invalid_suspension_subscription" {
   queue_url = aws_sqs_queue.non_sensitive_invalid_suspension.id
-  policy    = data.aws_iam_policy_document.invalid_suspension_policy_doc.json
+  policy    = data.aws_iam_policy_document.non_sensitive_invalid_suspension_policy_doc.json
 }
 
 data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
