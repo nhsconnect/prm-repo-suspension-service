@@ -141,7 +141,7 @@ pipelines:
       base_infra:
         pipeline: prm-deductions-infra
         stage: deploy_prod
-      test_env:
+      pre-prod_env:
         pipeline: prm-repo-suspension-service.pre-prod
         stage: deploy
     environment_variables:

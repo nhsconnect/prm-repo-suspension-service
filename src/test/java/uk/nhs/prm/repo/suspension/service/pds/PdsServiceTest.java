@@ -63,6 +63,17 @@ class PdsServiceTest {
         assertThat(status).isEqualTo(parsedStatus);
     }
 
+    @Test
+    public void shouldThrowExceptionWhenPdsReturn404() {
+        String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
+
+        ResponseEntity<String> response = ResponseEntity.notFound().build();
+        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS")).thenReturn(response);
+
+        Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
+            pdsService.isSuspended("1234567890");
+        });
+    }
 
     @Test
     public void shouldThrowExceptionWhenPdsReturn400() {
@@ -138,7 +149,6 @@ class PdsServiceTest {
             pdsService.updateMof("1234567890", "hello", "bob");
         });
     }
-
 
     private PdsAdaptorSuspensionStatusResponse aStatus() {
         return new PdsAdaptorSuspensionStatusResponse("9692294951", true, "ODS123", "ODS456", "v1");

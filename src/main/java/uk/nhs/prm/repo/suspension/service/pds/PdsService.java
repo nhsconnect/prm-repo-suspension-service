@@ -35,7 +35,9 @@ public class PdsService {
         final String url = getPatientUrl(nhsNumber);
         try {
             ResponseEntity<String> response = httpClient.getWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
-            log.info("Got a response from pds with status code: " + response.getStatusCode());
+            if(response.getStatusCode().is4xxClientError()){
+                throw new HttpClientErrorException(response.getStatusCode());
+            }
             return responseParser.parse(response.getBody());
         } catch (HttpClientErrorException e) {
             log.error("Got client error");
