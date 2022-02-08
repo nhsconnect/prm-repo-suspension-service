@@ -52,7 +52,6 @@ public class SuspensionsEventListenerTest {
 
     @Test
     void shouldAcknowledgeMessageWhenInvalidPdsRequestExceptionsThrown() throws JMSException {
-        var logged = addTestLogAppender();
         var exception = new InvalidPdsRequestException("some exception", new Throwable());
         var message = spy(new SQSTextMessage("bob"));
 
