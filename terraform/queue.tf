@@ -94,7 +94,7 @@ resource "aws_sns_topic_subscription" "mof_updated" {
 
 resource "aws_sqs_queue" "invalid_suspension" {
   name                       = local.invalid_suspension_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.invalid_suspension.id
 
   tags = {
