@@ -43,8 +43,10 @@ public class SqsListenerSpringConfiguration {
         var session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
         log.info("suspensions event queue name : {}", suspensionsQueueName);
         var consumer = session.createConsumer(session.createQueue(suspensionsQueueName));
+        var secondConsumer = session.createConsumer(session.createQueue(suspensionsQueueName));
 
         consumer.setMessageListener(new SuspensionsEventListener(suspensionsEventProcessor, tracer));
+        secondConsumer.setMessageListener(new SuspensionsEventListener(suspensionsEventProcessor, tracer));
 
         connection.start();
 

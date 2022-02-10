@@ -21,6 +21,7 @@ public class SuspensionsEventListener implements MessageListener {
     public void onMessage(Message message) {
         log.info("RECEIVED: Suspensions Event Message");
         try {
+            log.info("Listener instance is :" + this.toString());
             setTraceId(message);
             var payload = ((TextMessage) message).getText();
             suspensionsEventProcessor.processSuspensionEvent(payload);
