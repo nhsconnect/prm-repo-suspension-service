@@ -22,7 +22,7 @@ public class SuspensionsEventListener implements MessageListener {
         log.info("RECEIVED: Suspensions Event Message");
         try {
             log.info("Listener instance is :" + this.toString());
-            setTraceId(message);
+            tracer.setMDCContext(message);
             var payload = ((TextMessage) message).getText();
             suspensionsEventProcessor.processSuspensionEvent(payload);
             deleteMessage(message);
@@ -38,16 +38,6 @@ public class SuspensionsEventListener implements MessageListener {
             message.acknowledge();
         } catch (JMSException e) {
            log.error("Got an error during the deletion of message from suspension queue.");
-        }
-    }
-
-    private void setTraceId(Message message) throws JMSException {
-        if (message.getStringProperty("traceId") == null) {
-            log.info("The message has no trace id attribute, we'll create and assign one.");
-            tracer.setTraceId(tracer.createTraceId());
-        } else {
-            log.info("The message has a trace id attribute");
-            tracer.setTraceId(message.getStringProperty("traceId"));
         }
     }
 }
