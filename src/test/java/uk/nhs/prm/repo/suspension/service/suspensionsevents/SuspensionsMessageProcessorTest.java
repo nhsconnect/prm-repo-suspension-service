@@ -196,8 +196,9 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionMessageProcessor.processSuspensionEvent(notSuspendedMessage);
-        AuditMessage auditMessage = new AuditMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
-        verify(notSuspendedEventPublisher).sendMessage(auditMessage.toString());
+
+        var auditMessage = new AuditMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
+        verify(notSuspendedEventPublisher).sendMessage(auditMessage.toJsonString());
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
     }
 
@@ -329,8 +330,8 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
 
-        String expectedAuditMessage = new AuditMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toString();
-        verify(notSuspendedEventPublisher).sendMessage(expectedAuditMessage);
+        var expectedMessage = new AuditMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
+        verify(notSuspendedEventPublisher).sendMessage(expectedMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
     }

@@ -79,7 +79,7 @@ public class SuspensionMessageProcessor {
             log.info("Patient is Suspended");
             publishMofUpdate(suspensionMessage, suspensionEvent, response);
         } else {
-            var auditMessage = new AuditMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toString();
+            var auditMessage = new AuditMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
             notSuspendedEventPublisher.sendMessage(auditMessage);
         }
         return suspensionMessage;

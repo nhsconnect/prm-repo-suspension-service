@@ -91,9 +91,8 @@ public class SuspensionsIntegrationTest {
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             List<Message> receivedMessageHolder = checkMessageInRelatedQueue(notSuspendedQueueUrl);
-
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("lastUpdated"));
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("nemsMessageId"));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
         });
         purgeQueue(notSuspendedQueueUrl);
