@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.suspension.service.model.AuditMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
@@ -183,19 +184,20 @@ public class SuspensionsMessageProcessorTest {
 
     @Test
     void shouldPublishASuspensionMessageToNotSuspendedSNSTopicWhenPatientIsNotCurrentlySuspended() {
+        String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
         var notSuspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", false, "null", "", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         suspensionMessageProcessor.processSuspensionEvent(notSuspendedMessage);
-
-        verify(notSuspendedEventPublisher).sendMessage(notSuspendedMessage);
+        AuditMessage auditMessage = new AuditMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
+        verify(notSuspendedEventPublisher).sendMessage(auditMessage.toString());
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
     }
 
@@ -314,11 +316,12 @@ public class SuspensionsMessageProcessorTest {
 
     @Test
     void shouldParsePdsResponseWhenMofFieldNull() {
+        String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
@@ -326,7 +329,8 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
 
-        verify(notSuspendedEventPublisher).sendMessage(sampleMessage);
+        String expectedAuditMessage = new AuditMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toString();
+        verify(notSuspendedEventPublisher).sendMessage(expectedAuditMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
     }
@@ -400,14 +404,14 @@ public class SuspensionsMessageProcessorTest {
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
-                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"nhsNumber\":\"9692294951\"," +
+                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
                 "\"environment\":\"local\"}";
 
         when(pdsService.isSuspended("9692294951")).thenThrow(IntermittentErrorPdsException.class)
                 .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", false, null, null, ""));
 
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
-
 
         int numberOfInvocations = 2;
 
