@@ -9,9 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.suspension.service.model.AuditMessage;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
-import uk.nhs.prm.repo.suspension.service.model.NonSensitiveInvalidSuspensionMessage;
+import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
@@ -79,8 +78,8 @@ public class SuspensionMessageProcessor {
             log.info("Patient is Suspended");
             publishMofUpdate(suspensionMessage, suspensionEvent, response);
         } else {
-            var auditMessage = new AuditMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
-            notSuspendedEventPublisher.sendMessage(auditMessage);
+            var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
+            notSuspendedEventPublisher.sendMessage(notSuspendedMessage);
         }
         return suspensionMessage;
     }
@@ -97,7 +96,7 @@ public class SuspensionMessageProcessor {
 
     private String publishInvalidSuspension(String suspensionMessage, SuspensionEvent suspensionEvent, InvalidPdsRequestException invalidPdsRequestException) {
         invalidSuspensionPublisher.sendMessage(suspensionMessage);
-        invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveInvalidSuspensionMessage(suspensionEvent.nemsMessageId(),
+        invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),
                 "NO_ACTION:INVALID_SUSPENSION").toJsonString());
 
         throw invalidPdsRequestException;

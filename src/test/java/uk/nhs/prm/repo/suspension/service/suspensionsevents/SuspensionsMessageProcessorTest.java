@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.suspension.service.model.AuditMessage;
+import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
@@ -197,8 +197,8 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(notSuspendedMessage);
 
-        var auditMessage = new AuditMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
-        verify(notSuspendedEventPublisher).sendMessage(auditMessage.toJsonString());
+        var expectedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
+        verify(notSuspendedEventPublisher).sendMessage(expectedMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
     }
 
@@ -330,7 +330,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
 
-        var expectedMessage = new AuditMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
+        var expectedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
         verify(notSuspendedEventPublisher).sendMessage(expectedMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());

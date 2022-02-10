@@ -6,7 +6,7 @@ import lombok.Data;
 
 @AllArgsConstructor
 @Data
-public class NonSensitiveInvalidSuspensionMessage {
+public class NonSensitiveDataMessage {
 
     private final String nemsMessageId;
     private final String status;
