@@ -5,6 +5,10 @@ locals {
   mof_not_updated_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-queue"
   invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
   non_sensitive_invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
+  not_suspended_audit_queue_name = "${var.environment}-${var.component_name}-not-suspended-audit"
+  event_out_of_date_audit_queue_name = "${var.environment}-${var.component_name}-out-of-date-audit"
+  mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
+  mof_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-updated-audit"
 }
 
 resource "aws_sqs_queue" "suspensions" {
@@ -131,4 +135,78 @@ resource "aws_sns_topic_subscription" "non_sensitive_invalid_suspension" {
   endpoint             = aws_sqs_queue.non_sensitive_invalid_suspension.arn
 }
 
+resource "aws_sqs_queue" "not_suspended_audit" {
+  name                       = local.not_suspended_audit_queue_name
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_kms_key.not_suspended.id
 
+  tags = {
+    Name = local.not_suspended_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "not_suspended_audit" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.not_suspended.arn
+  endpoint             = aws_sqs_queue.not_suspended_audit.arn
+}
+
+resource "aws_sqs_queue" "event_out_of_date_audit" {
+  name                       = local.event_out_of_date_audit_queue_name
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_kms_key.event_out_of_date.id
+
+  tags = {
+    Name = local.event_out_of_date_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "event_out_of_date_audit" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.event_out_of_date.arn
+  endpoint             = aws_sqs_queue.event_out_of_date_audit.arn
+}
+
+resource "aws_sqs_queue" "mof_not_updated_audit" {
+  name                       = local.mof_not_updated_audit_queue_name
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_kms_key.mof_not_updated.id
+
+  tags = {
+    Name = local.mof_not_updated_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "mof_not_updated_audit" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.mof_not_updated.arn
+  endpoint             = aws_sqs_queue.mof_not_updated_audit.arn
+}
+
+resource "aws_sqs_queue" "mof_updated_audit" {
+  name                       = local.mof_updated_audit_queue_name
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_kms_key.mof_updated.id
+
+  tags = {
+    Name = local.mof_updated_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "mof_updated_audit" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.mof_updated.arn
+  endpoint             = aws_sqs_queue.mof_updated_audit.arn
+}
