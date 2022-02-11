@@ -1,7 +1,6 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
@@ -42,7 +41,6 @@ public class SuspensionMessageProcessor {
     @Value("${synthetic_patient_prefix}")
     private String syntheticPatientPrefix;
 
-    private final ObjectMapper mapper = new ObjectMapper();
     private final SuspensionEventParser parser;
 
     public void processSuspensionEvent(String message) {
@@ -116,12 +114,16 @@ public class SuspensionMessageProcessor {
     private PdsAdaptorSuspensionStatusResponse getPdsAdaptorSuspensionStatusResponse(SuspensionEvent suspensionEvent) {
         log.info("Checking patient's suspension status on PDS");
         PdsAdaptorSuspensionStatusResponse response = pdsService.isSuspended(suspensionEvent.nhsNumber());
-        if (!suspensionEvent.nhsNumber().equals(response.getNhsNumber())) {
+        if (nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), response.getNhsNumber())) {
             log.info("Processing a superseded record");
             var supersededNhsNumber = response.getNhsNumber();
             response = pdsService.isSuspended(supersededNhsNumber);
         }
         return response;
+    }
+
+    private boolean nhsNumberIsSuperseded(String nemsEventNhsNumber, String pdsNhsNumber) {
+        return !nemsEventNhsNumber.equals(pdsNhsNumber);
     }
 
     private void updateMof(String nhsNumber,
@@ -131,7 +133,7 @@ public class SuspensionMessageProcessor {
         if (canUpdateManagingOrganisation(newManagingOrganisation, suspensionEvent)) {
             var updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
-            publishMofUpdateMessage(suspensionEvent.nemsMessageId());
+            publishMofUpdateMessage(nhsNumber, suspensionEvent);
         } else {
             log.info("Managing Organisation field is already set to previous GP");
             var mofSameAsPreviousGp = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
@@ -143,8 +145,11 @@ public class SuspensionMessageProcessor {
         return (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode()));
     }
 
-    private void publishMofUpdateMessage(String nemsMessageId) {
-        var mofUpdatedMessage=new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+    private void publishMofUpdateMessage(String pdsNhsNumber, SuspensionEvent suspensionEvent) {
+        var mofUpdatedMessage=new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"ACTION:UPDATED_MANAGING_ORGANISATION");
+        if (nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), pdsNhsNumber)) {
+            mofUpdatedMessage=new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
+        }
         mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage.toJsonString());
     }
 }

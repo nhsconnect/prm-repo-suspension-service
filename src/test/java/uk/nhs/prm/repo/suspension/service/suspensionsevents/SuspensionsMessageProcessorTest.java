@@ -33,7 +33,7 @@ public class SuspensionsMessageProcessorTest {
     @Mock
     private InvalidSuspensionPublisher invalidSuspensionPublisher;
 
-    String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
+    private final String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
 
     @Mock
     private PdsService pdsService;
@@ -224,7 +224,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"ORIGINAL_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"" + ORIGINAL_NHS_NUMBER + "\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
         var pdsAdaptorSuspensionStatusResponse = new PdsAdaptorSuspensionStatusResponse(SUPERSEDED_NHS_NUMBER, true, "12345", "NEW_ODS_CODE", "ORIGINAL_E_TAG");
@@ -233,7 +233,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended(SUPERSEDED_NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponseSuperseded);
         when(pdsService.updateMof(SUPERSEDED_NHS_NUMBER, "ORIGINAL_ODS_CODE", "SUPERSEDED_E_TAG")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
@@ -247,7 +247,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", true, "12345", "", "W/\"5\"");
@@ -263,7 +263,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"LAST_GP_BEFORE_SUSPENSION_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
         var pdsAdaptorLookUpSuspensionStatusResponse
@@ -284,7 +284,6 @@ public class SuspensionsMessageProcessorTest {
 
     @Test
     void shouldPublishSuspendedMessageToMofNotUpdatedSnsTopicWhenPatientMofAlreadySetToCorrectValue() {
-        String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -305,7 +304,6 @@ public class SuspensionsMessageProcessorTest {
 
     @Test
     void shouldParsePdsResponseWhenMofFieldNull() {
-        String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -326,7 +324,6 @@ public class SuspensionsMessageProcessorTest {
 
     @Test
     void shouldParsePdsResponseWhenCurrentOdsCodeFieldNull() {
-        String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -350,7 +347,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
         var pdsAdaptorSuspensionStatusResponse
@@ -371,7 +368,7 @@ public class SuspensionsMessageProcessorTest {
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
-                "\"nhsNumber\":\"9692294951\"}\"," +
+                "\"nhsNumber\":\"9692294951\"," +
                 "\"environment\":\"local\"}";
 
         when(pdsService.isSuspended("9692294951")).thenThrow(IntermittentErrorPdsException.class);
@@ -392,7 +389,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
         when(pdsService.isSuspended("9692294951")).thenThrow(IntermittentErrorPdsException.class)
@@ -430,7 +427,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
         when(pdsService.isSuspended("9692294951")).thenThrow(InvalidPdsRequestException.class);
 
@@ -450,7 +447,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
         when(pdsService.isSuspended("9692294951"))
                 .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, null, ""));
@@ -468,7 +465,7 @@ public class SuspensionsMessageProcessorTest {
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
         when(pdsService.isSuspended("9692294951"))
