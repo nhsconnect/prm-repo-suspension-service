@@ -70,7 +70,8 @@ public class SuspensionMessageProcessor {
         }
 
         if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
-            mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
+            var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC").toJsonString();
+            mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
             return suspensionMessage;
         }
 

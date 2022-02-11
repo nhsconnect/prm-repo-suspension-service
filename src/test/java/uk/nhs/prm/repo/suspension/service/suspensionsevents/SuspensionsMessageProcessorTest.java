@@ -12,6 +12,7 @@ import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
@@ -162,11 +163,12 @@ public class SuspensionsMessageProcessorTest {
 
     @Test
     void shouldNotUpdateMofForNonSyntheticPatientsWhenToggleIsOn() {
+        String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
         var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
         setField(suspensionMessageProcessor, "processOnlySyntheticPatients", "true");
@@ -177,7 +179,9 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
-        verify(mofNotUpdatedEventPublisher).sendMessage(suspendedMessage);
+        var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NOT_SYNTHETIC");
+        assertEquals("NO_ACTION:NOT_SYNTHETIC", notSyntheticMessage.getStatus());
+        verify(mofNotUpdatedEventPublisher).sendMessage(notSyntheticMessage.toJsonString());
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
