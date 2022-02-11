@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
@@ -132,7 +131,7 @@ public class SuspensionMessageProcessor {
         if (canUpdateManagingOrganisation(newManagingOrganisation, suspensionEvent)) {
             var updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
-            publishMofUpdateMessage(nhsNumber, updateMofResponse, suspensionEvent.nemsMessageId());
+            publishMofUpdateMessage(suspensionEvent.nemsMessageId());
         } else {
             log.info("Managing Organisation field is already set to previous GP");
             var mofSameAsPreviousGp = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
@@ -144,17 +143,8 @@ public class SuspensionMessageProcessor {
         return (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode()));
     }
 
-    private void publishMofUpdateMessage(String nhsNumber,
-                                         PdsAdaptorSuspensionStatusResponse updateMofResponse,
-                                         String nemsMessageId) {
-        var managingOrganisationPublisherMessage = new ManagingOrganisationUpdatedMessage(
-                nhsNumber,
-                updateMofResponse.getManagingOrganisation(),
-                nemsMessageId);
-        try {
-            mofUpdatedEventPublisher.sendMessage(mapper.writeValueAsString(managingOrganisationPublisherMessage));
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-        }
+    private void publishMofUpdateMessage(String nemsMessageId) {
+        var mofUpdatedMessage=new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+        mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage.toJsonString());
     }
 }
