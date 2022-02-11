@@ -33,7 +33,7 @@ public class SuspensionsMessageProcessorTest {
     @Mock
     private InvalidSuspensionPublisher invalidSuspensionPublisher;
 
-    private final String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
+    private static final String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
 
     @Mock
     private PdsService pdsService;
