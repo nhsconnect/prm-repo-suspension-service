@@ -136,7 +136,8 @@ public class SuspensionMessageProcessor {
             publishMofUpdateMessage(nhsNumber, updateMofResponse, suspensionEvent.nemsMessageId());
         } else {
             log.info("Managing Organisation field is already set to previous GP");
-            mofNotUpdatedEventPublisher.sendMessage(suspensionMessage);
+            var mofSameAsPreviousGp = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
+            mofNotUpdatedEventPublisher.sendMessage(mofSameAsPreviousGp.toJsonString());
         }
     }
 
