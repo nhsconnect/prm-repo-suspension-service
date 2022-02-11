@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 
 @Component
 public class MofNotUpdatedEventPublisher {
@@ -13,8 +14,8 @@ public class MofNotUpdatedEventPublisher {
         this.mofNotUpdatedSnsTopicArn = mofNotUpdatedSnsTopicArn;
     }
 
-    public void sendMessage(String message) {
-        messagePublisher.sendMessage(this.mofNotUpdatedSnsTopicArn, message);
+    public void sendMessage(NonSensitiveDataMessage message) {
+        messagePublisher.sendMessage(this.mofNotUpdatedSnsTopicArn, message.toJsonString());
     }
 }
 

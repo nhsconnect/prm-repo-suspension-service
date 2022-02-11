@@ -70,7 +70,7 @@ public class SuspensionMessageProcessor {
         }
 
         if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
-            var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC").toJsonString();
+            var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
             mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
             return suspensionMessage;
         }
@@ -87,7 +87,7 @@ public class SuspensionMessageProcessor {
 
     private void publishMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
         try {
-            updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionMessage, suspensionEvent);
+            updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionEvent);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
@@ -128,17 +128,20 @@ public class SuspensionMessageProcessor {
     private void updateMof(String nhsNumber,
                            String recordETag,
                            String newManagingOrganisation,
-                           String suspensionMessage,
                            SuspensionEvent suspensionEvent) throws JsonProcessingException {
-        if (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode())) {
+        if (canUpdateManagingOrganisation(newManagingOrganisation, suspensionEvent)) {
             var updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
             publishMofUpdateMessage(nhsNumber, updateMofResponse, suspensionEvent.nemsMessageId());
         } else {
             log.info("Managing Organisation field is already set to previous GP");
             var mofSameAsPreviousGp = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
-            mofNotUpdatedEventPublisher.sendMessage(mofSameAsPreviousGp.toJsonString());
+            mofNotUpdatedEventPublisher.sendMessage(mofSameAsPreviousGp);
         }
+    }
+
+    private boolean canUpdateManagingOrganisation(String newManagingOrganisation, SuspensionEvent suspensionEvent) {
+        return (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode()));
     }
 
     private void publishMofUpdateMessage(String nhsNumber,

@@ -181,7 +181,7 @@ public class SuspensionsMessageProcessorTest {
 
         var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NOT_SYNTHETIC");
         assertEquals("NO_ACTION:NOT_SYNTHETIC", notSyntheticMessage.getStatus());
-        verify(mofNotUpdatedEventPublisher).sendMessage(notSyntheticMessage.toJsonString());
+        verify(mofNotUpdatedEventPublisher).sendMessage(notSyntheticMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
@@ -316,7 +316,7 @@ public class SuspensionsMessageProcessorTest {
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
         var nonSensitiveDataMessage = new NonSensitiveDataMessage(nemsMessageId,"NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
         assertEquals("NO_ACTION:MOF_SAME_AS_PREVIOUS_GP",nonSensitiveDataMessage.getStatus());
-        verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage.toJsonString());
+        verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
@@ -344,19 +344,20 @@ public class SuspensionsMessageProcessorTest {
 
     @Test
     void shouldParsePdsResponseWhenCurrentOdsCodeFieldNull() {
+        String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
         PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "B85612", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
-
-        verify(mofNotUpdatedEventPublisher).sendMessage(sampleMessage);
+        var expectedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
+        verify(mofNotUpdatedEventPublisher).sendMessage(expectedMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
