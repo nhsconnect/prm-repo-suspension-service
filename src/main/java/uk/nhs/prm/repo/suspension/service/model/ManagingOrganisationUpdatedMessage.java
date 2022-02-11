@@ -1,20 +1,18 @@
 package uk.nhs.prm.repo.suspension.service.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.GsonBuilder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
+@AllArgsConstructor
 @Data
 public class ManagingOrganisationUpdatedMessage {
 
-    private final String nhsNumber;
-    private final String managingOrganisationOdsCode;
     private final String nemsMessageId;
+    private final String managingOrganisationOdsCode;
+    private final String status;
 
-    public ManagingOrganisationUpdatedMessage(@JsonProperty("nhsNumber") String nhsNumber,
-                                              @JsonProperty("managingOrganisationOdsCode") String managingOrganisationOdsCode,
-                                              @JsonProperty("nemsMessageId") String nemsMessageId) {
-        this.nhsNumber = nhsNumber;
-        this.managingOrganisationOdsCode = managingOrganisationOdsCode;
-        this.nemsMessageId = nemsMessageId;
+    public String toJsonString() {
+        return new GsonBuilder().disableHtmlEscaping().create().toJson(this);
     }
 }

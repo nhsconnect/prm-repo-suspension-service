@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
@@ -66,7 +67,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "PREVIOUS_ODS_CODE", "")).thenReturn(pdsAdaptorMofUpdatedResponse);
 
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId,"PREVIOUS_ODS_CODE", "ACTION:UPDATED_MANAGING_ORGANISATION");
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
@@ -92,7 +93,7 @@ public class SuspensionsMessageProcessorTest {
 
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "PREVIOUS_ODS_CODE", "")).thenReturn(pdsAdaptorMofUpdatedResponse);
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId,"PREVIOUS_ODS_CODE", "ACTION:UPDATED_MANAGING_ORGANISATION");
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
@@ -119,7 +120,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "PREVIOUS_ODS_CODE", "")).thenReturn(pdsAdaptorMofUpdatedResponse);
 
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId,"PREVIOUS_ODS_CODE", "ACTION:UPDATED_MANAGING_ORGANISATION");
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
@@ -146,7 +147,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "PREVIOUS_ODS_CODE", "")).thenReturn(pdsAdaptorMofUpdatedResponse);
 
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId,"PREVIOUS_ODS_CODE", "ACTION:UPDATED_MANAGING_ORGANISATION");
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
@@ -209,7 +210,8 @@ public class SuspensionsMessageProcessorTest {
                 = new PdsAdaptorSuspensionStatusResponse("9692294951", true, "12345", "NEW_ODS_CODE", "");
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof("9692294951", "ORIGINAL_ODS_CODE", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId,"ORIGINAL_ODS_CODE","ACTION:UPDATED_MANAGING_ORGANISATION");
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
         verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
@@ -233,8 +235,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended(SUPERSEDED_NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponseSuperseded);
         when(pdsService.updateMof(SUPERSEDED_NHS_NUMBER, "ORIGINAL_ODS_CODE", "SUPERSEDED_E_TAG")).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
-
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId, "ORIGINAL_ODS_CODE", "ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
         verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
@@ -276,7 +277,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.updateMof("9692294951", "LAST_GP_BEFORE_SUSPENSION_ODS_CODE", "")).thenReturn(pdsAdaptorUpdateSuspensionStatusResponse);
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId,"LAST_GP_BEFORE_SUSPENSION_ODS_CODE","ACTION:UPDATED_MANAGING_ORGANISATION");
         verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
 
@@ -356,7 +357,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.updateMof("9692294951", "B85612", ""))
                 .thenReturn(new PdsAdaptorSuspensionStatusResponse("9692294951", true, null, "B85612", ""));
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
-        var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId, "B85612", "ACTION:UPDATED_MANAGING_ORGANISATION");
 
         verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());

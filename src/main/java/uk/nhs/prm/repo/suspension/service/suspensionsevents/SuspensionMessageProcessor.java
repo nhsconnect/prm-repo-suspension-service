@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
@@ -146,9 +147,9 @@ public class SuspensionMessageProcessor {
     }
 
     private void publishMofUpdateMessage(String pdsNhsNumber, SuspensionEvent suspensionEvent) {
-        var mofUpdatedMessage=new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"ACTION:UPDATED_MANAGING_ORGANISATION");
+        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), "ACTION:UPDATED_MANAGING_ORGANISATION");
         if (nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), pdsNhsNumber)) {
-            mofUpdatedMessage=new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
+            mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), "ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
         }
         mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
     }
