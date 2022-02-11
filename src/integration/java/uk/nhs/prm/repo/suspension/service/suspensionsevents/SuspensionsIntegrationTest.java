@@ -118,10 +118,8 @@ public class SuspensionsIntegrationTest {
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             List<Message> receivedMessageHolder = checkMessageInRelatedQueue(mofUpdatedQueueUrl);
 
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("nhsNumber"));
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("9912003888"));
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("managingOrganisationOdsCode"));
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("B1234"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("ACTION:UPDATED_MANAGING_ORGANISATION"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("TEST-NEMS-ID"));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
         });
         purgeQueue(mofUpdatedQueueUrl);
