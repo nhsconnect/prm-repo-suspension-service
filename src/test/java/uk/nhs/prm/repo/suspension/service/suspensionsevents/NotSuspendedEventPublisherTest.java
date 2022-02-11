@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 
 import static org.mockito.Mockito.verify;
 
@@ -25,7 +27,9 @@ class NotSuspendedEventPublisherTest {
 
     @Test
     void shouldPublishMessageToTheUnhandledTopic() {
-        notSuspendedEventPublisher.sendMessage("message");
-        verify(messagePublisher).sendMessage(suspensionsTopicArn, "message");
+        var nonSensitiveDataMessage = new NonSensitiveDataMessage("nemsMessageId","status");
+        String NonSensitiveMessageBody = "{\"nemsMessageId\":\"nemsMessageId\",\"status\":\"status\"}";
+        notSuspendedEventPublisher.sendMessage(nonSensitiveDataMessage);
+        verify(messagePublisher).sendMessage(suspensionsTopicArn, NonSensitiveMessageBody);
     }
 }

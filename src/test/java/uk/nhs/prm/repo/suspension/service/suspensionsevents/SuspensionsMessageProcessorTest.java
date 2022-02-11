@@ -201,7 +201,7 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(notSuspendedMessage);
 
-        var expectedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
+        var expectedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
         verify(notSuspendedEventPublisher).sendMessage(expectedMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
     }
@@ -336,7 +336,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.isSuspended("9692294951")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
 
-        var expectedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
+        var expectedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
         verify(notSuspendedEventPublisher).sendMessage(expectedMessage);
         verify(mofUpdatedEventPublisher, never()).sendMessage(any());
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());

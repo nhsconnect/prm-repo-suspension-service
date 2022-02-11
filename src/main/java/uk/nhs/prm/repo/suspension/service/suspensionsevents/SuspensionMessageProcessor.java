@@ -79,7 +79,7 @@ public class SuspensionMessageProcessor {
             log.info("Patient is Suspended");
             publishMofUpdate(suspensionMessage, suspensionEvent, response);
         } else {
-            var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS").toJsonString();
+            var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
             notSuspendedEventPublisher.sendMessage(notSuspendedMessage);
         }
         return suspensionMessage;
