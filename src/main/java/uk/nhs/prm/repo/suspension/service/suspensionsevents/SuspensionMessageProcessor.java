@@ -150,6 +150,6 @@ public class SuspensionMessageProcessor {
         if (nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), pdsNhsNumber)) {
             mofUpdatedMessage=new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
         }
-        mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage.toJsonString());
+        mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
     }
 }

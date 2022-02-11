@@ -70,7 +70,7 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage.toJsonString());
+        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
 
@@ -96,7 +96,7 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage.toJsonString());
+        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
 
@@ -123,7 +123,7 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage.toJsonString());
+        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
 
@@ -150,7 +150,7 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage.toJsonString());
+        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
 
@@ -211,7 +211,7 @@ public class SuspensionsMessageProcessorTest {
         when(pdsService.updateMof("9692294951", "ORIGINAL_ODS_CODE", "")).thenReturn(pdsAdaptorSuspensionStatusResponse);
         var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage.toJsonString());
+        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
 
@@ -237,7 +237,7 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
 
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage.toJsonString());
+        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
 
@@ -277,7 +277,7 @@ public class SuspensionsMessageProcessorTest {
 
         suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
         var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage.toJsonString());
+        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
 
     }
@@ -358,7 +358,7 @@ public class SuspensionsMessageProcessorTest {
         suspensionMessageProcessor.processSuspensionEvent(sampleMessage);
         var mofUpdatedMessage = new NonSensitiveDataMessage(nemsMessageId,"ACTION:UPDATED_MANAGING_ORGANISATION");
 
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage.toJsonString());
+        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
         verify(mofNotUpdatedEventPublisher, never()).sendMessage(any());
         verify(notSuspendedEventPublisher, never()).sendMessage(any());
     }
