@@ -19,6 +19,7 @@ public class SuspensionsEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
+        log.info("thread name is " + Thread.currentThread().getName() + " thread id is:" + Thread.currentThread().getId());
         log.info("RECEIVED: Suspensions Event Message");
         try {
             log.info("Listener instance is :" + this.toString());
