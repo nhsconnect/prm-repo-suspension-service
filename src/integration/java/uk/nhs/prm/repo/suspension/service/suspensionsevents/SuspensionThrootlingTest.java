@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
-
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
@@ -18,14 +17,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -66,7 +64,6 @@ public class SuspensionThrootlingTest {
     private WireMockServer initializeWebServer() {
         final WireMockServer wireMockServer = new WireMockServer(8080);
         wireMockServer.start();
-
         return wireMockServer;
     }
 
@@ -75,16 +72,17 @@ public class SuspensionThrootlingTest {
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
+//                        .withFixedDelay(1000)
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(getSuspendedResponse())));
         stubFor(put(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
+//                        .withFixedDelay(1000)
                         .withStatus(200)
                         .withBody(getSuspendedResponse())
                         .withHeader("Content-Type", "application/json")));
-
 
         String queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         String mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
@@ -102,21 +100,25 @@ public class SuspensionThrootlingTest {
 
         sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
         sqs.purgeQueue(new PurgeQueueRequest(mofUpdatedQueueUrl));
-
     }
 
     private void checkMessageInRelatedQueue(String queueUrl) {
         System.out.println("checking sqs queue: " + queueUrl);
-
-
-        System.out.println("starting time is " + Instant.now().toString());
+        var startingTime = Instant.now();
+        var startingTimeMessage = startingTime.toString() + " STARTING TIME";
 
         while (!isQueueEmpty(queueUrl)) {
             System.out.println("continue processing");
-
         }
-        System.out.println("finish is " + Instant.now().toString());
-
+        var finishTime = Instant.now();
+        var timeElapsed = Duration.between(startingTime, finishTime);
+        System.out.println("RESULTS:\n"
+                + timeElapsed.getSeconds()
+                + " seconds elapsed\n"
+                + startingTimeMessage
+                + "\n"
+                + finishTime.toString()
+                + " FINISH TIME");
     }
 
     private boolean isQueueEmpty(String queueUrl) {
@@ -152,7 +154,6 @@ public class SuspensionThrootlingTest {
         return requestEntries;
     }
 
-
     private String getSuspendedResponse() {
         return "{\n" +
                 "    \"nhsNumber\": \"9912003888\",\n" +
@@ -162,5 +163,4 @@ public class SuspensionThrootlingTest {
                 "    \"recordETag\": \"W/\\\"5\\\"\"\n" +
                 "}";
     }
-
 }

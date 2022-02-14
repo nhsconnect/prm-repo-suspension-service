@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
+import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.suspension.service.config.Tracer;
@@ -14,11 +15,13 @@ import javax.jms.TextMessage;
 @RequiredArgsConstructor
 public class SuspensionsEventListener implements MessageListener {
 
+//    final RateLimiter rateLimiter = RateLimiter.create(1.0);
     private final SuspensionMessageProcessor suspensionsEventProcessor;
     private final Tracer tracer;
 
     @Override
     public void onMessage(Message message) {
+//        rateLimiter.acquire();
         log.info("thread name is " + Thread.currentThread().getName() + " thread id is:" + Thread.currentThread().getId());
         log.info("RECEIVED: Suspensions Event Message");
         try {
