@@ -103,7 +103,11 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
       aws_sqs_queue.mof_updated.arn,
       aws_sqs_queue.mof_not_updated.arn,
       aws_sqs_queue.invalid_suspension.arn,
-      aws_sqs_queue.non_sensitive_invalid_suspension.arn
+      aws_sqs_queue.non_sensitive_invalid_suspension.arn,
+      aws_sqs_queue.event_out_of_date_audit.arn,
+      aws_sqs_queue.not_suspended_audit.arn,
+      aws_sqs_queue.mof_not_updated_audit.arn,
+      aws_sqs_queue.mof_updated_audit
     ]
   }
 }
