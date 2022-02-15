@@ -137,7 +137,7 @@ resource "aws_sns_topic_subscription" "non_sensitive_invalid_suspension" {
 
 resource "aws_sqs_queue" "not_suspended_audit" {
   name                       = local.not_suspended_audit_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.not_suspended.id
 
   tags = {
@@ -156,7 +156,7 @@ resource "aws_sns_topic_subscription" "not_suspended_audit" {
 
 resource "aws_sqs_queue" "event_out_of_date_audit" {
   name                       = local.event_out_of_date_audit_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.event_out_of_date.id
 
   tags = {
@@ -175,7 +175,7 @@ resource "aws_sns_topic_subscription" "event_out_of_date_audit" {
 
 resource "aws_sqs_queue" "mof_not_updated_audit" {
   name                       = local.mof_not_updated_audit_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_not_updated.id
 
   tags = {
@@ -194,7 +194,7 @@ resource "aws_sns_topic_subscription" "mof_not_updated_audit" {
 
 resource "aws_sqs_queue" "mof_updated_audit" {
   name                       = local.mof_updated_audit_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_updated.id
 
   tags = {
