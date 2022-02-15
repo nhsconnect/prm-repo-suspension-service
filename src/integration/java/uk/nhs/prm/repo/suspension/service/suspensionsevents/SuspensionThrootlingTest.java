@@ -70,22 +70,22 @@ public class SuspensionThrootlingTest {
 
     @Test
     void shouldProcess120MessagesIn60Seconds() {
-        stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
+        var anyNhsNumber = ".*";
+        stubFor(get(urlMatching("/suspended-patient-status/" + anyNhsNumber))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(getSuspendedResponse())));
-        stubFor(put(urlMatching("/suspended-patient-status/9912003888"))
+        stubFor(put(urlMatching("/suspended-patient-status/" + anyNhsNumber))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(getSuspendedResponse())
                         .withHeader("Content-Type", "application/json")));
 
-        String queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
-        String mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
-
+        var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
         var startingTime = Instant.now();
 
         sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
@@ -109,11 +109,10 @@ public class SuspensionThrootlingTest {
         sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
         sqs.purgeQueue(new PurgeQueueRequest(mofUpdatedQueueUrl));
 
-        Duration lowerBound = Duration.ofSeconds(57);
-        Duration upperBound = Duration.ofSeconds(63);
+        var lowerBound = Duration.ofSeconds(57);
+        var upperBound = Duration.ofSeconds(63);
 
         assertThat(timeElapsed).isBetween(lowerBound, upperBound);
-
     }
 
     private void checkMessageInRelatedQueue(String queueUrl) {
