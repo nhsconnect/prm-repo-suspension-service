@@ -306,7 +306,8 @@ data "aws_iam_policy_document" "not_suspended_events_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.not_suspended_observability.arn
+      aws_sqs_queue.not_suspended_observability.arn,
+      aws_sqs_queue.not_suspended_audit.arn
     ]
 
     condition {
@@ -332,7 +333,8 @@ data "aws_iam_policy_document" "mof_updated_events_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.mof_updated.arn
+      aws_sqs_queue.mof_updated.arn,
+      aws_sqs_queue.mof_updated_audit.arn
     ]
 
     condition {
@@ -358,7 +360,8 @@ data "aws_iam_policy_document" "mof_not_updated_events_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.mof_not_updated.arn
+      aws_sqs_queue.mof_not_updated.arn,
+      aws_sqs_queue.mof_updated_audit.arn
     ]
 
     condition {
