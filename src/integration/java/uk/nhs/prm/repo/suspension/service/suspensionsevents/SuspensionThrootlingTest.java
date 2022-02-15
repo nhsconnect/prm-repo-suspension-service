@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -68,18 +69,16 @@ public class SuspensionThrootlingTest {
     }
 
     @Test
-    void shouldSendSuspensionMessageToNotSuspendedSNSTopicIfNoLongerSuspendedInPDS() {
+    void shouldProcess120MessagesIn60Seconds() {
         stubFor(get(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
-//                        .withFixedDelay(1000)
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(getSuspendedResponse())));
         stubFor(put(urlMatching("/suspended-patient-status/9912003888"))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
-//                        .withFixedDelay(1000)
                         .withStatus(200)
                         .withBody(getSuspendedResponse())
                         .withHeader("Content-Type", "application/json")));
@@ -87,38 +86,41 @@ public class SuspensionThrootlingTest {
         String queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         String mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
 
-        sqs.sendMessageBatch(createBatchRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchRequest(queueUrl));
+        var startingTime = Instant.now();
+
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
 
         checkMessageInRelatedQueue(queueUrl);
 
+        var finishTime = Instant.now();
+        var timeElapsed = Duration.between(startingTime, finishTime);
+
         sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
         sqs.purgeQueue(new PurgeQueueRequest(mofUpdatedQueueUrl));
+
+        Duration lowerBound = Duration.ofSeconds(57);
+        Duration upperBound = Duration.ofSeconds(63);
+
+        assertThat(timeElapsed).isBetween(lowerBound, upperBound);
+
     }
 
     private void checkMessageInRelatedQueue(String queueUrl) {
         System.out.println("checking sqs queue: " + queueUrl);
-        var startingTime = Instant.now();
-        var startingTimeMessage = startingTime.toString() + " STARTING TIME";
-
         while (!isQueueEmpty(queueUrl)) {
             System.out.println("continue processing");
         }
-        var finishTime = Instant.now();
-        var timeElapsed = Duration.between(startingTime, finishTime);
-        System.out.println("RESULTS:\n"
-                + timeElapsed.getSeconds()
-                + " seconds elapsed\n"
-                + startingTimeMessage
-                + "\n"
-                + finishTime.toString()
-                + " FINISH TIME");
     }
 
     private boolean isQueueEmpty(String queueUrl) {
@@ -136,7 +138,7 @@ public class SuspensionThrootlingTest {
         return false;
     }
 
-    private SendMessageBatchRequest createBatchRequest(String queueUrl) {
+    private SendMessageBatchRequest createBatchOfTenRequest(String queueUrl) {
         SendMessageBatchRequest sendMessageBatchRequest = new SendMessageBatchRequest();
         sendMessageBatchRequest.setEntries(generateSendMessageBatchRequestEntryList());
         sendMessageBatchRequest.setQueueUrl(queueUrl);
@@ -147,7 +149,7 @@ public class SuspensionThrootlingTest {
     private List<SendMessageBatchRequestEntry> generateSendMessageBatchRequestEntryList() {
         int index = 0;
         List<SendMessageBatchRequestEntry> requestEntries = new ArrayList<>();
-        while (index < 9) {
+        while (index < 10) {
             requestEntries.add(new SendMessageBatchRequestEntry(UUID.randomUUID().toString(), suspensionEvent));
             index++;
         }

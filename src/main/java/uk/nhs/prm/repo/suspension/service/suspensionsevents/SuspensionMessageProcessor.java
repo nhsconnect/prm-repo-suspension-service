@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.util.concurrent.RateLimiter;
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
@@ -43,6 +44,8 @@ public class SuspensionMessageProcessor {
     private String syntheticPatientPrefix;
 
     private final SuspensionEventParser parser;
+
+    private final RateLimiter rateLimiterForPut = RateLimiter.create(2.0);
 
     public void processSuspensionEvent(String message) {
         Function<String, String> retryableProcessEvent = Retry
@@ -131,6 +134,7 @@ public class SuspensionMessageProcessor {
                            String recordETag,
                            String newManagingOrganisation,
                            SuspensionEvent suspensionEvent) throws JsonProcessingException {
+        rateLimiterForPut.acquire();
         if (canUpdateManagingOrganisation(newManagingOrganisation, suspensionEvent)) {
             var updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
