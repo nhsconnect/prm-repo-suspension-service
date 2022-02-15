@@ -240,6 +240,7 @@ resource "aws_sqs_queue_policy" "mof_updated_events_subscription" {
   queue_url = aws_sqs_queue.mof_updated.id
   policy    = data.aws_iam_policy_document.mof_updated_events_policy_doc.json
 }
+
 resource "aws_sqs_queue_policy" "mof_updated_events_audit_subscription" {
   queue_url = aws_sqs_queue.mof_updated_audit.id
   policy    = data.aws_iam_policy_document.mof_updated_events_policy_doc.json
@@ -250,8 +251,18 @@ resource "aws_sqs_queue_policy" "mof_not_updated_events_subscription" {
   policy    = data.aws_iam_policy_document.mof_not_updated_events_policy_doc.json
 }
 
+resource "aws_sqs_queue_policy" "mof_not_updated_events_audit_subscription" {
+  queue_url = aws_sqs_queue.mof_not_updated_audit.id
+  policy    = data.aws_iam_policy_document.mof_not_updated_events_policy_doc.json
+}
+
 resource "aws_sqs_queue_policy" "not_suspended_events_subscription" {
   queue_url = aws_sqs_queue.not_suspended_observability.id
+  policy    = data.aws_iam_policy_document.not_suspended_events_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "not_suspended_events_subscription" {
+  queue_url = aws_sqs_queue.not_suspended_audit.id
   policy    = data.aws_iam_policy_document.not_suspended_events_policy_doc.json
 }
 
