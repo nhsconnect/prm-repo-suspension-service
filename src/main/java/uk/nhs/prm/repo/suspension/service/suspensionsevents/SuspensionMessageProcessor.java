@@ -16,6 +16,8 @@ import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 @Service
@@ -47,6 +49,8 @@ public class SuspensionMessageProcessor {
 
     private final RateLimiter rateLimiterForPut = RateLimiter.create(2.0);
 
+    private static final Set<String> lockedKeys = new HashSet<>();
+
     public void processSuspensionEvent(String message) {
         Function<String, String> retryableProcessEvent = Retry
                 .decorateFunction(Retry.of("retryableSuspension", createRetryConfig()), this::processSuspensionEventOnce);
@@ -62,27 +66,39 @@ public class SuspensionMessageProcessor {
     }
 
     private String processSuspensionEventOnce(String suspensionMessage) {
-        SuspensionEvent suspensionEvent = parser.parse(suspensionMessage);
-        PdsAdaptorSuspensionStatusResponse response;
+        var suspensionEvent = parser.parse(suspensionMessage);
+
         try {
-            response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
-        } catch (InvalidPdsRequestException invalidPdsRequestException) {
-            return publishInvalidSuspension(suspensionMessage, suspensionEvent, invalidPdsRequestException);
+            PdsAdaptorSuspensionStatusResponse response;
+
+            lock(suspensionEvent.nhsNumber());
+
+            //TODO: tried to avoid nested try/catches, but it would break unit tests. To investigate
+            try {
+                response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
+            } catch (InvalidPdsRequestException invalidPdsRequestException) {
+                return publishInvalidSuspension(suspensionMessage, suspensionEvent, invalidPdsRequestException);
+            }
+
+            if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
+                var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
+                mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
+                return suspensionMessage;
+            }
+
+            if (Boolean.TRUE.equals(response.getIsSuspended())) {
+                log.info("Patient is Suspended");
+                publishMofUpdate(suspensionMessage, suspensionEvent, response);
+            } else {
+                var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
+                notSuspendedEventPublisher.sendMessage(notSuspendedMessage);
+            }
+        } catch (InterruptedException e) {
+            log.error("Lock operation failed: " + e.getMessage());
+        } finally {
+            unlock(suspensionEvent.nhsNumber());
         }
 
-        if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
-            var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
-            mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
-            return suspensionMessage;
-        }
-
-        if (Boolean.TRUE.equals(response.getIsSuspended())) {
-            log.info("Patient is Suspended");
-            publishMofUpdate(suspensionMessage, suspensionEvent, response);
-        } else {
-            var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
-            notSuspendedEventPublisher.sendMessage(notSuspendedMessage);
-        }
         return suspensionMessage;
     }
 
@@ -156,5 +172,20 @@ public class SuspensionMessageProcessor {
             mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), "ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
         }
         mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
+    }
+
+    private void lock(String key) throws InterruptedException {
+        synchronized (lockedKeys) {
+            while (!lockedKeys.add(key)) {
+                lockedKeys.wait();
+            }
+        }
+    }
+
+    private void unlock(String key) {
+        synchronized (lockedKeys) {
+            lockedKeys.remove(key);
+            lockedKeys.notifyAll();
+        }
     }
 }

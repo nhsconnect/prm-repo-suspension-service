@@ -58,9 +58,13 @@ public class SuspensionThrootlingTest {
             .lastUpdated("2017-11-01T15:00:33+00:00")
             .previousOdsCode("B85612")
             .eventType("SUSPENSION")
-            .nhsNumber("9912003888")
+            .nhsNumber(getStubNhsNumber())
             .nemsMessageId("TEST-NEMS-ID")
             .environment("local").buildJson();
+
+    private String getStubNhsNumber() {
+        return UUID.randomUUID().toString();
+    }
 
     private WireMockServer initializeWebServer() {
         final WireMockServer wireMockServer = new WireMockServer(8080);
