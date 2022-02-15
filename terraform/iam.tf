@@ -376,7 +376,7 @@ data "aws_iam_policy_document" "mof_not_updated_events_policy_doc" {
 
     resources = [
       aws_sqs_queue.mof_not_updated.arn,
-      aws_sqs_queue.mof_updated_audit.arn
+      aws_sqs_queue.mof_not_updated_audit.arn
     ]
 
     condition {
