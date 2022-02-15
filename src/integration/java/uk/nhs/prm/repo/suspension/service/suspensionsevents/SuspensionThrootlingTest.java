@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest()
@@ -62,6 +63,14 @@ public class SuspensionThrootlingTest {
             .nemsMessageId("TEST-NEMS-ID")
             .environment("local").buildJson();
 
+    private String suspensionEventForBackOff = new SuspensionEventBuilder()
+            .lastUpdated("2017-11-01T15:00:33+00:00")
+            .previousOdsCode("B85612")
+            .eventType("SUSPENSION")
+            .nhsNumber("1234567890")
+            .nemsMessageId("TEST-NEMS-ID-BACK-OFF")
+            .environment("local").buildJson();
+
     private String getStubNhsNumber() {
         return UUID.randomUUID().toString();
     }
@@ -74,36 +83,13 @@ public class SuspensionThrootlingTest {
 
     @Test
     void shouldProcess120MessagesIn60Seconds() {
-        var anyNhsNumber = ".*";
-        stubFor(get(urlMatching("/suspended-patient-status/" + anyNhsNumber))
-                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(getSuspendedResponse())));
-        stubFor(put(urlMatching("/suspended-patient-status/" + anyNhsNumber))
-                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(getSuspendedResponse())
-                        .withHeader("Content-Type", "application/json")));
+        stubbinForGenericPdsResponses();
 
         var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
         var startingTime = Instant.now();
 
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
-        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        send120MessageToSuspensionQueue(queueUrl);
 
         checkMessageInRelatedQueue(queueUrl);
 
@@ -117,6 +103,106 @@ public class SuspensionThrootlingTest {
         var upperBound = Duration.ofSeconds(63);
 
         assertThat(timeElapsed).isBetween(lowerBound, upperBound);
+    }
+
+    @Test
+    void shouldTryToProcessMultipleTimesWhenPdsReturn500() {
+        stubbinForGenericPdsResponses();
+
+        stubFor(get(urlMatching("/suspended-patient-status/1234567890")).atPriority(1)
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .inScenario("Retry Scenario")
+                .whenScenarioStateIs(STARTED)
+                .willReturn(aResponse()
+                        .withStatus(500) // request unsuccessful with status code 500
+                        .withHeader("Content-Type", "text/xml")
+                        .withBody("<response>Some content</response>"))
+                .willSetStateTo("Cause Success"));
+
+        // Second StubMapping
+        stubFor(get(urlEqualTo("/suspended-patient-status/1234567890")).atPriority(2)
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .inScenario("Retry Scenario")
+                .whenScenarioStateIs("Cause Success")
+                .willReturn(aResponse()
+                        .withStatus(500)  // request successful with status code 200
+                        .withHeader("Content-Type", "text/xml")
+                        .withBody("<response>Some content</response>"))
+                .willSetStateTo("Second Cause Success"));
+
+        stubFor(get(urlEqualTo("/suspended-patient-status/1234567890")).atPriority(3)
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .inScenario("Retry Scenario")
+                .whenScenarioStateIs("Second Cause Success")
+                .willReturn(aResponse()
+                        .withStatus(500)  // request successful with status code 200
+                        .withHeader("Content-Type", "text/xml")
+                        .withBody("<response>Some content</response>"))
+                .willSetStateTo("Third Cause Success"));
+
+        // Third StubMapping
+        stubFor(get(urlEqualTo("/suspended-patient-status/1234567890")).atPriority(4)
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .inScenario("Retry Scenario")
+                .whenScenarioStateIs("Third Cause Success")
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getSuspendedResponse())));
+
+
+
+        var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
+        var startingTime = Instant.now();
+
+        send120MessageToSuspensionQueue(queueUrl);
+
+        sqs.sendMessage(queueUrl,suspensionEventForBackOff);
+
+        checkMessageInRelatedQueue(queueUrl);
+
+        var finishTime = Instant.now();
+        var timeElapsed = Duration.between(startingTime, finishTime);
+
+        sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
+        sqs.purgeQueue(new PurgeQueueRequest(mofUpdatedQueueUrl));
+
+        var normalProcessionTimePlusBackOffDelayLowerBond = Duration.ofSeconds(64);
+        var normalProcessionTimePlusBackOffDelayUpperBound = Duration.ofSeconds(70);
+
+        assertThat(timeElapsed).isBetween(normalProcessionTimePlusBackOffDelayLowerBond, normalProcessionTimePlusBackOffDelayUpperBound);
+    }
+
+    private void send120MessageToSuspensionQueue(String queueUrl) {
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+        sqs.sendMessageBatch(createBatchOfTenRequest(queueUrl));
+    }
+
+    private void stubbinForGenericPdsResponses() {
+        var anyNhsNumber = ".*";
+        stubFor(get(urlMatching("/suspended-patient-status/" + anyNhsNumber))
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getSuspendedResponse())));
+        stubFor(put(urlMatching("/suspended-patient-status/" + anyNhsNumber))
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(getSuspendedResponse())
+                        .withHeader("Content-Type", "application/json")));
     }
 
     private void checkMessageInRelatedQueue(String queueUrl) {
