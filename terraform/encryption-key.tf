@@ -138,3 +138,14 @@ resource "aws_kms_alias" "event_out_of_date_encryption" {
   name          = "alias/event-out-of-date-encryption-kms-key"
   target_key_id = aws_kms_key.event_out_of_date.id
 }
+
+resource "aws_kms_key" "suspension_dynamodb_kms_key" {
+  description = "Custom KMS Key to enable server side encryption for Suspension DB"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+
+  tags = {
+    Name        = "${var.environment}-${var.component_name}-dynamodb-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
