@@ -48,9 +48,11 @@ variable "process_only_synthetic_patients" {
 variable "synthetic_patient_prefix" {}
 
 variable "scale_up_expression" {
-  type = string
+  type    = string
+  default = "((HOUR(m1)==21 && MINUTE(m1)==58 )),10,0"
 }
 
 variable "enable_scale_action" {
-  type = bool
+  type    = bool
+  default = true
 }
