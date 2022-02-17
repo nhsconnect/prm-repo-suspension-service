@@ -16,8 +16,6 @@ import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Function;
 
 @Service
@@ -49,7 +47,7 @@ public class SuspensionMessageProcessor {
 
     private final RateLimiter rateLimiterForPut = RateLimiter.create(2.0);
 
-    private static final Set<String> lockedKeys = new HashSet<>();
+    private CurrentThreadLock threadLock = new CurrentThreadLock();
 
     public void processSuspensionEvent(String message) {
         Function<String, String> retryableProcessEvent = Retry
@@ -71,9 +69,8 @@ public class SuspensionMessageProcessor {
         try {
             PdsAdaptorSuspensionStatusResponse response;
 
-            lock(suspensionEvent.nhsNumber());
+            threadLock.lock(suspensionEvent.nhsNumber());
 
-            //TODO: tried to avoid nested try/catches, but it would break unit tests. To investigate
             try {
                 response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
             } catch (InvalidPdsRequestException invalidPdsRequestException) {
@@ -93,10 +90,8 @@ public class SuspensionMessageProcessor {
                 var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
                 notSuspendedEventPublisher.sendMessage(notSuspendedMessage);
             }
-        } catch (InterruptedException e) {
-            log.error("Lock operation failed: " + e.getMessage());
         } finally {
-            unlock(suspensionEvent.nhsNumber());
+            threadLock.unlock(suspensionEvent.nhsNumber());
         }
 
         return suspensionMessage;
@@ -157,7 +152,7 @@ public class SuspensionMessageProcessor {
             publishMofUpdateMessage(nhsNumber, suspensionEvent);
         } else {
             log.info("Managing Organisation field is already set to previous GP");
-            var mofSameAsPreviousGp = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),"NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
+            var mofSameAsPreviousGp = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
             mofNotUpdatedEventPublisher.sendMessage(mofSameAsPreviousGp);
         }
     }
@@ -174,19 +169,4 @@ public class SuspensionMessageProcessor {
         mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
     }
 
-    private void lock(String key) throws InterruptedException {
-        synchronized (lockedKeys) {
-            while (!lockedKeys.add(key)) {
-                log.info("Multiple threads processing the same NHS number. Locking threads.");
-                lockedKeys.wait();
-            }
-        }
-    }
-
-    private void unlock(String key) {
-        synchronized (lockedKeys) {
-            lockedKeys.remove(key);
-            lockedKeys.notifyAll();
-        }
-    }
 }
