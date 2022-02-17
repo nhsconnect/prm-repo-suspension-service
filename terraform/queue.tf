@@ -139,9 +139,25 @@ resource "aws_sqs_queue" "not_suspended_audit" {
   name                       = local.not_suspended_audit_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.not_suspended.id
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.not_suspended_audit_dlq.arn
+    maxReceiveCount     = 4
+  })
 
   tags = {
     Name = local.not_suspended_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "not_suspended_audit_dlq" {
+  name                       = "${var.environment}-${var.component_name}-not-suspended-audit-dlq"
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_kms_key.not_suspended.id
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-not-suspended-audit-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
