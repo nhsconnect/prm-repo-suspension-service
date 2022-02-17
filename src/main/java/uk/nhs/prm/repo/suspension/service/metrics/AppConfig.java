@@ -12,12 +12,18 @@ public class AppConfig {
     private final String suspensionsQueueName;
     private final String notSuspendedSnsTopicArn;
     private final String notSuspendedQueueName;
+    private final String suspensionDynamoDbTableName;
 
-    public AppConfig(@Value("${environment}") String environment, @Value("${aws.suspensionsQueueName}") String suspensionsQueueName, @Value("${aws.notSuspendedSnsTopicArn}") String notSuspendedSnsTopicArn, @Value("${aws.notSuspendedQueueName}") String notSuspendedQueueName) {
+    public AppConfig(@Value("${environment}") String environment,
+                     @Value("${aws.suspensionsQueueName}") String suspensionsQueueName,
+                     @Value("${aws.notSuspendedSnsTopicArn}") String notSuspendedSnsTopicArn,
+                     @Value("${aws.notSuspendedQueueName}") String notSuspendedQueueName,
+                     @Value("${aws.suspensionDynamoDbTableName}") String suspensionDynamoDbTableName) {
         this.environment = environment;
         this.suspensionsQueueName = suspensionsQueueName;
         this.notSuspendedSnsTopicArn = notSuspendedSnsTopicArn;
         this.notSuspendedQueueName = notSuspendedQueueName;
+        this.suspensionDynamoDbTableName = suspensionDynamoDbTableName;
     }
 
     public String environment() {
@@ -35,6 +41,8 @@ public class AppConfig {
     public String notSuspendedQueueName() {
         return notSuspendedQueueName;
     }
+
+    public String suspensionDynamoDbTableName() { return suspensionDynamoDbTableName; }
 
     @Bean
     @SuppressWarnings("unused")
