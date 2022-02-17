@@ -28,7 +28,7 @@ public class LocalStackAwsDbConfig {
     public static DynamoDbClient dynamoDbClient(@Value("${localstack.url}") String localstackUrl) {
         return DynamoDbClient.builder()
                 .endpointOverride(URI.create(localstackUrl))
-                .region(Region.of("eu-west-2"))
+                .region(Region.EU_WEST_2)
                 .credentialsProvider(
                         StaticCredentialsProvider.create(new AwsCredentials() {
                             @Override
@@ -46,6 +46,9 @@ public class LocalStackAwsDbConfig {
 
     @PostConstruct
     public void setupDbAndTable() {
+        //TODO: use setup + teardown instead? This is a (not great) guard to run several tests locally
+        if (dynamoDbClient.listTables().tableNames().contains(suspensionDynamoDbTableName)) return;
+
         List<KeySchemaElement> keySchema = new ArrayList<>();
         keySchema.add(KeySchemaElement.builder()
                 .keyType(KeyType.HASH)
@@ -67,7 +70,7 @@ public class LocalStackAwsDbConfig {
                         .writeCapacityUnits(5L)
                         .build())
                 .build();
-        //TODO: to be fixed, it throws here
+
         dynamoDbClient.createTable(createTableRequest);
     }
 }

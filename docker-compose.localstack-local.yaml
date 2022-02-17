@@ -8,7 +8,7 @@ services:
     ports:
       - "127.0.0.1:4588:4588"
     environment:
-      - SERVICES=sqs,sns
+      - SERVICES=sqs,sns,dynamodb
       - DEFAULT_REGION=eu-west-2
       - HOSTNAME_EXTERNAL=localhost
       - EDGE_PORT=4588
