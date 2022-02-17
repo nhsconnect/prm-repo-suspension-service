@@ -16,8 +16,9 @@ public class ConcurrentThreadLock {
         synchronized (lockedKeys) {
             try {
                 while (!lockedKeys.add(key)) {
-                    log.info("Multiple threads processing the same NHS number. Locking threads.");
+                    log.warn("Multiple threads processing the same NHS number. Locking thread.");
                     lockedKeys.wait();
+                    log.info("Thread unlocked continuing processing");
                 }
             } catch (InterruptedException e) {
                 log.error("Lock operation failed: " + e.getMessage());
