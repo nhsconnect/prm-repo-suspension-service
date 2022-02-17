@@ -17,10 +17,11 @@ public class DbClient {
     private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;
 
-    public void getItem(String nhsNumber ) {
+    //TODO: create custom object
+    public Object getItem(String nhsNumber ) {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("nhs_number", AttributeValue.builder().n(nhsNumber).build());
-        GetItemResponse item = dynamoDbClient.getItem(GetItemRequest.builder()
+        return dynamoDbClient.getItem(GetItemRequest.builder()
                 .tableName(config.suspensionDynamoDbTableName())
                 .key(key)
                 .build());
