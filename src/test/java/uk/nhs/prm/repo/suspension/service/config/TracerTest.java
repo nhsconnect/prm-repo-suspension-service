@@ -9,8 +9,7 @@ import javax.jms.JMSException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
-import static uk.nhs.prm.repo.suspension.service.config.Tracer.NEMS_MESSAGE_ID;
-import static uk.nhs.prm.repo.suspension.service.config.Tracer.TRACE_ID;
+import static uk.nhs.prm.repo.suspension.service.config.Tracer.*;
 
 class TracerTest {
 
@@ -50,5 +49,17 @@ class TracerTest {
         tracer.setMDCContext(message);
         String mdcValue = MDC.get(NEMS_MESSAGE_ID);
         assertThat(mdcValue).isEqualTo(SOME_NEMS_ID);
+    }
+
+    @Test
+    void shouldAddTraceIdToMDC() throws JMSException {
+        SQSTextMessage message = spy(new SQSTextMessage("payload"));
+        message.setStringProperty(NEMS_MESSAGE_ID, SOME_NEMS_ID);
+
+        String threadName = Thread.currentThread().getName();
+
+        tracer.setMDCContext(message);
+        String threadIdNameMdc = MDC.get(THREAD_NAME);
+        assertThat(threadIdNameMdc).isEqualTo(threadName);
     }
 }

@@ -177,6 +177,7 @@ public class SuspensionMessageProcessor {
     private void lock(String key) throws InterruptedException {
         synchronized (lockedKeys) {
             while (!lockedKeys.add(key)) {
+                log.info("Multiple threads processing the same NHS number. Locking threads.");
                 lockedKeys.wait();
             }
         }

@@ -19,9 +19,9 @@ public class SuspensionsEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        log.info("RECEIVED: Suspensions Event Message");
         try {
             tracer.setMDCContext(message);
+            log.info("RECEIVED: Suspensions Event Message") ;
             var payload = ((TextMessage) message).getText();
             suspensionsEventProcessor.processSuspensionEvent(payload);
             deleteMessage(message);

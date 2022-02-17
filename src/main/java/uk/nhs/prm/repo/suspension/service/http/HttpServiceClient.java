@@ -27,11 +27,6 @@ public class HttpServiceClient {
         return exchangeWithStatusCode(HttpMethod.PUT, url, requestEntity);
     }
 
-    private String exchange(HttpMethod method, String url, HttpEntity requestEntity) {
-        ResponseEntity<String> responseEntity = restTemplate.exchange(url, method, requestEntity, String.class);
-        return responseEntity.getBody();
-    }
-
     private ResponseEntity<String> exchangeWithStatusCode(HttpMethod method, String url, HttpEntity requestEntity) {
         ResponseEntity<String> responseEntity = restTemplate.exchange(url, method, requestEntity, String.class);
         return responseEntity;

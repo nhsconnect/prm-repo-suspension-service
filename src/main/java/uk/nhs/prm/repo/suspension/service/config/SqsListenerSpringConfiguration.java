@@ -48,7 +48,7 @@ public class SqsListenerSpringConfiguration {
         ProviderConfiguration providerConfiguration = new ProviderConfiguration().withNumberOfMessagesToPrefetch(0);
         SQSConnectionFactory connectionFactory = new SQSConnectionFactory(providerConfiguration, amazonSQS);
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setConcurrency("5-7");
+        factory.setConcurrency("5-8");
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setTaskExecutor(createDefaultTaskExecutor());
         factory.setMaxMessagesPerTask(10);
@@ -61,7 +61,6 @@ public class SqsListenerSpringConfiguration {
         threadPoolTaskExecutor.setThreadNamePrefix("SQSExecutor - ");
         threadPoolTaskExecutor.setCorePoolSize(8);
         threadPoolTaskExecutor.setMaxPoolSize(8);
-        threadPoolTaskExecutor.setQueueCapacity(2);
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
     }

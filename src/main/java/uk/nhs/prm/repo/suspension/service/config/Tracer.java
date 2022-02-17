@@ -16,10 +16,12 @@ public class Tracer {
 
     public static final String TRACE_ID = "traceId";
     public static final String NEMS_MESSAGE_ID = "nemsMessageId";
+    public static final String THREAD_NAME = "threadName";
 
     public void setMDCContext(Message message) throws JMSException {
         clearMDCContext();
         handleTraceId(message);
+        setThreadId();
         handleNemsMessageId(message);
     }
 
@@ -56,6 +58,10 @@ public class Tracer {
         }
     }
 
+    private void setThreadId() {
+        MDC.put(THREAD_NAME, Thread.currentThread().getName());
+    }
+
     private void setNemsMessageId(String nemsMessageId) {
         MDC.put(NEMS_MESSAGE_ID, nemsMessageId);
     }
@@ -67,5 +73,6 @@ public class Tracer {
     private void clearMDCContext() {
         MDC.remove(TRACE_ID);
         MDC.remove(NEMS_MESSAGE_ID);
+        MDC.remove(THREAD_NAME);
     }
 }
