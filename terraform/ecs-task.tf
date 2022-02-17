@@ -17,7 +17,8 @@ locals {
     { name = "NON_SENSITIVE_INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.non_sensitive_invalid_suspension.arn },
     { name = "PDS_ADAPTOR_SUSPENSION_SERVICE_PASSWORD", value = data.aws_ssm_parameter.pds_adaptor_auth_key.value },
     { name = "PROCESS_ONLY_SYNTHETIC_PATIENTS", value = tostring(var.process_only_synthetic_patients) },
-    { name = "SYNTHETIC_PATIENT_PREFIX", value = var.synthetic_patient_prefix }
+    { name = "SYNTHETIC_PATIENT_PREFIX", value = var.synthetic_patient_prefix },
+    { name = "DYNAMODB_TABLE_NAME", value = aws_dynamodb_table.suspensions.name }
   ]
 }
 
