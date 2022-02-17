@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
+import uk.nhs.prm.repo.suspension.service.http.RateLimitHttpClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationRequest;
 
@@ -21,7 +21,7 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 class PdsServiceTest {
 
     @Mock
-    private HttpServiceClient client;
+    private RateLimitHttpClient client;
 
     @Mock
     private PdsAdaptorSuspensionStatusResponseParser responseParser;
@@ -41,7 +41,7 @@ class PdsServiceTest {
         var parsedStatus = aStatus();
 
         ResponseEntity<String> response = ResponseEntity.ok("some status");
-        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
+        when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS"))
                 .thenReturn(response);
         when(responseParser.parse("some status")).thenReturn(parsedStatus);
 
@@ -56,7 +56,7 @@ class PdsServiceTest {
         var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
 
         ResponseEntity<String> response = ResponseEntity.ok("some status");
-        when(client.putWithStatusCode(expectedUrl, "suspension-service", "PASS", requestPayload)).thenReturn(response);
+        when(client.putWithStatusCodeWithTwoSecRateLimit(expectedUrl, "suspension-service", "PASS", requestPayload)).thenReturn(response);
         when(responseParser.parse("some status")).thenReturn(parsedStatus);
 
         var status = pdsService.updateMof("1234567890", "hello", "bob");
@@ -68,7 +68,7 @@ class PdsServiceTest {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
 
         ResponseEntity<String> response = ResponseEntity.notFound().build();
-        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS")).thenReturn(response);
+        when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS")).thenReturn(response);
 
         Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
             pdsService.isSuspended("1234567890");
@@ -79,7 +79,7 @@ class PdsServiceTest {
     public void shouldThrowExceptionWhenPdsReturn400() {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
 
-        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
+        when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(HttpClientErrorException.class);
 
         Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
@@ -92,7 +92,7 @@ class PdsServiceTest {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
         var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
 
-        when(client.putWithStatusCode(expectedUrl, "suspension-service", "PASS", requestPayload ))
+        when(client.putWithStatusCodeWithTwoSecRateLimit(expectedUrl, "suspension-service", "PASS", requestPayload))
                 .thenThrow(HttpClientErrorException.class);
 
         Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
@@ -104,7 +104,7 @@ class PdsServiceTest {
     public void shouldThrowExceptionWhenPdsReturn500() {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
 
-        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
+        when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(HttpServerErrorException.class);
 
         Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
@@ -117,7 +117,7 @@ class PdsServiceTest {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
         var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
 
-        when(client.putWithStatusCode(expectedUrl, "suspension-service", "PASS", requestPayload ))
+        when(client.putWithStatusCodeWithTwoSecRateLimit(expectedUrl, "suspension-service", "PASS", requestPayload))
                 .thenThrow(HttpServerErrorException.class);
 
         Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
@@ -129,7 +129,7 @@ class PdsServiceTest {
     public void shouldThrowExceptionWhenPdsConnectionFails() {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
 
-        when(client.getWithStatusCode(expectedUrl, "suspension-service", "PASS"))
+        when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(RuntimeException.class);
 
         Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
@@ -142,7 +142,7 @@ class PdsServiceTest {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
         var requestPayload = new UpdateManagingOrganisationRequest("hello", "bob");
 
-        when(client.putWithStatusCode(expectedUrl, "suspension-service", "PASS", requestPayload ))
+        when(client.putWithStatusCodeWithTwoSecRateLimit(expectedUrl, "suspension-service", "PASS", requestPayload))
                 .thenThrow(RuntimeException.class);
 
         Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {

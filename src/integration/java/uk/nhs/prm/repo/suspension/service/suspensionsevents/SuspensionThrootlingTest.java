@@ -81,11 +81,11 @@ public class SuspensionThrootlingTest {
 
     @Test
     void shouldProcess120MessagesIn60Seconds() {
-        stubbinForGenericPdsResponses();
+        stubbinForGenericPdsResponses(200, 800);
 
         var startingTime = Instant.now();
 
-        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 1);
+        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 12);
 
         await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
@@ -95,6 +95,24 @@ public class SuspensionThrootlingTest {
         System.out.println("Total time taken: " + timeElapsed);
 
         assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(65), Duration.ofSeconds(10));
+    }
+
+    @Test
+    void shouldThrottlePdsAdaptorToPreventUpdatesMoreThan2PerSecond() {
+        stubbinForGenericPdsResponses(0, 0);
+
+        var startingTime = Instant.now();
+
+        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 5);
+
+        await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
+
+        var finishTime = Instant.now();
+        var timeElapsed = Duration.between(startingTime, finishTime);
+
+        System.out.println("Total time taken: " + timeElapsed);
+
+        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(30), Duration.ofSeconds(5));
     }
 
     @Test
@@ -118,7 +136,7 @@ public class SuspensionThrootlingTest {
 
     @Test
     void shouldRetry3TimesWithExponentialBackOffPeriod() {
-        stubbinForGenericPdsResponses();
+        stubbinForGenericPdsResponses(200, 800);
         setPdsRetryMessage();
 
         var startingTime = Instant.now();
@@ -170,7 +188,7 @@ public class SuspensionThrootlingTest {
         }
     }
 
-    private void stubbinForGenericPdsResponses() {
+    private void stubbinForGenericPdsResponses(int getRequestDelay, int putRequestDelay) {
         var anyNhsNumber = ".*";
         stubFor(get(urlMatching("/suspended-patient-status/" + anyNhsNumber))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))

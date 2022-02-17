@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import uk.nhs.prm.repo.suspension.service.http.HttpServiceClient;
+import uk.nhs.prm.repo.suspension.service.http.RateLimitHttpClient;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationRequest;
 
@@ -24,9 +24,9 @@ public class PdsService {
 
     private final PdsAdaptorSuspensionStatusResponseParser responseParser;
 
-    private final HttpServiceClient httpClient;
+    private final RateLimitHttpClient httpClient;
 
-    public PdsService(PdsAdaptorSuspensionStatusResponseParser responseParser, HttpServiceClient httpClient) {
+    public PdsService(PdsAdaptorSuspensionStatusResponseParser responseParser, RateLimitHttpClient httpClient) {
         this.responseParser = responseParser;
         this.httpClient = httpClient;
     }
@@ -34,7 +34,7 @@ public class PdsService {
     public PdsAdaptorSuspensionStatusResponse isSuspended(String nhsNumber) {
         final String url = getPatientUrl(nhsNumber);
         try {
-            ResponseEntity<String> response = httpClient.getWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
+            ResponseEntity<String> response = httpClient.getWithStatusCodeNoRateLimit(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
             if(response.getStatusCode().is4xxClientError()){
                 throw new HttpClientErrorException(response.getStatusCode());
             }
@@ -53,7 +53,7 @@ public class PdsService {
         final String url = getPatientUrl(nhsNumber);
         final UpdateManagingOrganisationRequest requestPayload = new UpdateManagingOrganisationRequest(previousOdsCode, recordETag);
         try {
-            ResponseEntity<String> response = httpClient.putWithStatusCode(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, requestPayload);
+            ResponseEntity<String> response = httpClient.putWithStatusCodeWithTwoSecRateLimit(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword, requestPayload);
             return responseParser.parse(response.getBody());
         } catch (HttpClientErrorException e) {
             log.error("Got client error");

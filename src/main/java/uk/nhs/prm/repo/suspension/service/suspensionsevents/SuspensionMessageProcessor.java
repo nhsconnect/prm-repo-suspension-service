@@ -46,8 +46,6 @@ public class SuspensionMessageProcessor {
 
     private final SuspensionEventParser parser;
 
-    private final RateLimiter rateLimiterForPut = RateLimiter.create(2.0);
-
     private final ConcurrentThreadLock threadLock;
 
     public void processSuspensionEvent(String message) {
@@ -146,7 +144,6 @@ public class SuspensionMessageProcessor {
                            String recordETag,
                            String newManagingOrganisation,
                            SuspensionEvent suspensionEvent) throws JsonProcessingException {
-        rateLimiterForPut.acquire();
         if (canUpdateManagingOrganisation(newManagingOrganisation, suspensionEvent)) {
             var updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());

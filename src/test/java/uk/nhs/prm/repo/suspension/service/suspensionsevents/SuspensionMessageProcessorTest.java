@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
-public class SuspensionsMessageProcessorTest {
+public class SuspensionMessageProcessorTest {
 
     private SuspensionMessageProcessor suspensionMessageProcessor;
 
