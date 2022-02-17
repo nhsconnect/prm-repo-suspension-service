@@ -7,22 +7,23 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Slf4j
-public class CurrentThreadLock {
+@Component
+public class ConcurrentThreadLock {
 
     private final Set<String> lockedKeys = new HashSet<>();
 
     public void lock(String key) {
-        try {
-            synchronized (lockedKeys) {
+        synchronized (lockedKeys) {
+            try {
                 while (!lockedKeys.add(key)) {
                     log.info("Multiple threads processing the same NHS number. Locking threads.");
                     lockedKeys.wait();
                 }
+            } catch (InterruptedException e) {
+                log.error("Lock operation failed: " + e.getMessage());
+                unlock(key);
             }
-        } catch (InterruptedException e) {
-            log.error("Lock operation failed: " + e.getMessage());
         }
-
     }
 
     public void unlock(String key) {

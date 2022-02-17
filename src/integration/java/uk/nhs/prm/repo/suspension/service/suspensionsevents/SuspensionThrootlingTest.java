@@ -85,7 +85,7 @@ public class SuspensionThrootlingTest {
 
         var startingTime = Instant.now();
 
-        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 12);
+        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 1);
 
         await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 

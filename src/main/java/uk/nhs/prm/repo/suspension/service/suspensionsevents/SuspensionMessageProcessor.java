@@ -16,6 +16,7 @@ import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
+import java.util.HashSet;
 import java.util.function.Function;
 
 @Service
@@ -47,7 +48,7 @@ public class SuspensionMessageProcessor {
 
     private final RateLimiter rateLimiterForPut = RateLimiter.create(2.0);
 
-    private CurrentThreadLock threadLock = new CurrentThreadLock();
+    private final ConcurrentThreadLock threadLock;
 
     public void processSuspensionEvent(String message) {
         Function<String, String> retryableProcessEvent = Retry
