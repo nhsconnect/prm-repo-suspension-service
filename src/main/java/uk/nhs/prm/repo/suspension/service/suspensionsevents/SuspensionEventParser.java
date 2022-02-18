@@ -18,7 +18,7 @@ public class SuspensionEventParser {
     }
 
     private HashMap<String, Object> parseIntoMap(String suspensionMessage) {
-        HashMap<String, Object> map = new HashMap<>();
+        HashMap<String, Object> map;
         try {
             map = mapper.readValue(suspensionMessage, new TypeReference<>() {
             });
