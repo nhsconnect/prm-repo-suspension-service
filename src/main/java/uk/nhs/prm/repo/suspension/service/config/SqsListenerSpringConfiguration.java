@@ -27,6 +27,18 @@ public class SqsListenerSpringConfiguration {
     @Value("${aws.suspensionsQueueName}")
     private String suspensionsQueueName;
 
+    @Value("${suspension.concurrency.min.max}")
+    private String concurrencyMinMax;
+
+    @Value("${suspension.concurrency.max.messages.per.task}")
+    private Integer maxMessagesPerTask;
+
+    @Value("${suspension.thread.core.pool.size}")
+    private Integer threadCorePoolSize;
+
+    @Value("${suspension.thread.max.pool.size}")
+    private Integer threadMaxPoolSize;
+
     private final SuspensionMessageProcessor suspensionsEventProcessor;
     private final Tracer tracer;
 
@@ -48,10 +60,10 @@ public class SqsListenerSpringConfiguration {
         ProviderConfiguration providerConfiguration = new ProviderConfiguration().withNumberOfMessagesToPrefetch(0);
         SQSConnectionFactory connectionFactory = new SQSConnectionFactory(providerConfiguration, amazonSQS);
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setConcurrency("8-10");
+        factory.setConcurrency(concurrencyMinMax);
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setTaskExecutor(createDefaultTaskExecutor());
-        factory.setMaxMessagesPerTask(10);
+        factory.setMaxMessagesPerTask(maxMessagesPerTask);
         factory.setConnectionFactory(connectionFactory);
         return factory;
     }
@@ -59,8 +71,8 @@ public class SqsListenerSpringConfiguration {
     protected AsyncTaskExecutor createDefaultTaskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setThreadNamePrefix("SQSExecutor - ");
-        threadPoolTaskExecutor.setCorePoolSize(10);
-        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.setCorePoolSize(threadCorePoolSize);
+        threadPoolTaskExecutor.setMaxPoolSize(threadMaxPoolSize);
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
     }
