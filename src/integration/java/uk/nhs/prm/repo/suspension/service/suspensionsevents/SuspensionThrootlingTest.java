@@ -99,7 +99,6 @@ public class SuspensionThrootlingTest {
     }
 
     @Test
-    @Disabled
     void shouldThrottlePdsAdaptorToPreventUpdatesMoreThan2PerSecond() {
         stubbinForGenericPdsResponses(0, 0);
 
@@ -114,7 +113,7 @@ public class SuspensionThrootlingTest {
 
         System.out.println("Total time taken: " + timeElapsed);
 
-        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(25), Duration.ofSeconds(5));
+        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(20), Duration.ofSeconds(5));
     }
 
     @Test

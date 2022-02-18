@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.suspension.service.http;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,7 +44,6 @@ class RateLimitHttpClientTest {
     }
 
     @Test
-    @Disabled
     void shouldCallServiceClientPutWithRateLimit() {
         int numberOfThreads = 8;
         ArrayList<Thread> threadsWithPutRequest = createThreadsWithPutRequest(numberOfThreads);
@@ -60,7 +58,7 @@ class RateLimitHttpClientTest {
 
         Duration processingTime = Duration.between(startTime, finishTime);
 
-        assertThat(processingTime).isCloseTo(Duration.ofSeconds(4), Duration.ofMillis(500));
+        assertThat(processingTime).isCloseTo(Duration.ofSeconds(3), Duration.ofMillis(500));
 
     }
 
