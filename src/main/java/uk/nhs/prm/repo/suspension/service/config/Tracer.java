@@ -30,7 +30,6 @@ public class Tracer {
             log.info("The message has no trace ID attribute, we'll create and assign one.");
             setTraceId(createTraceId());
         } else {
-            log.info("The message has an existing trace ID attribute");
             setTraceId(message.getStringProperty(TRACE_ID));
         }
     }
@@ -53,7 +52,6 @@ public class Tracer {
         if (message.getStringProperty(NEMS_MESSAGE_ID) == null) {
             log.error("The message has no NEMS message ID attribute");
         } else {
-            log.info("Setting the NEMS message ID attribute");
             setNemsMessageId(message.getStringProperty(NEMS_MESSAGE_ID));
         }
     }

@@ -13,6 +13,7 @@ public class ConcurrentThreadLock {
     private final Set<String> lockedKeys = new HashSet<>();
 
     public void lock(String key) {
+        log.info("Checking concurrent lock before processing");
         synchronized (lockedKeys) {
             try {
                 while (!lockedKeys.add(key)) {
@@ -28,6 +29,7 @@ public class ConcurrentThreadLock {
     }
 
     public void unlock(String key) {
+        log.info("Unlocking concurrent threads now process has finished");
         synchronized (lockedKeys) {
             lockedKeys.remove(key);
             lockedKeys.notifyAll();

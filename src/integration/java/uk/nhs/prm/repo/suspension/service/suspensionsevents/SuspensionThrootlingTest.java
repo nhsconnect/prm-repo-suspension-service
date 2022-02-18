@@ -112,7 +112,7 @@ public class SuspensionThrootlingTest {
 
         System.out.println("Total time taken: " + timeElapsed);
 
-        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(30), Duration.ofSeconds(5));
+        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(25), Duration.ofSeconds(5));
     }
 
     @Test
@@ -194,14 +194,14 @@ public class SuspensionThrootlingTest {
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withStatus(200)
-                        .withFixedDelay(200)
+                        .withFixedDelay(getRequestDelay)
                         .withHeader("Content-Type", "application/json")
                         .withBody(getSuspendedResponse())));
         stubFor(put(urlMatching("/suspended-patient-status/" + anyNhsNumber))
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .willReturn(aResponse()
                         .withStatus(200)
-                        .withFixedDelay(800)
+                        .withFixedDelay(putRequestDelay)
                         .withBody(getSuspendedResponse())
                         .withHeader("Content-Type", "application/json")));
     }
