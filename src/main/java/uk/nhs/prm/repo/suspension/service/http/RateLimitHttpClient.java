@@ -13,14 +13,11 @@ public class RateLimitHttpClient {
 
     private final HttpServiceClient httpServiceClient;
 
-    private final RateLimiter rateLimiter = RateLimiter.create(2.0);
-
     public ResponseEntity<String> getWithStatusCodeNoRateLimit(String url, String username, String password) {
         return httpServiceClient.getWithStatusCode(url, username, password);
     }
 
     public ResponseEntity<String> putWithStatusCodeWithTwoSecRateLimit(String url, String username, String password, Object requestPayload) {
-        rateLimiter.acquire();
         return httpServiceClient.putWithStatusCode(url, username, password, requestPayload);
     }
 }
