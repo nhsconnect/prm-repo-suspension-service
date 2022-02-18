@@ -29,7 +29,7 @@ public class ConcurrentThreadLock {
     }
 
     public void unlock(String key) {
-        log.info("Unlocking concurrent threads now process has finished");
+        log.info("Process finished, lock released NHS number");
         synchronized (lockedKeys) {
             lockedKeys.remove(key);
             lockedKeys.notifyAll();

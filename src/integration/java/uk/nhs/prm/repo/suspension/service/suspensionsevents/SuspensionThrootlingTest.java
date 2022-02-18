@@ -118,6 +118,7 @@ public class SuspensionThrootlingTest {
     @Test
     void shouldContinueProcessMessagesWhenOneFailsWithConcurrentThreads() {
         setPdsRetryMessage();
+        stubbinForGenericPdsResponses(0,0);
 
         var startingTime = Instant.now();
 
