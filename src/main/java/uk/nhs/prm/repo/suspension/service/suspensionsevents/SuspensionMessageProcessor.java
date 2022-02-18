@@ -1,7 +1,6 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.util.concurrent.RateLimiter;
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
@@ -16,7 +15,6 @@ import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
-import java.util.HashSet;
 import java.util.function.Function;
 
 @Service
@@ -63,8 +61,13 @@ public class SuspensionMessageProcessor {
     }
 
     private String processSuspensionEventOnce(String suspensionMessage) {
-        var suspensionEvent = parser.parse(suspensionMessage);
-
+        SuspensionEvent suspensionEvent;
+        try {
+            suspensionEvent = parser.parse(suspensionMessage);
+        } catch (InvalidSuspensionMessageException exception) {
+            invalidSuspensionPublisher.sendMessage(suspensionMessage);
+            throw new InvalidSuspensionMessageException("Encountered an invalid Suspension message", exception);
+        }
         try {
             PdsAdaptorSuspensionStatusResponse response;
 

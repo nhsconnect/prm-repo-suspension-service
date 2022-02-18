@@ -17,12 +17,14 @@ public class SuspensionEventParser {
         return new SuspensionEvent(parseIntoMap(suspensionMessage));
     }
 
-    public HashMap<String, Object> parseIntoMap(String suspensionMessage) {
+    private HashMap<String, Object> parseIntoMap(String suspensionMessage) {
         HashMap<String, Object> map = new HashMap<>();
         try {
-            map = mapper.readValue(suspensionMessage, new TypeReference<HashMap<String,Object>>(){});
+            map = mapper.readValue(suspensionMessage, new TypeReference<>() {
+            });
         } catch (JsonProcessingException e) {
             log.error("Got an exception while parsing suspensions message to a map.");
+            throw new InvalidSuspensionMessageException("Failed to parse Suspension Message", e);
         }
         return map;
     }

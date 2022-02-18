@@ -21,7 +21,7 @@ public class SuspensionsEventListener implements MessageListener {
     public void onMessage(Message message) {
         try {
             tracer.setMDCContext(message);
-            log.info("RECEIVED: Suspensions Event Message") ;
+            log.info("RECEIVED: Suspensions Event Message");
             var payload = ((TextMessage) message).getText();
             suspensionsEventProcessor.processSuspensionEvent(payload);
             deleteMessage(message);
@@ -36,7 +36,7 @@ public class SuspensionsEventListener implements MessageListener {
         try {
             message.acknowledge();
         } catch (JMSException e) {
-           log.error("Got an error during the deletion of message from suspension queue.");
+            log.error("Got an error during the deletion of message from suspension queue.");
         }
     }
 }

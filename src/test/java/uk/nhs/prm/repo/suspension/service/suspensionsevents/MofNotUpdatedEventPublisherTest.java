@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
+
 import static org.mockito.Mockito.verify;
 
 class MofNotUpdatedEventPublisherTest {
