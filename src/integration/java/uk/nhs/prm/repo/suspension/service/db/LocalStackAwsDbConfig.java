@@ -47,31 +47,31 @@ public class LocalStackAwsDbConfig {
     @PostConstruct
     public void setupDbAndTable() {
         //TODO: use setup + teardown instead? This is a (not great) guard to run several tests locally
-        if (dynamoDbClient.listTables().tableNames().contains(suspensionDynamoDbTableName)) return;
-
-        List<KeySchemaElement> keySchema = new ArrayList<>();
-        keySchema.add(KeySchemaElement.builder()
-                .keyType(KeyType.HASH)
-                .attributeName("nhs_number")
-                .build());
-
-        List<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
-        attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.N)
-                .attributeName("nhs_number")
-                .build());
-
-        var createTableRequest = CreateTableRequest.builder()
-                .tableName(suspensionDynamoDbTableName)
-                .keySchema(keySchema)
-                .attributeDefinitions(attributeDefinitions)
-                .provisionedThroughput(ProvisionedThroughput.builder()
-                        .readCapacityUnits(5L)
-                        .writeCapacityUnits(5L)
-                        .build())
-                .build();
-
-        dynamoDbClient.createTable(createTableRequest);
+//        if (dynamoDbClient.listTables().tableNames().contains(suspensionDynamoDbTableName)) return;
+//
+//        List<KeySchemaElement> keySchema = new ArrayList<>();
+//        keySchema.add(KeySchemaElement.builder()
+//                .keyType(KeyType.HASH)
+//                .attributeName("nhs_number")
+//                .build());
+//
+//        List<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
+//        attributeDefinitions.add(AttributeDefinition.builder()
+//                .attributeType(ScalarAttributeType.N)
+//                .attributeName("nhs_number")
+//                .build());
+//
+//        var createTableRequest = CreateTableRequest.builder()
+//                .tableName(suspensionDynamoDbTableName)
+//                .keySchema(keySchema)
+//                .attributeDefinitions(attributeDefinitions)
+//                .provisionedThroughput(ProvisionedThroughput.builder()
+//                        .readCapacityUnits(5L)
+//                        .writeCapacityUnits(5L)
+//                        .build())
+//                .build();
+//
+//        dynamoDbClient.createTable(createTableRequest);
     }
 }
 
