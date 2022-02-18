@@ -181,7 +181,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
 resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_down_alarm" {
   alarm_name                = "${var.environment}-${var.component_name}-scale-down"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
-  threshold                 =  15
+  threshold                 =  var.scale_down_number_of_empty_receives_count
   evaluation_periods        = "1"
   metric_name               = "NumberOfEmptyReceives"
   namespace                 = local.sqs_namespace

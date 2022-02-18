@@ -56,3 +56,8 @@ variable "enable_scale_action" {
   type    = bool
   default = true
 }
+
+variable "scale_down_number_of_empty_receives_count" {
+  type    = string
+  default = 15
+}
