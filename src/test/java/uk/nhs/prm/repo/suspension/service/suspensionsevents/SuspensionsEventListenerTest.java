@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.suspension.service.config.Tracer;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 
 import javax.jms.JMSException;
@@ -17,6 +18,11 @@ import static uk.nhs.prm.repo.suspension.service.logging.TestLogAppender.addTest
 @ExtendWith(MockitoExtension.class)
 public class SuspensionsEventListenerTest {
 
+    private static final String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
+
+    @Mock
+    Tracer tracer;
+
     @Mock
     private SuspensionMessageProcessor suspensionsEventProcessor;
 
@@ -25,7 +31,7 @@ public class SuspensionsEventListenerTest {
 
     @Test
     void shouldCallNemsEventServiceWithReceivedMessage() throws JMSException {
-        String payload = "payload";
+        var payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
 
         suspensionsEventListener.onMessage(message);
@@ -50,18 +56,6 @@ public class SuspensionsEventListenerTest {
     @Test
     void shouldAcknowledgeMessageWhenInvalidPdsRequestExceptionsThrown() throws JMSException {
         var exception = new InvalidPdsRequestException("some exception", new Throwable());
-        var message = spy(new SQSTextMessage("bob"));
-
-        doThrow(exception).when(suspensionsEventProcessor).processSuspensionEvent(any());
-
-        suspensionsEventListener.onMessage(message);
-
-        verify(message).acknowledge();
-    }
-
-    @Test
-    void shouldAcknowledgeMessageWhenInvalidSuspensionMessageExceptionThrown() throws JMSException {
-        var exception = new InvalidSuspensionMessageException("some exception", new Throwable());
         var message = spy(new SQSTextMessage("bob"));
 
         doThrow(exception).when(suspensionsEventProcessor).processSuspensionEvent(any());
