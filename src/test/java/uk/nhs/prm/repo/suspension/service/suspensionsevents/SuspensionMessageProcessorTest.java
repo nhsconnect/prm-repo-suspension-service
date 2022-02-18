@@ -503,6 +503,7 @@ public class SuspensionMessageProcessorTest {
                 suspensionMessageProcessor.processSuspensionEvent(sampleMessage));
 
         verify(invalidSuspensionPublisher).sendMessage(sampleMessage);
+        verify(invalidSuspensionPublisher).sendNonSensitiveMessage(sampleMessage);
     }
 
 

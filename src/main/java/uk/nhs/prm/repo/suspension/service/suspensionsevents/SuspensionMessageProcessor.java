@@ -62,12 +62,7 @@ public class SuspensionMessageProcessor {
 
     private String processSuspensionEventOnce(String suspensionMessage) {
         SuspensionEvent suspensionEvent;
-        try {
-            suspensionEvent = parser.parse(suspensionMessage);
-        } catch (InvalidSuspensionMessageException exception) {
-            invalidSuspensionPublisher.sendMessage(suspensionMessage);
-            throw new InvalidSuspensionMessageException("Encountered an invalid Suspension message", exception);
-        }
+        suspensionEvent = getSuspensionEvent(suspensionMessage);
         try {
             PdsAdaptorSuspensionStatusResponse response;
 
@@ -76,7 +71,7 @@ public class SuspensionMessageProcessor {
             try {
                 response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
             } catch (InvalidPdsRequestException invalidPdsRequestException) {
-                return publishInvalidSuspension(suspensionMessage, suspensionEvent, invalidPdsRequestException);
+                return publishInvalidSuspension(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
             }
 
             if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
@@ -99,19 +94,31 @@ public class SuspensionMessageProcessor {
         return suspensionMessage;
     }
 
+    private SuspensionEvent getSuspensionEvent(String suspensionMessage) {
+        SuspensionEvent suspensionEvent;
+        try {
+            suspensionEvent = parser.parse(suspensionMessage);
+        } catch (InvalidSuspensionMessageException exception) {
+            invalidSuspensionPublisher.sendMessage(suspensionMessage);
+            invalidSuspensionPublisher.sendNonSensitiveMessage(suspensionMessage);
+            throw new InvalidSuspensionMessageException("Encountered an invalid message", exception);
+        }
+        return suspensionEvent;
+    }
+
     private void publishMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
         try {
             updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionEvent);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
-            publishInvalidSuspension(suspensionMessage, suspensionEvent, invalidPdsRequestException);
+            publishInvalidSuspension(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
         }
     }
 
-    private String publishInvalidSuspension(String suspensionMessage, SuspensionEvent suspensionEvent, InvalidPdsRequestException invalidPdsRequestException) {
+    private String publishInvalidSuspension(String suspensionMessage, String nemsMessageId, InvalidPdsRequestException invalidPdsRequestException) {
         invalidSuspensionPublisher.sendMessage(suspensionMessage);
-        invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),
+        invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveDataMessage(nemsMessageId,
                 "NO_ACTION:INVALID_SUSPENSION").toJsonString());
 
         throw invalidPdsRequestException;
