@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import uk.nhs.prm.repo.suspension.service.model.LastUpdatedData;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,14 +21,19 @@ public class DbClientTest {
     @Autowired
     DbClient dbClient;
 
+    String nhsNumber = "123";
+    String lastUpdated = "456";
+
     @BeforeEach
     public void setUp() {
-        dbClient.addItem("123", "123");
+        var lastUpdatedData = new LastUpdatedData(nhsNumber, lastUpdated);
+        dbClient.addItem(lastUpdatedData);
     }
 
     @Test
-    void shouldReadDataFromDbWithoutThrowing() {
-        var nhsNumber = "123";
-        assertThat(dbClient.getItem(nhsNumber)).isInstanceOf(GetItemResponse.class);
+    void shouldReadDataFromSuspensionsDb() {
+        var lastUpdatePatientData = dbClient.getItem(nhsNumber);
+        assertThat(lastUpdatePatientData.getNhsNumber()).isEqualTo(nhsNumber);
+        assertThat(lastUpdatePatientData.getLastUpdated()).isEqualTo(lastUpdated);
     }
 }

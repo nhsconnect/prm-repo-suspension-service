@@ -8,4 +8,12 @@ import lombok.Data;
 public class LastUpdatedData {
     private String nhsNumber;
     private String lastUpdated;
+
+    public String getNhsNumber() {
+        return this.nhsNumber;
+    }
+
+    public String getLastUpdated() {
+        return this.lastUpdated;
+    }
 }
