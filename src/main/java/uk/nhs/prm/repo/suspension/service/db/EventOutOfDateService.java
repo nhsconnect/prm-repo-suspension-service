@@ -11,8 +11,14 @@ public class EventOutOfDateService {
         this.dbClient = dbClient;
     }
 
-    public boolean checkIfEventIsOutOfDate(String nhsNumber) {
-        dbClient.getItem(nhsNumber);
-        return true;
+    public boolean checkIfEventIsOutOfDate(String nhsNumber, String lastUpdated) {
+        var lastUpdatedData = dbClient.getItem(nhsNumber);
+        return lastUpdatedData != null
+                && isGreaterOrEqualThan(lastUpdatedData.getLastUpdated(), lastUpdated);
     }
+
+    private boolean isGreaterOrEqualThan(String a, String b) {
+        return a.compareTo(b) >= 0;
+    }
+
 }

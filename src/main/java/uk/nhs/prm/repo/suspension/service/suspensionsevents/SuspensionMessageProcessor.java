@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.suspension.service.db.EventOutOfDateService;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
@@ -34,7 +35,9 @@ public class SuspensionMessageProcessor {
     private final MofUpdatedEventPublisher mofUpdatedEventPublisher;
     private final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
     private final InvalidSuspensionPublisher invalidSuspensionPublisher;
+    private final EventOutOfDatePublisher eventOutOfDatePublisher;
     private final PdsService pdsService;
+    private final EventOutOfDateService eventOutOfDateService;
 
     @Value("${process_only_synthetic_patients}")
     private String processOnlySyntheticPatients;
@@ -68,6 +71,12 @@ public class SuspensionMessageProcessor {
 
             threadLock.lock(suspensionEvent.nhsNumber());
 
+            if (eventOutOfDateService.checkIfEventIsOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
+                var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
+                eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
+                return suspensionMessage;
+            }
+
             try {
                 response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
             } catch (InvalidPdsRequestException invalidPdsRequestException) {
@@ -83,6 +92,7 @@ public class SuspensionMessageProcessor {
             if (Boolean.TRUE.equals(response.getIsSuspended())) {
                 log.info("Patient is Suspended");
                 publishMofUpdate(suspensionMessage, suspensionEvent, response);
+                //update db here
             } else {
                 var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
                 notSuspendedEventPublisher.sendMessage(notSuspendedMessage);

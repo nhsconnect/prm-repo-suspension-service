@@ -21,4 +21,8 @@ public class SuspensionEvent {
     public String nemsMessageId() {
         return fields.get("nemsMessageId").toString();
     }
+
+    public String lastUpdated() {
+        return fields.get("lastUpdated").toString();
+    }
 }

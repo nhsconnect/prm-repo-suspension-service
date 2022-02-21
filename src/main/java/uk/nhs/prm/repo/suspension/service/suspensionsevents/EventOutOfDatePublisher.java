@@ -1,0 +1,21 @@
+package uk.nhs.prm.repo.suspension.service.suspensionsevents;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
+
+@Component
+public class EventOutOfDatePublisher {
+    private final String mofNotUpdatedSnsTopicArn;
+    private final MessagePublisher messagePublisher;
+
+    public EventOutOfDatePublisher(MessagePublisher messagePublisher, @Value("${aws.mofNotUpdatedSnsTopicArn}") String mofNotUpdatedSnsTopicArn) {
+        this.messagePublisher = messagePublisher;
+        this.mofNotUpdatedSnsTopicArn = mofNotUpdatedSnsTopicArn;
+    }
+
+    public void sendMessage(NonSensitiveDataMessage message) {
+        messagePublisher.sendMessage(this.mofNotUpdatedSnsTopicArn, message.toJsonString());
+    }
+}
+

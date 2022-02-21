@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.suspension.service.db.EventOutOfDateService;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
@@ -32,6 +33,12 @@ public class SuspensionMessageProcessorTest {
     private MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
 
     @Mock
+    private EventOutOfDateService eventOutOfDateService;
+
+    @Mock
+    private EventOutOfDatePublisher eventOutOfDatePublisher;
+
+    @Mock
     private InvalidSuspensionPublisher invalidSuspensionPublisher;
 
     @Mock
@@ -47,7 +54,8 @@ public class SuspensionMessageProcessorTest {
     @BeforeEach
     public void setUp() {
         suspensionMessageProcessor = new SuspensionMessageProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, pdsService, new SuspensionEventParser(), concurrentThreadLock);
+                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher, pdsService,
+                eventOutOfDateService, new SuspensionEventParser(), concurrentThreadLock);
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
         setField(suspensionMessageProcessor, "maxAttempts", 5);
         setField(suspensionMessageProcessor, "multiplier", 2.0);
