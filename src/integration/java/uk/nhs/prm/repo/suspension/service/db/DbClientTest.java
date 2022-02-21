@@ -36,4 +36,10 @@ public class DbClientTest {
         assertThat(lastUpdatePatientData.getNhsNumber()).isEqualTo(nhsNumber);
         assertThat(lastUpdatePatientData.getLastUpdated()).isEqualTo(lastUpdated);
     }
+
+    @Test
+    void shouldHandleNhsNumberThatDoesNotExistInDb() {
+        var lastUpdatePatientData = dbClient.getItem("999");
+        assertThat(lastUpdatePatientData).isEqualTo(null);
+    }
 }

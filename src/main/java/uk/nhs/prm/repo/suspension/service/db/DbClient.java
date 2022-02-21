@@ -42,6 +42,9 @@ public class DbClient {
     }
 
     private LastUpdatedData fromDbItem(GetItemResponse itemResponse) {
+        if (!itemResponse.hasItem()) {
+            return null;
+        }
         var nhsNumber = itemResponse.item().get("nhs_number").n();
         var lastUpdated = itemResponse.item().get("last_updated").n();
         return new LastUpdatedData(nhsNumber, lastUpdated);
