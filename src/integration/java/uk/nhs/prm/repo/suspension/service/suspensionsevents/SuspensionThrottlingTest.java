@@ -154,7 +154,7 @@ public class SuspensionThrottlingTest {
 
         System.out.println("Total time taken: " + timeElapsed);
 
-        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(20), Duration.ofSeconds(5));
+        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(15), Duration.ofSeconds(10));
     }
 
 
