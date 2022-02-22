@@ -82,12 +82,12 @@ public class SuspensionThrottlingTest {
     }
 
     @Test
-    void shouldProcess120MessagesIn60Seconds() {
+    void shouldProcess50MessagesIn25Seconds() {
         stubbinForGenericPdsResponses(200, 800);
 
         var startingTime = Instant.now();
 
-        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 12);
+        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 5);
 
         await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
@@ -96,7 +96,7 @@ public class SuspensionThrottlingTest {
 
         System.out.println("Total time taken: " + timeElapsed);
 
-        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(65), Duration.ofSeconds(10));
+        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(25), Duration.ofSeconds(10));
     }
 
     @Test
