@@ -61,3 +61,7 @@ variable "scale_down_number_of_empty_receives_count" {
   type    = string
   default = 15
 }
+
+variable "core_task_number" {
+  default = ""
+}
