@@ -69,13 +69,15 @@ public class SuspensionMessageProcessor {
         try {
             PdsAdaptorSuspensionStatusResponse response;
 
-            threadLock.lock(suspensionEvent.nhsNumber());
+//            TODO: investigation pending on how this affects throttling tests (they run faster)
+//                  regardless of this block being in or out the lock block
+//            if (eventOutOfDateService.checkIfEventIsOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
+//                var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
+//                eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
+//                return suspensionMessage;
+//            }
 
-            if (eventOutOfDateService.checkIfEventIsOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
-                var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
-                eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
-                return suspensionMessage;
-            }
+            threadLock.lock(suspensionEvent.nhsNumber());
 
             try {
                 response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
@@ -92,7 +94,6 @@ public class SuspensionMessageProcessor {
             if (Boolean.TRUE.equals(response.getIsSuspended())) {
                 log.info("Patient is Suspended");
                 publishMofUpdate(suspensionMessage, suspensionEvent, response);
-                //update db here
             } else {
                 var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
                 notSuspendedEventPublisher.sendMessage(notSuspendedMessage);

@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.suspension.service.suspensionsevents;
+package uk.nhs.prm.repo.suspension.service.infra;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
 import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
@@ -21,6 +23,7 @@ import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,9 @@ public class LocalStackAwsConfig {
 
     @Autowired
     private SnsClient snsClient;
+
+    @Autowired
+    private DynamoDbClient dynamoDbClient;
 
     @Value("${aws.suspensionsQueueName}")
     private String suspensionsQueueName;
@@ -49,6 +55,9 @@ public class LocalStackAwsConfig {
 
     @Value("${aws.invalidSuspensionQueueName}")
     private String invalidSuspensionQueueName;
+
+    @Value("${aws.suspensionDynamoDbTableName}")
+    private String suspensionDynamoDbTableName;
 
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
@@ -77,6 +86,26 @@ public class LocalStackAwsConfig {
                 .build();
     }
 
+    @Bean
+    public static DynamoDbClient dynamoDbClient(@Value("${localstack.url}") String localstackUrl) {
+        return DynamoDbClient.builder()
+                .endpointOverride(URI.create(localstackUrl))
+                .region(Region.EU_WEST_2)
+                .credentialsProvider(
+                        StaticCredentialsProvider.create(new AwsCredentials() {
+                            @Override
+                            public String accessKeyId() {
+                                return "FAKE";
+                            }
+
+                            @Override
+                            public String secretAccessKey() {
+                                return "FAKE";
+                            }
+                        }))
+                .build();
+    }
+
     @PostConstruct
     public void setupTestQueuesAndTopics() {
         amazonSQSAsync.createQueue(suspensionsQueueName);
@@ -94,8 +123,45 @@ public class LocalStackAwsConfig {
         createSnsTestReceiverSubscription(mofUpdatedTopic, getQueueArn(mofUpdatedQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(invalidSuspensionTopic, getQueueArn(invalidSuspensionQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(nonSensitiveInvalidSuspensionTopic, getQueueArn(nonSensitiveInvalidSuspensionQueue.getQueueUrl()));
+
+        setupDbAndTable();
     }
 
+    private void setupDbAndTable() {
+        if (dynamoDbClient.listTables().tableNames().contains(suspensionDynamoDbTableName)) return;
+
+        List<KeySchemaElement> keySchema = new ArrayList<>();
+        keySchema.add(KeySchemaElement.builder()
+                .keyType(KeyType.HASH)
+                .attributeName("nhs_number")
+                .build());
+
+        List<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
+        attributeDefinitions.add(AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.N)
+                .attributeName("nhs_number")
+                .build());
+
+        var createTableRequest = CreateTableRequest.builder()
+                .tableName(suspensionDynamoDbTableName)
+                .keySchema(keySchema)
+                .attributeDefinitions(attributeDefinitions)
+                .provisionedThroughput(ProvisionedThroughput.builder()
+                        .readCapacityUnits(5L)
+                        .writeCapacityUnits(5L)
+                        .build())
+                .build();
+
+        dynamoDbClient.createTable(createTableRequest);
+
+        var waiter = dynamoDbClient.waiter();
+
+        var tableRequest = DescribeTableRequest.builder()
+                .tableName(suspensionDynamoDbTableName)
+                .build();
+
+        waiter.waitUntilTableExists(tableRequest);
+    }
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queueArn) {
         final Map<String, String> attributes = new HashMap<>();

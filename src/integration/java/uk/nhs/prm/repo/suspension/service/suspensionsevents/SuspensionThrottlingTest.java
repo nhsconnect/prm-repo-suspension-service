@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.nhs.prm.repo.suspension.service.infra.LocalStackAwsConfig;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -36,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
 @EnableScheduling
-public class SuspensionThrootlingTest {
+public class SuspensionThrottlingTest {
 
     @Autowired
     private AmazonSQSAsync sqs;

@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.nhs.prm.repo.suspension.service.infra.LocalStackAwsConfig;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;

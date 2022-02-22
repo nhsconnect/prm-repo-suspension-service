@@ -53,5 +53,4 @@ class EventOutOfDateServiceTest {
         verify(dbClient).getItem(nhsNumber);
         assertTrue(eventIsOutOfDate);
     }
-
 }

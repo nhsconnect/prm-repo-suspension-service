@@ -9,13 +9,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.suspension.service.model.LastUpdatedData;
+import uk.nhs.prm.repo.suspension.service.infra.LocalStackAwsConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @SpringBootTest()
-@ContextConfiguration(classes = { LocalStackAwsDbConfig.class})
+@ContextConfiguration(classes = { LocalStackAwsConfig.class})
 public class DbClientTest {
 
     @Autowired
