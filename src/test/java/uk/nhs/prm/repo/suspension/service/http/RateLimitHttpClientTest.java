@@ -1,11 +1,14 @@
 package uk.nhs.prm.repo.suspension.service.http;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -14,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith({MockitoExtension.class})
 class RateLimitHttpClientTest {
@@ -23,6 +27,14 @@ class RateLimitHttpClientTest {
 
     @InjectMocks
     private RateLimitHttpClient rateLimitClient;
+
+    @BeforeEach
+    void setup() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        setField(rateLimitClient, "rateLimit", "2.0");
+        Method postConstruct = RateLimitHttpClient.class.getDeclaredMethod("init", null); // methodName,parameters
+        postConstruct.setAccessible(true);
+        postConstruct.invoke(rateLimitClient);
+    }
 
     @Test
     void shouldCallServiceClientGetWithNoRateLimit() {
@@ -58,7 +70,7 @@ class RateLimitHttpClientTest {
 
         Duration processingTime = Duration.between(startTime, finishTime);
 
-        assertThat(processingTime).isCloseTo(Duration.ofSeconds(3), Duration.ofMillis(500));
+        assertThat(processingTime).isCloseTo(Duration.ofSeconds(4), Duration.ofMillis(1000));
 
     }
 

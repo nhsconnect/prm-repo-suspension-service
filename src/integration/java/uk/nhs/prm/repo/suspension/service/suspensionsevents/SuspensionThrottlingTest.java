@@ -87,16 +87,16 @@ public class SuspensionThrottlingTest {
 
         var startingTime = Instant.now();
 
-        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 5);
+        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 2);
 
-        await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
+        await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
         var finishTime = Instant.now();
         var timeElapsed = Duration.between(startingTime, finishTime);
 
         System.out.println("Total time taken: " + timeElapsed);
 
-        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(25), Duration.ofSeconds(10));
+        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(10), Duration.ofSeconds(5));
     }
 
     @Test
@@ -105,16 +105,16 @@ public class SuspensionThrottlingTest {
 
         var startingTime = Instant.now();
 
-        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 5);
+        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 2);
 
-        await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
+        await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
         var finishTime = Instant.now();
         var timeElapsed = Duration.between(startingTime, finishTime);
 
         System.out.println("Total time taken: " + timeElapsed);
 
-        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(20), Duration.ofSeconds(5));
+        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(7), Duration.ofSeconds(5));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class SuspensionThrottlingTest {
 
         sqs.sendMessage(suspensionQueueUrl, suspensionEventForBackOff);
 
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
         var finishTime = Instant.now();
         var timeElapsed = Duration.between(startingTime, finishTime);
@@ -144,7 +144,7 @@ public class SuspensionThrottlingTest {
 
         var startingTime = Instant.now();
 
-        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 5);
+        sendMultipleBatchesOf10Messages(suspensionQueueUrl, 2);
         sqs.sendMessage(suspensionQueueUrl, suspensionEventForBackOff);
 
         await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
@@ -154,7 +154,7 @@ public class SuspensionThrottlingTest {
 
         System.out.println("Total time taken: " + timeElapsed);
 
-        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(35), Duration.ofSeconds(5));
+        assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(20), Duration.ofSeconds(5));
     }
 
 
