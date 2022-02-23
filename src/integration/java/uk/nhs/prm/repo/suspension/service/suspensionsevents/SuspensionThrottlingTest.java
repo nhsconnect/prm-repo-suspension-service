@@ -242,7 +242,7 @@ public class SuspensionThrottlingTest {
     }
 
     private String getSuspensionEvent() {
-        String nhsNumber = UUID.randomUUID().toString();
+        var nhsNumber = Long.toString(System.currentTimeMillis());
         System.out.println("Nhs Number generated: " + nhsNumber);
         return new SuspensionEventBuilder()
                 .lastUpdated("2017-11-01T15:00:33+00:00")
