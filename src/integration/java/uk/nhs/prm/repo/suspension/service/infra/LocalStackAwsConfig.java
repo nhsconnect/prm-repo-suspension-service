@@ -16,6 +16,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
 import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
@@ -128,7 +129,15 @@ public class LocalStackAwsConfig {
     }
 
     private void setupDbAndTable() {
-        if (dynamoDbClient.listTables().tableNames().contains(suspensionDynamoDbTableName)) return;
+
+        var waiter = dynamoDbClient.waiter();
+        var tableRequest = DescribeTableRequest.builder()
+                .tableName(suspensionDynamoDbTableName)
+                .build();
+
+        if (dynamoDbClient.listTables().tableNames().contains(suspensionDynamoDbTableName)) {
+            resetTableForLocalEnvironment(waiter, tableRequest);
+        };
 
         List<KeySchemaElement> keySchema = new ArrayList<>();
         keySchema.add(KeySchemaElement.builder()
@@ -153,14 +162,13 @@ public class LocalStackAwsConfig {
                 .build();
 
         dynamoDbClient.createTable(createTableRequest);
-
-        var waiter = dynamoDbClient.waiter();
-
-        var tableRequest = DescribeTableRequest.builder()
-                .tableName(suspensionDynamoDbTableName)
-                .build();
-
         waiter.waitUntilTableExists(tableRequest);
+    }
+
+    private void resetTableForLocalEnvironment(DynamoDbWaiter waiter, DescribeTableRequest tableRequest) {
+        var deleteRequest = DeleteTableRequest.builder().tableName(suspensionDynamoDbTableName).build();
+        dynamoDbClient.deleteTable(deleteRequest);
+        waiter.waitUntilTableNotExists(tableRequest);
     }
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queueArn) {
@@ -181,4 +189,3 @@ public class LocalStackAwsConfig {
         return queueAttributes.getAttributes().get("QueueArn");
     }
 }
-
