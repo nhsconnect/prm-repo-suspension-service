@@ -21,14 +21,12 @@ public class DbClientTest {
 
     @Autowired
     DbClient dbClient;
-
-    String nhsNumber = "123";
-    String lastUpdated = "456";
+    final String nhsNumber = "1234567890";
+    final String lastUpdated = "2017-11-01T15:00:33+00:00";
 
     @BeforeEach
     public void setUp() {
-        var lastUpdatedData = new LastUpdatedData(nhsNumber, lastUpdated);
-        dbClient.addItem(lastUpdatedData);
+        dbClient.addItem(new LastUpdatedData(nhsNumber, lastUpdated));
     }
 
     @Test
@@ -40,7 +38,8 @@ public class DbClientTest {
 
     @Test
     void shouldHandleNhsNumberThatDoesNotExistInDb() {
-        var lastUpdatePatientData = dbClient.getItem("999");
+        var notExistingNhsNumber = "9898989898";
+        var lastUpdatePatientData = dbClient.getItem(notExistingNhsNumber);
         assertThat(lastUpdatePatientData).isEqualTo(null);
     }
 }

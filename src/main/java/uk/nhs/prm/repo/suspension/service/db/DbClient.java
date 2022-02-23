@@ -19,7 +19,7 @@ public class DbClient {
     private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;
 
-    public LastUpdatedData getItem(String nhsNumber ) {
+    public LastUpdatedData getItem(String nhsNumber) {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("nhs_number", AttributeValue.builder().n(nhsNumber).build());
         var getItemResponse = dynamoDbClient.getItem(GetItemRequest.builder()
@@ -33,7 +33,7 @@ public class DbClient {
     public void addItem(LastUpdatedData lastUpdatedData) {
         Map<String, AttributeValue> item = new HashMap<>();
         item.put("nhs_number", AttributeValue.builder().n(lastUpdatedData.getNhsNumber()).build());
-        item.put("last_updated", AttributeValue.builder().n(lastUpdatedData.getLastUpdated()).build());
+        item.put("last_updated", AttributeValue.builder().s(lastUpdatedData.getLastUpdated()).build());
 
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(config.suspensionDynamoDbTableName())
@@ -46,7 +46,7 @@ public class DbClient {
             return null;
         }
         var nhsNumber = itemResponse.item().get("nhs_number").n();
-        var lastUpdated = itemResponse.item().get("last_updated").n();
+        var lastUpdated = itemResponse.item().get("last_updated").s();
         return new LastUpdatedData(nhsNumber, lastUpdated);
     }
 }
