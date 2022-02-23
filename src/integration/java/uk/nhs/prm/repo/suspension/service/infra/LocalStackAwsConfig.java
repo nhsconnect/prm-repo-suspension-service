@@ -154,13 +154,13 @@ public class LocalStackAwsConfig {
 
         dynamoDbClient.createTable(createTableRequest);
 
-//        var waiter = dynamoDbClient.waiter();
-//
-//        var tableRequest = DescribeTableRequest.builder()
-//                .tableName(suspensionDynamoDbTableName)
-//                .build();
-//
-//        waiter.waitUntilTableExists(tableRequest);
+        var waiter = dynamoDbClient.waiter();
+
+        var tableRequest = DescribeTableRequest.builder()
+                .tableName(suspensionDynamoDbTableName)
+                .build();
+
+        waiter.waitUntilTableExists(tableRequest);
     }
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queueArn) {
