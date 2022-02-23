@@ -35,7 +35,7 @@ public class SuspensionsEventListenerTest {
         SQSTextMessage message = spy(new SQSTextMessage(payload));
 
         suspensionsEventListener.onMessage(message);
-        verify(suspensionsEventProcessor).processSuspensionEvent(payload);
+        verify(suspensionsEventProcessor).process(payload);
         verify(message).acknowledge();
     }
 
@@ -45,7 +45,7 @@ public class SuspensionsEventListenerTest {
         var exception = new IllegalStateException("some exception");
         var message = spy(new SQSTextMessage("bob"));
 
-        doThrow(exception).when(suspensionsEventProcessor).processSuspensionEvent(any());
+        doThrow(exception).when(suspensionsEventProcessor).process(any());
 
         suspensionsEventListener.onMessage(message);
 
@@ -58,7 +58,7 @@ public class SuspensionsEventListenerTest {
         var exception = new InvalidPdsRequestException("some exception", new Throwable());
         var message = spy(new SQSTextMessage("bob"));
 
-        doThrow(exception).when(suspensionsEventProcessor).processSuspensionEvent(any());
+        doThrow(exception).when(suspensionsEventProcessor).process(any());
 
         suspensionsEventListener.onMessage(message);
 

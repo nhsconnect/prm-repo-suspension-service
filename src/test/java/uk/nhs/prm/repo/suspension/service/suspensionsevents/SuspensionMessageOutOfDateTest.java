@@ -39,8 +39,11 @@ public class SuspensionMessageOutOfDateTest {
 
     @BeforeEach
     public void setUp() {
-        suspensionMessageProcessor = new SuspensionMessageProcessor(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher, pdsService, eventOutOfDateService, new SuspensionEventParser(), concurrentThreadLock);
+        var messageProcessExecution = new MessageProcessExecution(notSuspendedEventPublisher, mofUpdatedEventPublisher,
+                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher,
+                pdsService, eventOutOfDateService, new SuspensionEventParser(), concurrentThreadLock);
+        suspensionMessageProcessor = new SuspensionMessageProcessor(messageProcessExecution);
+
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
         setField(suspensionMessageProcessor, "maxAttempts", 5);
         setField(suspensionMessageProcessor, "multiplier", 2.0);
@@ -57,7 +60,7 @@ public class SuspensionMessageOutOfDateTest {
                 "\"environment\":\"local\"}";
         when(eventOutOfDateService.checkIfEventIsOutOfDate(nhsNumber, lastUpdatedDate)).thenReturn(true);
 
-        suspensionMessageProcessor.processSuspensionEvent(suspendedMessage);
+        suspensionMessageProcessor.process(suspendedMessage);
 
         verify(eventOutOfDateService).checkIfEventIsOutOfDate(nhsNumber, lastUpdatedDate);
         verify(eventOutOfDatePublisher).sendMessage(new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER"));

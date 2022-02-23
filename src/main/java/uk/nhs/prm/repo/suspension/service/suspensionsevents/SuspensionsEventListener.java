@@ -23,7 +23,7 @@ public class SuspensionsEventListener implements MessageListener {
             tracer.setMDCContext(message);
             log.info("RECEIVED: Suspensions Event Message");
             var payload = ((TextMessage) message).getText();
-            suspensionsEventProcessor.processSuspensionEvent(payload);
+            suspensionsEventProcessor.process(payload);
             deleteMessage(message);
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
             deleteMessage(message);
