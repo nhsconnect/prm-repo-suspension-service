@@ -64,8 +64,7 @@ public class SuspensionMessageProcessor {
     }
 
     private String processSuspensionEventOnce(String suspensionMessage) {
-        SuspensionEvent suspensionEvent;
-        suspensionEvent = getSuspensionEvent(suspensionMessage);
+        var suspensionEvent = getSuspensionEvent(suspensionMessage);
         try {
             PdsAdaptorSuspensionStatusResponse response;
 
