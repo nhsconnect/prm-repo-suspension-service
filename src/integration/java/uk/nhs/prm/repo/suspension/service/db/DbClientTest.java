@@ -21,7 +21,7 @@ public class DbClientTest {
 
     @Autowired
     DbClient dbClient;
-    String nhsNumber = "1234567890";
+    String nhsNumber = "1111111111";
     String lastUpdated = "2017-11-01T15:00:33+00:00";
 
     @BeforeEach
