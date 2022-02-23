@@ -69,13 +69,11 @@ public class SuspensionMessageProcessor {
         try {
             PdsAdaptorSuspensionStatusResponse response;
 
-//            TODO: investigation pending on how this affects throttling tests (they run faster)
-//                  regardless of this block being in or out the lock block
-//            if (eventOutOfDateService.checkIfEventIsOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
-//                var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
-//                eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
-//                return suspensionMessage;
-//            }
+            if (eventOutOfDateService.checkIfEventIsOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
+                var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
+                eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
+                return suspensionMessage;
+            }
 
             threadLock.lock(suspensionEvent.nhsNumber());
 

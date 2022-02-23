@@ -1,7 +1,6 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -47,7 +46,6 @@ public class SuspensionMessageOutOfDateTest {
         setField(suspensionMessageProcessor, "multiplier", 2.0);
     }
 
-    @Disabled("Code under test temporarily disabled")
     @Test
     void shouldSendOutOfDateNemsMessagesToEventOutOfDateQueue() {
         var lastUpdatedDate = "2017-11-01T15:00:33+00:00";
