@@ -33,26 +33,28 @@ public class MessageProcessExecution {
     public String run(String suspensionMessage) {
         var suspensionEvent = getSuspensionEvent(suspensionMessage);
         try {
-            PdsAdaptorSuspensionStatusResponse response;
+            threadLock.lock(suspensionEvent.nhsNumber());
 
+            // synthetic patient block
+            if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
+                var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
+                mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
+                return suspensionMessage;
+            }
+
+            // event out of date block
             if (eventOutOfDateService.checkIfEventIsOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
                 var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
                 eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
                 return suspensionMessage;
             }
 
-            threadLock.lock(suspensionEvent.nhsNumber());
-
+            // pds adaptor block
+            PdsAdaptorSuspensionStatusResponse response;
             try {
                 response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
             } catch (InvalidPdsRequestException invalidPdsRequestException) {
                 return publishInvalidSuspension(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
-            }
-
-            if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
-                var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
-                mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
-                return suspensionMessage;
             }
 
             if (Boolean.TRUE.equals(response.getIsSuspended())) {
