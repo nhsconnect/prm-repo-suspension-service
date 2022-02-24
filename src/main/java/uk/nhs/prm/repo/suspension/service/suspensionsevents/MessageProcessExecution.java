@@ -50,17 +50,10 @@ public class MessageProcessExecution {
             }
 
             // pds adaptor block
-            PdsAdaptorSuspensionStatusResponse response;
-            try {
-                response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
-            } catch (InvalidPdsRequestException invalidPdsRequestException) {
-                publishInvalidSuspensionAndThrow(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
-                return;
-            }
-
-            if (Boolean.TRUE.equals(response.getIsSuspended())) {
+            var pdsAdaptorSuspensionStatusResponse = getPdsAdaptorSuspensionStatusResponse(suspensionMessage, suspensionEvent);
+            if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
                 log.info("Patient is Suspended");
-                publishMofUpdate(suspensionMessage, suspensionEvent, response);
+                publishMofUpdate(suspensionMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
             } else {
                 var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
                 notSuspendedEventPublisher.sendMessage(notSuspendedMessage);
@@ -80,7 +73,29 @@ public class MessageProcessExecution {
         }
     }
 
-    // TODO: duplication/shared logic in the following 2 methods (getSuspensionEvent, publishInvalidSuspensionAndThrow)
+    PdsAdaptorSuspensionStatusResponse getPdsAdaptorSuspensionStatusResponse(String suspensionMessage, SuspensionEvent suspensionEvent) {
+        try {
+            log.info("Checking patient's suspension status on PDS");
+            var response = pdsService.isSuspended(suspensionEvent.nhsNumber());
+            if (nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), response.getNhsNumber())) {
+                log.info("Processing a superseded record");
+                var supersededNhsNumber = response.getNhsNumber();
+                response = pdsService.isSuspended(supersededNhsNumber);
+            }
+            return response;
+        } catch (InvalidPdsRequestException invalidPdsRequestException) {
+            publishInvalidSuspensionAndThrow(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
+            return null;  // publishInvalidSuspensionAndThrow throws, so this line is never reached
+        }
+    }
+
+    String publishInvalidSuspensionAndThrow(String suspensionMessage, String nemsMessageId, InvalidPdsRequestException invalidPdsRequestException) {
+        invalidSuspensionPublisher.sendMessage(suspensionMessage);
+        invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveDataMessage(nemsMessageId,
+                "NO_ACTION:INVALID_SUSPENSION").toJsonString());
+        throw invalidPdsRequestException;
+    }
+
     SuspensionEvent getSuspensionEvent(String suspensionMessage) {
         SuspensionEvent suspensionEvent;
         try {
@@ -93,13 +108,6 @@ public class MessageProcessExecution {
         return suspensionEvent;
     }
 
-    String publishInvalidSuspensionAndThrow(String suspensionMessage, String nemsMessageId, InvalidPdsRequestException invalidPdsRequestException) {
-        invalidSuspensionPublisher.sendMessage(suspensionMessage);
-        invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveDataMessage(nemsMessageId,
-                "NO_ACTION:INVALID_SUSPENSION").toJsonString());
-        throw invalidPdsRequestException;
-    }
-
     boolean patientIsNonSynthetic(SuspensionEvent suspensionEvent) {
         boolean isNonSynthetic = !suspensionEvent.nhsNumber().startsWith(syntheticPatientPrefix);
         log.info(isNonSynthetic ? "Processing Non-Synthetic Patient" : "Processing Synthetic Patient");
@@ -109,17 +117,6 @@ public class MessageProcessExecution {
     boolean processingOnlySyntheticPatients() {
         log.info("Process only synthetic patients: " + processOnlySyntheticPatients);
         return Boolean.parseBoolean(processOnlySyntheticPatients);
-    }
-
-    PdsAdaptorSuspensionStatusResponse getPdsAdaptorSuspensionStatusResponse(SuspensionEvent suspensionEvent) {
-        log.info("Checking patient's suspension status on PDS");
-        PdsAdaptorSuspensionStatusResponse response = pdsService.isSuspended(suspensionEvent.nhsNumber());
-        if (nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), response.getNhsNumber())) {
-            log.info("Processing a superseded record");
-            var supersededNhsNumber = response.getNhsNumber();
-            response = pdsService.isSuspended(supersededNhsNumber);
-        }
-        return response;
     }
 
     boolean nhsNumberIsSuperseded(String nemsEventNhsNumber, String pdsNhsNumber) {
