@@ -54,7 +54,7 @@ public class MessageProcessExecution {
             try {
                 response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
             } catch (InvalidPdsRequestException invalidPdsRequestException) {
-                return publishInvalidSuspension(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
+                return publishInvalidSuspensionAndThrow(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
             }
 
             if (Boolean.TRUE.equals(response.getIsSuspended())) {
@@ -71,6 +71,17 @@ public class MessageProcessExecution {
         return suspensionMessage;
     }
 
+    void publishMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
+        try {
+            updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionEvent);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+        } catch (InvalidPdsRequestException invalidPdsRequestException) {
+            publishInvalidSuspensionAndThrow(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
+        }
+    }
+
+    // TODO: duplication/shared logic in the following 2 methods (getSuspensionEvent, publishInvalidSuspensionAndThrow)
     SuspensionEvent getSuspensionEvent(String suspensionMessage) {
         SuspensionEvent suspensionEvent;
         try {
@@ -83,21 +94,10 @@ public class MessageProcessExecution {
         return suspensionEvent;
     }
 
-    void publishMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
-        try {
-            updateMof(response.getNhsNumber(), response.getRecordETag(), response.getManagingOrganisation(), suspensionEvent);
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-        } catch (InvalidPdsRequestException invalidPdsRequestException) {
-            publishInvalidSuspension(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
-        }
-    }
-
-    String publishInvalidSuspension(String suspensionMessage, String nemsMessageId, InvalidPdsRequestException invalidPdsRequestException) {
+    String publishInvalidSuspensionAndThrow(String suspensionMessage, String nemsMessageId, InvalidPdsRequestException invalidPdsRequestException) {
         invalidSuspensionPublisher.sendMessage(suspensionMessage);
         invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveDataMessage(nemsMessageId,
                 "NO_ACTION:INVALID_SUSPENSION").toJsonString());
-
         throw invalidPdsRequestException;
     }
 
