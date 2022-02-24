@@ -30,7 +30,7 @@ public class MessageProcessExecution {
     final SuspensionEventParser parser;
     final ConcurrentThreadLock threadLock;
 
-    public String run(String suspensionMessage) {
+    public void run(String suspensionMessage) {
         var suspensionEvent = getSuspensionEvent(suspensionMessage);
         try {
             threadLock.lock(suspensionEvent.nhsNumber());
@@ -39,14 +39,14 @@ public class MessageProcessExecution {
             if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
                 var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
                 mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
-                return suspensionMessage;
+                return;
             }
 
             // event out of date block
             if (eventOutOfDateService.checkIfEventIsOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
                 var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
                 eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
-                return suspensionMessage;
+                return;
             }
 
             // pds adaptor block
@@ -54,7 +54,8 @@ public class MessageProcessExecution {
             try {
                 response = getPdsAdaptorSuspensionStatusResponse(suspensionEvent);
             } catch (InvalidPdsRequestException invalidPdsRequestException) {
-                return publishInvalidSuspensionAndThrow(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
+                publishInvalidSuspensionAndThrow(suspensionMessage, suspensionEvent.nemsMessageId(), invalidPdsRequestException);
+                return;
             }
 
             if (Boolean.TRUE.equals(response.getIsSuspended())) {
@@ -67,8 +68,6 @@ public class MessageProcessExecution {
         } finally {
             threadLock.unlock(suspensionEvent.nhsNumber());
         }
-
-        return suspensionMessage;
     }
 
     void publishMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
