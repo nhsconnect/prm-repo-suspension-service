@@ -27,13 +27,14 @@ public class SuspensionMessageProcessor {
     final private MessageProcessExecution messageProcessExecution;
 
     public void process(String message) {
-        Function<String, String> retryableProcessEvent = Retry
+        Function<String, Void> retryableProcessEvent = Retry
                 .decorateFunction(Retry.of("retryableSuspension", createRetryConfig()), this::processOnce);
         retryableProcessEvent.apply(message);
     }
 
-    private String processOnce(String message) {
-        return messageProcessExecution.run(message);
+    private Void processOnce(String message) {
+         messageProcessExecution.run(message);
+         return null;
     }
 
     private RetryConfig createRetryConfig() {
