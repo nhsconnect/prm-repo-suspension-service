@@ -1,7 +1,6 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -64,7 +63,6 @@ public class MessageProcessLastUpdatedEventTest {
         verify(eventOutOfDatePublisher).sendMessage(new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER"));
     }
 
-    @Disabled("Pending investigation on integration test failing when this functionality is on")
     @Test
     void shouldSaveRecordIfisNotOutOfDate() {
         mockMofDependencies();

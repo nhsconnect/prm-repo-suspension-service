@@ -67,13 +67,15 @@ public class SuspensionThrottlingTest {
         purgeQueues(suspensionQueueUrl, mofUpdatedQueueUrl);
     }
 
-    private final String suspensionEventForBackOff = new SuspensionEventBuilder()
-            .lastUpdated("2017-11-01T15:00:33+00:00")
-            .previousOdsCode("B85612")
-            .eventType("SUSPENSION")
-            .nhsNumber("1234567890")
-            .nemsMessageId("TEST-NEMS-ID-BACK-OFF")
-            .environment("local").buildJson();
+    private String suspensionEventForBackOffWith(String nhsNumber) {
+        return new SuspensionEventBuilder()
+                .lastUpdated("2017-11-01T15:00:33+00:00")
+                .previousOdsCode("B85612")
+                .eventType("SUSPENSION")
+                .nhsNumber(nhsNumber)
+                .nemsMessageId("TEST-NEMS-ID-BACK-OFF")
+                .environment("local").buildJson();
+    }
 
     private WireMockServer initializeWebServer() {
         final WireMockServer wireMockServer = new WireMockServer(8080);
@@ -121,10 +123,10 @@ public class SuspensionThrottlingTest {
     void shouldContinueProcessMessagesWhenOneFailsWithConcurrentThreads() {
         setPdsRetryMessage();
         stubbinForGenericPdsResponses(0,0);
-
+        var nhsNumber = Long.toString(System.currentTimeMillis());
         var startingTime = Instant.now();
 
-        sqs.sendMessage(suspensionQueueUrl, suspensionEventForBackOff);
+        sqs.sendMessage(suspensionQueueUrl, suspensionEventForBackOffWith(nhsNumber));
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
@@ -134,7 +136,7 @@ public class SuspensionThrottlingTest {
         System.out.println("Total time taken: " + timeElapsed);
 
         assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(8), Duration.ofSeconds(1));
-        verify(4, getRequestedFor(urlEqualTo("/suspended-patient-status/1234567890")));
+        verify(4, getRequestedFor(urlEqualTo("/suspended-patient-status/" + nhsNumber)));
     }
 
     @Test
@@ -145,7 +147,7 @@ public class SuspensionThrottlingTest {
         var startingTime = Instant.now();
 
         sendMultipleBatchesOf10Messages(suspensionQueueUrl, 2);
-        sqs.sendMessage(suspensionQueueUrl, suspensionEventForBackOff);
+        sqs.sendMessage(suspensionQueueUrl, suspensionEventForBackOffWith(Long.toString(System.currentTimeMillis())));
 
         await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
@@ -156,7 +158,6 @@ public class SuspensionThrottlingTest {
 
         assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(15), Duration.ofSeconds(10));
     }
-
 
     private void setPdsRetryMessage() {
         setPdsErrorState(STARTED, "Cause Success", 1);
@@ -208,7 +209,6 @@ public class SuspensionThrottlingTest {
                         .withBody(getSuspendedResponse())
                         .withHeader("Content-Type", "application/json")));
     }
-
 
     private boolean isQueueEmpty(String queueUrl) {
         List<String> attributeList = new ArrayList<>();
