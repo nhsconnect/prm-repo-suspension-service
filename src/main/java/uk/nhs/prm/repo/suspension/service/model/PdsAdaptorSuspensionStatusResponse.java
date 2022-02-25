@@ -12,16 +12,19 @@ public class PdsAdaptorSuspensionStatusResponse {
         private final String currentOdsCode;
         private final String managingOrganisation;
         private final String recordETag;
+        private final Boolean isDeceased;
 
         public PdsAdaptorSuspensionStatusResponse(@JsonProperty("nhsNumber") String nhsNumber,
                                                   @JsonProperty("isSuspended") Boolean isSuspended,
                                                   @JsonProperty("currentOdsCode") String currentOdsCode,
                                                   @JsonProperty("managingOrganisation") String managingOrganisation,
-                                                  @JsonProperty("recordETag") String recordETag) {
+                                                  @JsonProperty("recordETag") String recordETag,
+                                                  @JsonProperty("isDeceased") Boolean isDeceased) {
                 this.nhsNumber = nhsNumber;
                 this.isSuspended = isSuspended;
                 this.currentOdsCode = currentOdsCode;
                 this.managingOrganisation = managingOrganisation;
                 this.recordETag = recordETag;
+                this.isDeceased = isDeceased;
         }
 }

@@ -15,6 +15,7 @@ locals {
     { name = "MOF_NOT_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_not_updated.arn },
     { name = "INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.invalid_suspension.arn },
     { name = "NON_SENSITIVE_INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.non_sensitive_invalid_suspension.arn },
+    { name = "DECEASED_PATIENT_SNS_TOPIC_ARN", value = aws_sns_topic.deceased_patient.arn },
     { name = "PDS_ADAPTOR_SUSPENSION_SERVICE_PASSWORD", value = data.aws_ssm_parameter.pds_adaptor_auth_key.value },
     { name = "PROCESS_ONLY_SYNTHETIC_PATIENTS", value = tostring(var.process_only_synthetic_patients) },
     { name = "SYNTHETIC_PATIENT_PREFIX", value = var.synthetic_patient_prefix },

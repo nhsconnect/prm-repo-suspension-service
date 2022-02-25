@@ -71,6 +71,26 @@ class PdsAdaptorSuspensionStatusResponseParserTest {
     }
 
     @Test
+    public void shouldParseStatusOfADeceasedPatient() {
+        String suspendedResponseBody = "{\n" +
+                "    \"nhsNumber\": \"1234567890\",\n" +
+                "    \"isSuspended\": null,\n" +
+                "    \"currentOdsCode\": null,\n" +
+                "    \"managingOrganisation\": null,\n" +
+                "    \"recordETag\": \"foo\",\n" +
+                "    \"isDeceased\": true \n" +
+                "}";
+
+        var status = parser.parse(suspendedResponseBody);
+
+        assertThat(status.getIsSuspended()).isNull();
+        assertThat(status.getCurrentOdsCode()).isNull();
+        assertThat(status.getManagingOrganisation()).isNull();
+        assertThat(status.getRecordETag()).isEqualTo("foo");
+        assertThat(status.getIsDeceased()).isTrue();
+    }
+
+    @Test
     public void shouldThrowIfThereIsNoResponseBodyToParse() {
         assertThrows(UnexpectedPdsAdaptorResponseException.class, () -> parser.parse(null));
     }

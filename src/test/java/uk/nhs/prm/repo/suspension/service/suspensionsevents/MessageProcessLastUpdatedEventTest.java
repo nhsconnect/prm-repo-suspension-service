@@ -15,7 +15,7 @@ import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class MessageProcessLastUpdatedEvent {
+public class MessageProcessLastUpdatedEventTest {
     private MessageProcessExecution messageProcessExecution;
 
     @Mock
@@ -30,6 +30,8 @@ public class MessageProcessLastUpdatedEvent {
     private InvalidSuspensionPublisher invalidSuspensionPublisher;
     @Mock
     private EventOutOfDatePublisher eventOutOfDatePublisher;
+    @Mock
+    private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
     @Mock
     private PdsService pdsService;
     @Mock
@@ -48,7 +50,7 @@ public class MessageProcessLastUpdatedEvent {
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher,
+                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher, deceasedPatientEventPublisher,
                 pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
     }
 
@@ -79,9 +81,9 @@ public class MessageProcessLastUpdatedEvent {
 
     private void mockMofDependencies() {
         var pdsAdaptorSuspensionStatusResponse
-                = new PdsAdaptorSuspensionStatusResponse(nhsNumber, true, null, null, "");
+                = new PdsAdaptorSuspensionStatusResponse(nhsNumber, true, null, null, "", false);
         var pdsAdaptorMofUpdatedResponse
-                = new PdsAdaptorSuspensionStatusResponse(nhsNumber, true, null, "PREVIOUS_ODS_CODE", "");
+                = new PdsAdaptorSuspensionStatusResponse(nhsNumber, true, null, "PREVIOUS_ODS_CODE", "", false);
 
         when(pdsService.isSuspended(nhsNumber)).thenReturn(pdsAdaptorSuspensionStatusResponse);
         when(pdsService.updateMof(nhsNumber, "PREVIOUS_ODS_CODE", "")).thenReturn(pdsAdaptorMofUpdatedResponse);

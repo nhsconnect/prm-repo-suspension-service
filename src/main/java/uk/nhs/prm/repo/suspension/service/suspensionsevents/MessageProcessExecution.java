@@ -21,6 +21,7 @@ public class MessageProcessExecution {
     final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
     final InvalidSuspensionPublisher invalidSuspensionPublisher;
     final EventOutOfDatePublisher eventOutOfDatePublisher;
+    final DeceasedPatientEventPublisher deceasedPatientEventPublisher;
     final PdsService pdsService;
     final LastUpdatedEventService lastUpdatedEventService;
     @Value("${process_only_synthetic_patients}")
@@ -51,6 +52,15 @@ public class MessageProcessExecution {
 
             // pds adaptor block
             var pdsAdaptorSuspensionStatusResponse = getPdsAdaptorSuspensionStatusResponse(suspensionMessage, suspensionEvent);
+
+            // patient is deceased block
+            if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsDeceased())) {
+                log.info("Patient is deceased");
+                var deceasedPatientMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:DECEASED_PATIENT");
+                deceasedPatientEventPublisher.sendMessage(deceasedPatientMessage);
+                return;
+            }
+
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
                 log.info("Patient is Suspended");
                 publishMofUpdate(suspensionMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);

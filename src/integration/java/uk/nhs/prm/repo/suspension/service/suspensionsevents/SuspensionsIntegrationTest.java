@@ -179,7 +179,8 @@ public class SuspensionsIntegrationTest {
         return "{\n" +
                 "    \"nhsNumber\": \"9912003888\",\n" +
                 "    \"isSuspended\": false,\n" +
-                "    \"currentOdsCode\": \"N85027\"\n" +
+                "    \"currentOdsCode\": \"N85027\",\n" +
+                "    \"isDeceased\":  false\n" +
                 "}";
     }
 
@@ -189,7 +190,8 @@ public class SuspensionsIntegrationTest {
                 "    \"isSuspended\": true,\n" +
                 "    \"currentOdsCode\": null,\n" +
                 "    \"managingOrganisation\": \"B1234\",\n" +
-                "    \"recordETag\": \"W/\\\"5\\\"\"\n" +
+                "    \"recordETag\": \"W/\\\"5\\\"\",\n" +
+                "    \"isDeceased\":  false\n" +
                 "}";
     }
 

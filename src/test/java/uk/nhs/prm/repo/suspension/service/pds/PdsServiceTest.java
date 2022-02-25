@@ -151,6 +151,6 @@ class PdsServiceTest {
     }
 
     private PdsAdaptorSuspensionStatusResponse aStatus() {
-        return new PdsAdaptorSuspensionStatusResponse("9692294951", true, "ODS123", "ODS456", "v1");
+        return new PdsAdaptorSuspensionStatusResponse("9692294951", true, "ODS123", "ODS456", "v1", false);
     }
 }

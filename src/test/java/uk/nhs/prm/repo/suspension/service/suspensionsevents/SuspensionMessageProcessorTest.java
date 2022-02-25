@@ -12,7 +12,6 @@ import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
@@ -39,6 +38,9 @@ public class SuspensionMessageProcessorTest {
     private EventOutOfDatePublisher eventOutOfDatePublisher;
 
     @Mock
+    private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
+
+    @Mock
     private InvalidSuspensionPublisher invalidSuspensionPublisher;
 
     @Mock
@@ -54,7 +56,7 @@ public class SuspensionMessageProcessorTest {
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher,
+                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher, deceasedPatientEventPublisher,
                 pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
         suspensionMessageProcessor = new SuspensionMessageProcessor(messageProcessExecution);
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
@@ -92,7 +94,7 @@ public class SuspensionMessageProcessorTest {
                 "\"environment\":\"local\"}";
 
         when(pdsService.isSuspended(NHS_NUMBER)).thenThrow(IntermittentErrorPdsException.class)
-                .thenReturn(new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, false, null, null, ""));
+                .thenReturn(new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, false, null, null, "", false));
 
         suspensionMessageProcessor.process(sampleMessage);
 
