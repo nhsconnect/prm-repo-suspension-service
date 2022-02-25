@@ -67,16 +67,6 @@ public class SuspensionThrottlingTest {
         purgeQueues(suspensionQueueUrl, mofUpdatedQueueUrl);
     }
 
-    private String suspensionEventForBackOffWith(String nhsNumber) {
-        return new SuspensionEventBuilder()
-                .lastUpdated("2017-11-01T15:00:33+00:00")
-                .previousOdsCode("B85612")
-                .eventType("SUSPENSION")
-                .nhsNumber(nhsNumber)
-                .nemsMessageId("TEST-NEMS-ID-BACK-OFF")
-                .environment("local").buildJson();
-    }
-
     private WireMockServer initializeWebServer() {
         final WireMockServer wireMockServer = new WireMockServer(8080);
         wireMockServer.start();
@@ -121,12 +111,13 @@ public class SuspensionThrottlingTest {
 
     @Test
     void shouldContinueProcessMessagesWhenOneFailsWithConcurrentThreads() {
-        setPdsRetryMessage();
+        var nhsNumber = randomNhsNumber();
+
+        setPdsRetryMessage(nhsNumber);
         stubbinForGenericPdsResponses(0,0);
-        var nhsNumber = Long.toString(System.currentTimeMillis());
         var startingTime = Instant.now();
 
-        sqs.sendMessage(suspensionQueueUrl, suspensionEventForBackOffWith(nhsNumber));
+        sqs.sendMessage(suspensionQueueUrl, getSuspensionEvent(nhsNumber));
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
@@ -141,13 +132,14 @@ public class SuspensionThrottlingTest {
 
     @Test
     void shouldRetry3TimesWithExponentialBackOffPeriod() {
+        var nhsNumber = randomNhsNumber();
         stubbinForGenericPdsResponses(200, 800);
-        setPdsRetryMessage();
+        setPdsRetryMessage(nhsNumber);
 
         var startingTime = Instant.now();
 
         sendMultipleBatchesOf10Messages(suspensionQueueUrl, 2);
-        sqs.sendMessage(suspensionQueueUrl, suspensionEventForBackOffWith(Long.toString(System.currentTimeMillis())));
+        sqs.sendMessage(suspensionQueueUrl, getSuspensionEvent(nhsNumber));
 
         await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(isQueueEmpty(suspensionQueueUrl)));
 
@@ -159,12 +151,12 @@ public class SuspensionThrottlingTest {
         assertThat(timeElapsed).isCloseTo(Duration.ofSeconds(15), Duration.ofSeconds(10));
     }
 
-    private void setPdsRetryMessage() {
-        setPdsErrorState(STARTED, "Cause Success", 1);
-        setPdsErrorState("Cause Success", "Second Cause Success", 2);
-        setPdsErrorState("Second Cause Success", "Third Cause Success", 3);
+    private void setPdsRetryMessage(String nhsNumber) {
+        setPdsErrorState(STARTED, "Cause Success", 1, nhsNumber);
+        setPdsErrorState("Cause Success", "Second Cause Success", 2, nhsNumber);
+        setPdsErrorState("Second Cause Success", "Third Cause Success", 3, nhsNumber);
 
-        stubFor(get(urlEqualTo("/suspended-patient-status/1234567890")).atPriority(4)
+        stubFor(get(urlEqualTo("/suspended-patient-status/" + nhsNumber)).atPriority(4)
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .inScenario("Retry Scenario")
                 .whenScenarioStateIs("Third Cause Success")
@@ -174,8 +166,8 @@ public class SuspensionThrottlingTest {
                         .withBody(getSuspendedResponse())));
     }
 
-    private void setPdsErrorState(String startingState, String finishedState, int priority) {
-        stubFor(get(urlMatching("/suspended-patient-status/1234567890")).atPriority(priority)
+    private void setPdsErrorState(String startingState, String finishedState, int priority, String nhsNumber) {
+        stubFor(get(urlMatching("/suspended-patient-status/" + nhsNumber)).atPriority(priority)
                 .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
                 .inScenario("Retry Scenario")
                 .whenScenarioStateIs(startingState)
@@ -216,13 +208,10 @@ public class SuspensionThrottlingTest {
         attributeList.add("ApproximateNumberOfMessages");
         GetQueueAttributesResult getQueueAttributesResult = sqs.getQueueAttributes(queueUrl, attributeList);
 
-        Integer numberOfMessageNotVisible = Integer.valueOf(getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessagesNotVisible"));
-        Integer numberOfMessageVisible = Integer.valueOf(getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessages"));
+        var numberOfMessageNotVisible = Integer.valueOf(getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessagesNotVisible"));
+        var numberOfMessageVisible = Integer.valueOf(getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessages"));
 
-        if (numberOfMessageVisible == 0 && numberOfMessageNotVisible == 0) {
-            return true;
-        }
-        return false;
+        return (numberOfMessageVisible == 0 && numberOfMessageNotVisible == 0);
     }
 
     private SendMessageBatchRequest createBatchOfTenRequest(String queueUrl) {
@@ -241,8 +230,18 @@ public class SuspensionThrottlingTest {
         return requestEntries;
     }
 
+    private String getSuspensionEvent(String nhsNumber) {
+        return new SuspensionEventBuilder()
+                .lastUpdated("2017-11-01T15:00:33+00:00")
+                .previousOdsCode("B85612")
+                .eventType("SUSPENSION")
+                .nhsNumber(nhsNumber)
+                .nemsMessageId("TEST-NEMS-ID-BACK-OFF")
+                .environment("local").buildJson();
+    }
+
     private String getSuspensionEvent() {
-        var nhsNumber = Long.toString(System.currentTimeMillis());
+        var nhsNumber = randomNhsNumber();
         System.out.println("Nhs Number generated: " + nhsNumber);
         return new SuspensionEventBuilder()
                 .lastUpdated("2017-11-01T15:00:33+00:00")
@@ -255,12 +254,16 @@ public class SuspensionThrottlingTest {
 
     private String getSuspendedResponse() {
         return "{\n" +
-                "    \"nhsNumber\": \"9912003888\",\n" +
+                "    \"nhsNumber\": \"1231231231\",\n" +
                 "    \"isSuspended\": true,\n" +
                 "    \"currentOdsCode\": null,\n" +
                 "    \"managingOrganisation\": \"B1234\",\n" +
                 "    \"recordETag\": \"W/\\\"5\\\"\"\n" +
                 "}";
+    }
+
+    private String randomNhsNumber() {
+        return Long.toString(System.currentTimeMillis());
     }
 
     private void purgeQueues(String queueUrl, String mofUpdatedQueueUrl) {
