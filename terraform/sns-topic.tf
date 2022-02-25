@@ -70,6 +70,18 @@ resource "aws_sns_topic" "event_out_of_date" {
   }
 }
 
+resource "aws_sns_topic" "deceased_patient" {
+  name = "${var.environment}-${var.component_name}-deceased-patient"
+  kms_master_key_id = aws_kms_key.deceased_patient.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-deceased-patient-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 
 data "aws_sns_topic" "alarm_notifications" {
   name = "${var.environment}-alarm-notifications-sns-topic"

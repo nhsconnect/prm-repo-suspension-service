@@ -9,6 +9,8 @@ locals {
   event_out_of_date_audit_queue_name = "${var.environment}-${var.component_name}-out-of-date-audit"
   mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
   mof_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-updated-audit"
+  deceased_patient_queue_name = "${var.environment}-${var.component_name}-deceased-patient-queue"
+  deceased_patient_audit_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit"
 }
 
 resource "aws_sqs_queue" "suspensions" {
@@ -273,4 +275,46 @@ resource "aws_sns_topic_subscription" "mof_updated_audit" {
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.mof_updated.arn
   endpoint             = aws_sqs_queue.mof_updated_audit.arn
+}
+
+resource "aws_sqs_queue" "deceased_patient" {
+  name                       = local.deceased_patient_queue_name
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_kms_key.deceased_patient.id
+  receive_wait_time_seconds = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name = local.deceased_patient_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "deceased_patient" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.deceased_patient.arn
+  endpoint             = aws_sqs_queue.deceased_patient.arn
+}
+
+resource "aws_sqs_queue" "deceased_patient_audit" {
+  name                       = local.deceased_patient_audit_queue_name
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_kms_key.deceased_patient.id
+  receive_wait_time_seconds = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name = local.deceased_patient_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "deceased_patient_audit" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.deceased_patient.arn
+  endpoint             = aws_sqs_queue.deceased_patient_audit.arn
 }
