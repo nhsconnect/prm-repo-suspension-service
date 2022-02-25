@@ -283,6 +283,16 @@ resource "aws_sqs_queue_policy" "non_sensitive_invalid_suspension_subscription" 
   policy    = data.aws_iam_policy_document.non_sensitive_invalid_suspension_policy_doc.json
 }
 
+resource "aws_sqs_queue_policy" "non_sensitive_deceased_subscription" {
+  queue_url = aws_sqs_queue.deceased_patient.id
+  policy    = data.aws_iam_policy_document.non_sensitive_deceased_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "non_sensitive_deceased_audit_subscription" {
+  queue_url = aws_sqs_queue.deceased_patient_audit.id
+  policy    = data.aws_iam_policy_document.non_sensitive_deceased_policy_doc.json
+}
+
 data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
   statement {
     effect = "Allow"
@@ -436,6 +446,33 @@ data "aws_iam_policy_document" "non_sensitive_invalid_suspension_policy_doc" {
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.non_sensitive_invalid_suspension.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "non_sensitive_deceased_policy_doc" {
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.deceased_patient.arn,
+      aws_sqs_queue.deceased_patient_audit.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.deceased_patient.arn]
       variable = "aws:SourceArn"
     }
   }
