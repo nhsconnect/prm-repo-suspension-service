@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.suspension.service.db.EventOutOfDateService;
+import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
@@ -22,7 +22,7 @@ public class MessageProcessExecution {
     final InvalidSuspensionPublisher invalidSuspensionPublisher;
     final EventOutOfDatePublisher eventOutOfDatePublisher;
     final PdsService pdsService;
-    final EventOutOfDateService eventOutOfDateService;
+    final LastUpdatedEventService lastUpdatedEventService;
     @Value("${process_only_synthetic_patients}")
     String processOnlySyntheticPatients;
     @Value("${synthetic_patient_prefix}")
@@ -43,7 +43,7 @@ public class MessageProcessExecution {
             }
 
             // event out of date block
-            if (eventOutOfDateService.checkIfEventIsOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
+            if (lastUpdatedEventService.isOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
                 var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
                 eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
                 return;
@@ -54,6 +54,8 @@ public class MessageProcessExecution {
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
                 log.info("Patient is Suspended");
                 publishMofUpdate(suspensionMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
+//                Pending investigation on integration test failing when this functionality is on
+//                lastUpdatedEventService.save(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated());
             } else {
                 var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
                 notSuspendedEventPublisher.sendMessage(notSuspendedMessage);

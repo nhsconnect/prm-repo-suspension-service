@@ -6,9 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.suspension.service.db.EventOutOfDateService;
-import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
-import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
+import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
@@ -35,7 +33,7 @@ public class SuspensionMessageProcessorTest {
     private MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
 
     @Mock
-    private EventOutOfDateService eventOutOfDateService;
+    private LastUpdatedEventService lastUpdatedEventService;
 
     @Mock
     private EventOutOfDatePublisher eventOutOfDatePublisher;
@@ -57,7 +55,7 @@ public class SuspensionMessageProcessorTest {
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(notSuspendedEventPublisher, mofUpdatedEventPublisher,
                 mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher,
-                pdsService, eventOutOfDateService, new SuspensionEventParser(), concurrentThreadLock);
+                pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
         suspensionMessageProcessor = new SuspensionMessageProcessor(messageProcessExecution);
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
         setField(suspensionMessageProcessor, "maxAttempts", 5);

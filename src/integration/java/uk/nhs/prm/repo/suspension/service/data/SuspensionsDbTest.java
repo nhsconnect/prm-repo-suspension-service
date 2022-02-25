@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.suspension.service.db;
+package uk.nhs.prm.repo.suspension.service.data;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.nhs.prm.repo.suspension.service.model.LastUpdatedData;
+import uk.nhs.prm.repo.suspension.service.model.LastUpdatedEvent;
 import uk.nhs.prm.repo.suspension.service.infra.LocalStackAwsConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,29 +17,38 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @SpringBootTest()
 @ContextConfiguration(classes = { LocalStackAwsConfig.class})
-public class DbClientTest {
+public class SuspensionsDbTest {
 
     @Autowired
-    DbClient dbClient;
+    SuspensionsDb suspensionsDb;
     String nhsNumber = "1111111111";
     String lastUpdated = "2017-11-01T15:00:33+00:00";
 
     @BeforeEach
     public void setUp() {
-        dbClient.addItem(new LastUpdatedData(nhsNumber, lastUpdated));
+        suspensionsDb.save(new LastUpdatedEvent(nhsNumber, lastUpdated));
     }
 
     @Test
-    void shouldReadDataFromSuspensionsDb() {
-        var lastUpdatePatientData = dbClient.getItem(nhsNumber);
+    void shouldReadFromDb() {
+        var lastUpdatePatientData = suspensionsDb.getByNhsNumber(nhsNumber);
         assertThat(lastUpdatePatientData.getNhsNumber()).isEqualTo(nhsNumber);
         assertThat(lastUpdatePatientData.getLastUpdated()).isEqualTo(lastUpdated);
     }
 
     @Test
+    void shouldUpdateRecord() {
+        var newTimestamp = "2018-11-01T15:00:33+00:00";
+        suspensionsDb.save(new LastUpdatedEvent(nhsNumber, newTimestamp));
+        var lastUpdatePatientData = suspensionsDb.getByNhsNumber(nhsNumber);
+        assertThat(lastUpdatePatientData.getNhsNumber()).isEqualTo(nhsNumber);
+        assertThat(lastUpdatePatientData.getLastUpdated()).isEqualTo(newTimestamp);
+    }
+
+    @Test
     void shouldHandleNhsNumberThatDoesNotExistInDb() {
         var notExistingNhsNumber = "9898989898";
-        var lastUpdatePatientData = dbClient.getItem(notExistingNhsNumber);
+        var lastUpdatePatientData = suspensionsDb.getByNhsNumber(notExistingNhsNumber);
         assertThat(lastUpdatePatientData).isEqualTo(null);
     }
 }

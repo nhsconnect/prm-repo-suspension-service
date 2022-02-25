@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class LastUpdatedData {
+public class LastUpdatedEvent {
     private String nhsNumber;
     private String lastUpdated;
 
