@@ -45,6 +45,9 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.mofUpdatedQueueName}")
     private String mofUpdatedQueueName;
 
+    @Value("${aws.mofNotUpdatedQueueName}")
+    private String mofNotUpdatedQueueName;
+
     @Value("${aws.nonSensitiveInvalidSuspensionQueueName}")
     private String nonSensitiveInvalidSuspensionQueueName;
 
@@ -121,6 +124,47 @@ public class SuspensionsIntegrationTest {
     }
 
     @Test
+    void shouldPutEventOutOfDateInMofNotUpdatedQueue() {
+        var nhsNumber = Long.toString(System.currentTimeMillis());
+
+        stubFor(get(urlMatching("/suspended-patient-status/" + nhsNumber))
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getSuspendedResponseWith(nhsNumber))));
+        stubFor(put(urlMatching("/suspended-patient-status/" + nhsNumber))
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getSuspendedResponseWith(nhsNumber))));
+
+        var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
+        var mofNotUpdatedQueueUrl = sqs.getQueueUrl(mofNotUpdatedQueueName).getQueueUrl();
+
+        var suspensionEvent = getSuspensionEventWith(nhsNumber);
+        sqs.sendMessage(queueUrl, suspensionEvent);
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageHolder = checkMessageInRelatedQueue(mofUpdatedQueueUrl);
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
+        });
+
+        var nemsMessageId = "OUT-OF-DATE-ID";
+        var secondSuspensionEvent = getSuspensionEventWith(nhsNumber, nemsMessageId);
+
+        sqs.sendMessage(queueUrl, secondSuspensionEvent);
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageHolder = checkMessageInRelatedQueue(mofNotUpdatedQueueUrl);
+            assertTrue(receivedMessageHolder.get(0).getBody().contains(nemsMessageId));
+        });
+
+        purgeQueue(mofUpdatedQueueUrl);
+        purgeQueue(mofNotUpdatedQueueUrl);
+    }
+
+    @Test
     void shouldPutDLQsWhenPdsAdaptorReturn400() {
         var nhsNumber = Long.toString(System.currentTimeMillis());
         stubFor(get(urlMatching("/suspended-patient-status/" + nhsNumber))
@@ -169,14 +213,18 @@ public class SuspensionsIntegrationTest {
         return messages;
     }
 
-    private String getSuspensionEventWith(String nhsNumber) {
+    private String getSuspensionEventWith(String nhsNumber, String nemsMessageId) {
         return new SuspensionEventBuilder()
                 .lastUpdated("2017-11-01T15:00:33+00:00")
                 .previousOdsCode("B85612")
                 .eventType("SUSPENSION")
                 .nhsNumber(nhsNumber)
-                .nemsMessageId("TEST-NEMS-ID")
+                .nemsMessageId(nemsMessageId)
                 .environment("local").buildJson();
+    }
+
+    private String getSuspensionEventWith(String nhsNumber) {
+        return getSuspensionEventWith(nhsNumber, "TEST-NEMS-ID");
     }
 
     private String getNotSuspendedResponseWith(String nhsNumber) {

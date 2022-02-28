@@ -51,6 +51,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.mofUpdatedQueueName}")
     private String mofUpdatedQueueName;
 
+    @Value("${aws.mofNotUpdatedQueueName}")
+    private String mofNotUpdatedQueueName;
+
     @Value("${aws.nonSensitiveInvalidSuspensionQueueName}")
     private String nonSensitiveInvalidSuspensionQueueName;
 
@@ -110,18 +113,21 @@ public class LocalStackAwsConfig {
     @PostConstruct
     public void setupTestQueuesAndTopics() {
         amazonSQSAsync.createQueue(suspensionsQueueName);
-        CreateQueueResult notSuspendedQueue = amazonSQSAsync.createQueue(notSuspendedQueueName);
-        CreateQueueResult mofUpdatedQueue = amazonSQSAsync.createQueue(mofUpdatedQueueName);
-        CreateQueueResult invalidSuspensionQueue = amazonSQSAsync.createQueue(invalidSuspensionQueueName);
-        CreateQueueResult nonSensitiveInvalidSuspensionQueue = amazonSQSAsync.createQueue(nonSensitiveInvalidSuspensionQueueName);
+        var notSuspendedQueue = amazonSQSAsync.createQueue(notSuspendedQueueName);
+        var mofUpdatedQueue = amazonSQSAsync.createQueue(mofUpdatedQueueName);
+        var mofNotUpdatedQueue = amazonSQSAsync.createQueue(mofNotUpdatedQueueName);
+        var invalidSuspensionQueue = amazonSQSAsync.createQueue(invalidSuspensionQueueName);
+        var nonSensitiveInvalidSuspensionQueue = amazonSQSAsync.createQueue(nonSensitiveInvalidSuspensionQueueName);
 
-        CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
-        CreateTopicResponse mofUpdatedTopic = snsClient.createTopic(CreateTopicRequest.builder().name("mof_updated_sns_topic").build());
-        CreateTopicResponse invalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("invalid_suspension_topic").build());
-        CreateTopicResponse nonSensitiveInvalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("non_sensitive_invalid_suspension_topic").build());
+        var topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
+        var mofUpdatedTopic = snsClient.createTopic(CreateTopicRequest.builder().name("mof_updated_sns_topic").build());
+        var mofNotUpdatedTopic = snsClient.createTopic(CreateTopicRequest.builder().name("mof_not_updated_sns_topic").build());
+        var invalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("invalid_suspension_topic").build());
+        var nonSensitiveInvalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("non_sensitive_invalid_suspension_topic").build());
 
         createSnsTestReceiverSubscription(topic, getQueueArn(notSuspendedQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(mofUpdatedTopic, getQueueArn(mofUpdatedQueue.getQueueUrl()));
+        createSnsTestReceiverSubscription(mofNotUpdatedTopic, getQueueArn(mofNotUpdatedQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(invalidSuspensionTopic, getQueueArn(invalidSuspensionQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(nonSensitiveInvalidSuspensionTopic, getQueueArn(nonSensitiveInvalidSuspensionQueue.getQueueUrl()));
 
