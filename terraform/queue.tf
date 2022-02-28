@@ -176,10 +176,6 @@ resource "aws_sqs_queue" "event_out_of_date_audit" {
   name                       = local.event_out_of_date_audit_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.event_out_of_date.id
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.event_out_of_date_audit_dlq.arn
-    maxReceiveCount     = 4
-  })
 
   tags = {
     Name = local.event_out_of_date_audit_queue_name
@@ -188,13 +184,13 @@ resource "aws_sqs_queue" "event_out_of_date_audit" {
   }
 }
 
-resource "aws_sqs_queue" "event_out_of_date_audit_dlq" {
-  name                       = "${var.environment}-${var.component_name}-out-of-date-audit-dlq"
+resource "aws_sqs_queue" "event_out_of_date_observability_queue" {
+  name                       = "${var.environment}-${var.component_name}-out-of-date-observability-queue"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.event_out_of_date.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-out-of-date-audit-dlq"
+    Name = "${var.environment}-${var.component_name}-out-of-date-observability-queue"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -205,6 +201,13 @@ resource "aws_sns_topic_subscription" "event_out_of_date_audit" {
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.event_out_of_date.arn
   endpoint             = aws_sqs_queue.event_out_of_date_audit.arn
+}
+
+resource "aws_sns_topic_subscription" "event_out_of_date_observability_queue" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.event_out_of_date.arn
+  endpoint             = aws_sqs_queue.event_out_of_date_observability_queue.arn
 }
 
 resource "aws_sqs_queue" "mof_not_updated_audit" {

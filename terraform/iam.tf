@@ -97,6 +97,7 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
       "sqs:DeleteMessage",
       "sqs:ReceiveMessage"
     ]
+#    TODO: double check what queues should be here
     resources = [
       aws_sqs_queue.suspensions.arn,
       aws_sqs_queue.not_suspended_observability.arn,
@@ -104,7 +105,6 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
       aws_sqs_queue.mof_not_updated.arn,
       aws_sqs_queue.invalid_suspension.arn,
       aws_sqs_queue.non_sensitive_invalid_suspension.arn,
-      aws_sqs_queue.event_out_of_date_audit.arn,
       aws_sqs_queue.not_suspended_audit.arn,
       aws_sqs_queue.mof_not_updated_audit.arn,
       aws_sqs_queue.mof_updated_audit.arn,
@@ -293,6 +293,16 @@ resource "aws_sqs_queue_policy" "non_sensitive_deceased_audit_subscription" {
   policy    = data.aws_iam_policy_document.non_sensitive_deceased_policy_doc.json
 }
 
+resource "aws_sqs_queue_policy" "event_out_of_date_audit_subscription" {
+  queue_url = aws_sqs_queue.event_out_of_date_audit.id
+  policy    = data.aws_iam_policy_document.event_out_of_date_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "event_out_of_date_observability_queue_subscription" {
+  queue_url = aws_sqs_queue.event_out_of_date_observability_queue.id
+  policy    = data.aws_iam_policy_document.event_out_of_date_policy_doc.json
+}
+
 data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
   statement {
     effect = "Allow"
@@ -473,6 +483,33 @@ data "aws_iam_policy_document" "non_sensitive_deceased_policy_doc" {
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.deceased_patient.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "event_out_of_date_policy_doc" {
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.event_out_of_date_observability_queue.arn,
+      aws_sqs_queue.event_out_of_date_audit.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.event_out_of_date.arn]
       variable = "aws:SourceArn"
     }
   }
