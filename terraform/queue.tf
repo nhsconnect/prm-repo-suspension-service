@@ -300,7 +300,7 @@ resource "aws_sns_topic_subscription" "deceased_patient" {
 
 resource "aws_sqs_queue" "deceased_patient_audit" {
   name                       = local.deceased_patient_audit_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.deceased_patient.id
   receive_wait_time_seconds = 20
   visibility_timeout_seconds = 240
