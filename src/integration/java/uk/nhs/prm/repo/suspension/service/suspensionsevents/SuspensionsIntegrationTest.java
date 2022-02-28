@@ -45,8 +45,11 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.mofUpdatedQueueName}")
     private String mofUpdatedQueueName;
 
-    @Value("${aws.mofNotUpdatedQueueName}")
-    private String mofNotUpdatedQueueName;
+    @Value("${aws.eventOutOfOrderAuditName}")
+    private String eventOutOfOrderAuditName;
+
+    @Value("${aws.eventOutOfOrderObservabilityQueueName}")
+    private String eventOutOfOrderObservabilityQueueName;
 
     @Value("${aws.nonSensitiveInvalidSuspensionQueueName}")
     private String nonSensitiveInvalidSuspensionQueueName;
@@ -124,7 +127,7 @@ public class SuspensionsIntegrationTest {
     }
 
     @Test
-    void shouldPutEventOutOfDateInMofNotUpdatedQueue() {
+    void shouldPutEventOutOfOrderInRelevantQueues() {
         var nhsNumber = Long.toString(System.currentTimeMillis());
 
         stubFor(get(urlMatching("/suspended-patient-status/" + nhsNumber))
@@ -140,7 +143,8 @@ public class SuspensionsIntegrationTest {
 
         var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
-        var mofNotUpdatedQueueUrl = sqs.getQueueUrl(mofNotUpdatedQueueName).getQueueUrl();
+        var eventOutOfOrderAuditQueueUrl = sqs.getQueueUrl(eventOutOfOrderAuditName).getQueueUrl();
+        var eventOutOfOrderObservabilityQueueUrl = sqs.getQueueUrl(eventOutOfOrderObservabilityQueueName).getQueueUrl();
 
         var suspensionEvent = getSuspensionEventWith(nhsNumber);
         sqs.sendMessage(queueUrl, suspensionEvent);
@@ -156,12 +160,15 @@ public class SuspensionsIntegrationTest {
         sqs.sendMessage(queueUrl, secondSuspensionEvent);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageHolder = checkMessageInRelatedQueue(mofNotUpdatedQueueUrl);
-            assertTrue(receivedMessageHolder.get(0).getBody().contains(nemsMessageId));
+            var receivedMessageInAuditQueue = checkMessageInRelatedQueue(eventOutOfOrderAuditQueueUrl);
+            var receivedMessageInObservabilityQueue = checkMessageInRelatedQueue(eventOutOfOrderObservabilityQueueUrl);
+            assertTrue(receivedMessageInAuditQueue.get(0).getBody().contains(nemsMessageId));
+            assertTrue(receivedMessageInObservabilityQueue.get(0).getBody().contains(nemsMessageId));
         });
 
         purgeQueue(mofUpdatedQueueUrl);
-        purgeQueue(mofNotUpdatedQueueUrl);
+        purgeQueue(eventOutOfOrderAuditQueueUrl);
+        purgeQueue(eventOutOfOrderObservabilityQueueUrl);
     }
 
     @Test

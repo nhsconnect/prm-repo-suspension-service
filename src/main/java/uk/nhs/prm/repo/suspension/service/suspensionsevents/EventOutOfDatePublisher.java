@@ -6,16 +6,16 @@ import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 
 @Component
 public class EventOutOfDatePublisher {
-    private final String mofNotUpdatedSnsTopicArn;
+    private final String eventOutOfOrderSnsTopicArn;
     private final MessagePublisher messagePublisher;
 
-    public EventOutOfDatePublisher(MessagePublisher messagePublisher, @Value("${aws.mofNotUpdatedSnsTopicArn}") String mofNotUpdatedSnsTopicArn) {
+    public EventOutOfDatePublisher(MessagePublisher messagePublisher, @Value("${aws.eventOutOrderSnsTopicArn}") String eventOutOfOrderSnsTopicArn) {
         this.messagePublisher = messagePublisher;
-        this.mofNotUpdatedSnsTopicArn = mofNotUpdatedSnsTopicArn;
+        this.eventOutOfOrderSnsTopicArn = eventOutOfOrderSnsTopicArn;
     }
 
     public void sendMessage(NonSensitiveDataMessage message) {
-        messagePublisher.sendMessage(this.mofNotUpdatedSnsTopicArn, message.toJsonString());
+        messagePublisher.sendMessage(this.eventOutOfOrderSnsTopicArn, message.toJsonString());
     }
 }
 
