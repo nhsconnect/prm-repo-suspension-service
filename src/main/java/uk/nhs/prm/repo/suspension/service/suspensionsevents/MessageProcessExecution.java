@@ -45,6 +45,7 @@ public class MessageProcessExecution {
 
             // event out of date block
             if (lastUpdatedEventService.isOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
+                log.info("Event is out of date");
                 var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
                 eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
                 return;
