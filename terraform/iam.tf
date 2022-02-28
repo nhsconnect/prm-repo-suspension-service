@@ -518,14 +518,8 @@ data "aws_iam_policy_document" "event_out_of_date_policy_doc" {
 data "aws_iam_policy_document" "dynamodb-table-access" {
   statement {
     actions = [
-      "dynamodb:BatchGetItem",
-      "dynamodb:Describe*",
-      "dynamodb:List*",
       "dynamodb:GetItem",
-      "dynamodb:Query",
-      "dynamodb:Scan",
-      "dynamodb:PutItem",
-      "dynamodb:UpdateItem"
+      "dynamodb:PutItem"
     ]
     resources = [
       "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.suspensions.name}"
