@@ -110,7 +110,7 @@ public class SuspensionThrottlingTest {
     }
 
     @Test
-    void shouldContinueProcessMessagesWhenOneFailsWithConcurrentThreads() {
+    void shouldApplyBackOffDelay() {
         var nhsNumber = randomNhsNumber();
 
         setPdsRetryMessage(nhsNumber);
