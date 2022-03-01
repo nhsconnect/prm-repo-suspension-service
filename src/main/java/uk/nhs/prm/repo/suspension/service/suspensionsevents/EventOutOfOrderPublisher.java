@@ -5,11 +5,11 @@ import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 
 @Component
-public class EventOutOfDatePublisher {
+public class EventOutOfOrderPublisher {
     private final String eventOutOfOrderSnsTopicArn;
     private final MessagePublisher messagePublisher;
 
-    public EventOutOfDatePublisher(MessagePublisher messagePublisher, @Value("${aws.eventOutOrderSnsTopicArn}") String eventOutOfOrderSnsTopicArn) {
+    public EventOutOfOrderPublisher(MessagePublisher messagePublisher, @Value("${aws.eventOutOrderSnsTopicArn}") String eventOutOfOrderSnsTopicArn) {
         this.messagePublisher = messagePublisher;
         this.eventOutOfOrderSnsTopicArn = eventOutOfOrderSnsTopicArn;
     }

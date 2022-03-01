@@ -154,7 +154,7 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
         });
 
-        var nemsMessageId = "OUT-OF-DATE-ID";
+        var nemsMessageId = "OUT-OF-ORDER-ID";
         var secondSuspensionEvent = getSuspensionEventWith(nhsNumber, nemsMessageId);
 
         sqs.sendMessage(queueUrl, secondSuspensionEvent);

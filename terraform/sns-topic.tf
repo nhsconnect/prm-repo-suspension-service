@@ -58,13 +58,13 @@ resource "aws_sns_topic" "non_sensitive_invalid_suspension" {
   }
 }
 
-resource "aws_sns_topic" "event_out_of_date" {
-  name = "${var.environment}-${var.component_name}-event-out-of-date"
-  kms_master_key_id = aws_kms_key.event_out_of_date.id
+resource "aws_sns_topic" "event_out_of_order" {
+  name = "${var.environment}-${var.component_name}-event-out-of-order"
+  kms_master_key_id = aws_kms_key.event_out_of_order.id
   sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-event-out-of-date-sns-topic"
+    Name = "${var.environment}-${var.component_name}-event-out-of-order-sns-topic"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }

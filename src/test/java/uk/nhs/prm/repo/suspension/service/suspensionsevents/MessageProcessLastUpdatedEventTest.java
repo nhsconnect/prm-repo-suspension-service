@@ -28,7 +28,7 @@ public class MessageProcessLastUpdatedEventTest {
     @Mock
     private InvalidSuspensionPublisher invalidSuspensionPublisher;
     @Mock
-    private EventOutOfDatePublisher eventOutOfDatePublisher;
+    private EventOutOfOrderPublisher eventOutOfOrderPublisher;
     @Mock
     private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
     @Mock
@@ -49,30 +49,30 @@ public class MessageProcessLastUpdatedEventTest {
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher, deceasedPatientEventPublisher,
+                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfOrderPublisher, deceasedPatientEventPublisher,
                 pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
     }
 
     @Test
-    void shouldSendOutOfDateNemsMessagesToEventOutOfDateQueue() {
-        when(lastUpdatedEventService.isOutOfDate(nhsNumber, lastUpdated)).thenReturn(true);
+    void shouldSendOutOfOrderNemsMessagesToEventOutOrderQueue() {
+        when(lastUpdatedEventService.isOutOfOrder(nhsNumber, lastUpdated)).thenReturn(true);
 
         messageProcessExecution.run(suspendedMessage);
 
-        verify(lastUpdatedEventService).isOutOfDate(nhsNumber, lastUpdated);
-        verify(eventOutOfDatePublisher).sendMessage(new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER"));
+        verify(lastUpdatedEventService).isOutOfOrder(nhsNumber, lastUpdated);
+        verify(eventOutOfOrderPublisher).sendMessage(new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER"));
     }
 
     @Test
-    void shouldSaveRecordIfisNotOutOfDate() {
+    void shouldSaveRecordIfisNotOutOfOrder() {
         mockMofDependencies();
         var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId, "PREVIOUS_ODS_CODE", "ACTION:UPDATED_MANAGING_ORGANISATION");
-        when(lastUpdatedEventService.isOutOfDate(nhsNumber, lastUpdated)).thenReturn(false);
+        when(lastUpdatedEventService.isOutOfOrder(nhsNumber, lastUpdated)).thenReturn(false);
 
         messageProcessExecution.run(suspendedMessage);
 
-        verify(lastUpdatedEventService).isOutOfDate(nhsNumber, lastUpdated);
-        verify(eventOutOfDatePublisher, never()).sendMessage(any());
+        verify(lastUpdatedEventService).isOutOfOrder(nhsNumber, lastUpdated);
+        verify(eventOutOfOrderPublisher, never()).sendMessage(any());
         verify(lastUpdatedEventService).save(nhsNumber, lastUpdated);
         verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
     }

@@ -293,14 +293,14 @@ resource "aws_sqs_queue_policy" "non_sensitive_deceased_audit_subscription" {
   policy    = data.aws_iam_policy_document.non_sensitive_deceased_policy_doc.json
 }
 
-resource "aws_sqs_queue_policy" "event_out_of_date_audit_subscription" {
-  queue_url = aws_sqs_queue.event_out_of_date_audit.id
-  policy    = data.aws_iam_policy_document.event_out_of_date_policy_doc.json
+resource "aws_sqs_queue_policy" "event_out_of_order_audit_subscription" {
+  queue_url = aws_sqs_queue.event_out_of_order_audit.id
+  policy    = data.aws_iam_policy_document.event_out_of_order_policy_doc.json
 }
 
-resource "aws_sqs_queue_policy" "event_out_of_date_observability_queue_subscription" {
-  queue_url = aws_sqs_queue.event_out_of_date_observability_queue.id
-  policy    = data.aws_iam_policy_document.event_out_of_date_policy_doc.json
+resource "aws_sqs_queue_policy" "event_out_of_order_observability_queue_subscription" {
+  queue_url = aws_sqs_queue.event_out_of_order_observability_queue.id
+  policy    = data.aws_iam_policy_document.event_out_of_order_policy_doc.json
 }
 
 data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
@@ -488,7 +488,7 @@ data "aws_iam_policy_document" "non_sensitive_deceased_policy_doc" {
   }
 }
 
-data "aws_iam_policy_document" "event_out_of_date_policy_doc" {
+data "aws_iam_policy_document" "event_out_of_order_policy_doc" {
   statement {
 
     effect = "Allow"
@@ -503,13 +503,13 @@ data "aws_iam_policy_document" "event_out_of_date_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.event_out_of_date_observability_queue.arn,
-      aws_sqs_queue.event_out_of_date_audit.arn
+      aws_sqs_queue.event_out_of_order_observability_queue.arn,
+      aws_sqs_queue.event_out_of_order_audit.arn
     ]
 
     condition {
       test     = "ArnEquals"
-      values   = [aws_sns_topic.event_out_of_date.arn]
+      values   = [aws_sns_topic.event_out_of_order.arn]
       variable = "aws:SourceArn"
     }
   }

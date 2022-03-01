@@ -20,7 +20,7 @@ public class MessageProcessExecution {
     final MofUpdatedEventPublisher mofUpdatedEventPublisher;
     final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
     final InvalidSuspensionPublisher invalidSuspensionPublisher;
-    final EventOutOfDatePublisher eventOutOfDatePublisher;
+    final EventOutOfOrderPublisher eventOutOfOrderPublisher;
     final DeceasedPatientEventPublisher deceasedPatientEventPublisher;
     final PdsService pdsService;
     final LastUpdatedEventService lastUpdatedEventService;
@@ -43,11 +43,11 @@ public class MessageProcessExecution {
                 return;
             }
 
-            // event out of date block
-            if (lastUpdatedEventService.isOutOfDate(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
-                log.info("Event is out of date");
-                var eventOutOfDateMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
-                eventOutOfDatePublisher.sendMessage(eventOutOfDateMessage);
+            // event out of order block
+            if (lastUpdatedEventService.isOutOfOrder(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
+                log.info("Event is out of order");
+                var eventOutOfOrderMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
+                eventOutOfOrderPublisher.sendMessage(eventOutOfOrderMessage);
                 return;
             }
 

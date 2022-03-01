@@ -35,7 +35,7 @@ public class SuspensionMessageProcessorTest {
     private LastUpdatedEventService lastUpdatedEventService;
 
     @Mock
-    private EventOutOfDatePublisher eventOutOfDatePublisher;
+    private EventOutOfOrderPublisher eventOutOfOrderPublisher;
 
     @Mock
     private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
@@ -56,7 +56,7 @@ public class SuspensionMessageProcessorTest {
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfDatePublisher, deceasedPatientEventPublisher,
+                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfOrderPublisher, deceasedPatientEventPublisher,
                 pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
         suspensionMessageProcessor = new SuspensionMessageProcessor(messageProcessExecution);
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);

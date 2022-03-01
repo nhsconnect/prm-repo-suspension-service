@@ -30,28 +30,28 @@ class LastUpdatedEventServiceTest {
     @Test
     public void shouldReturnFalseWhenNhsNumberIsNotInDb() {
         when(suspensionsDb.getByNhsNumber(nhsNumber)).thenReturn(null);
-        var eventIsOutOfDate = lastUpdatedEventService.isOutOfDate(nhsNumber, lastUpdated);
+        var eventIsOutOfOrder = lastUpdatedEventService.isOutOfOrder(nhsNumber, lastUpdated);
 
         verify(suspensionsDb).getByNhsNumber(nhsNumber);
-        assertFalse(eventIsOutOfDate);
+        assertFalse(eventIsOutOfOrder);
     }
 
     @Test
     public void shouldReturnFalseWhenDateInDbIsEarlierThanNemsMessageDate() {
         when(suspensionsDb.getByNhsNumber(nhsNumber)).thenReturn(new LastUpdatedEvent(nhsNumber, "2016-11-01T15:00:33+00:00"));
-        var eventIsOutOfDate = lastUpdatedEventService.isOutOfDate(nhsNumber, lastUpdated);
+        var eventIsOutOfOrder = lastUpdatedEventService.isOutOfOrder(nhsNumber, lastUpdated);
 
         verify(suspensionsDb).getByNhsNumber(nhsNumber);
-        assertFalse(eventIsOutOfDate);
+        assertFalse(eventIsOutOfOrder);
     }
 
     @Test
     public void shouldReturnTrueWhenDateInDbIsEarlierThanNemsMessageDate() {
         when(suspensionsDb.getByNhsNumber(nhsNumber)).thenReturn(new LastUpdatedEvent(nhsNumber, "2021-11-01T15:00:33+00:00"));
-        var eventIsOutOfDate = lastUpdatedEventService.isOutOfDate(nhsNumber, lastUpdated);
+        var eventIsOutOfOrder = lastUpdatedEventService.isOutOfOrder(nhsNumber, lastUpdated);
 
         verify(suspensionsDb).getByNhsNumber(nhsNumber);
-        assertTrue(eventIsOutOfDate);
+        assertTrue(eventIsOutOfOrder);
     }
 
     @Test

@@ -6,7 +6,7 @@ locals {
   invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
   non_sensitive_invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
   not_suspended_audit_queue_name = "${var.environment}-${var.component_name}-not-suspended-audit"
-  event_out_of_date_audit_queue_name = "${var.environment}-${var.component_name}-out-of-date-audit"
+  event_out_of_order_audit_queue_name = "${var.environment}-${var.component_name}-out-of-order-audit"
   mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
   mof_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-updated-audit"
   deceased_patient_queue_name = "${var.environment}-${var.component_name}-deceased-patient-queue"
@@ -172,42 +172,42 @@ resource "aws_sns_topic_subscription" "not_suspended_audit" {
   endpoint             = aws_sqs_queue.not_suspended_audit.arn
 }
 
-resource "aws_sqs_queue" "event_out_of_date_audit" {
-  name                       = local.event_out_of_date_audit_queue_name
+resource "aws_sqs_queue" "event_out_of_order_audit" {
+  name                       = local.event_out_of_order_audit_queue_name
   message_retention_seconds  = 1209600
-  kms_master_key_id = aws_kms_key.event_out_of_date.id
+  kms_master_key_id = aws_kms_key.event_out_of_order.id
 
   tags = {
-    Name = local.event_out_of_date_audit_queue_name
+    Name = local.event_out_of_order_audit_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
-resource "aws_sqs_queue" "event_out_of_date_observability_queue" {
-  name                       = "${var.environment}-${var.component_name}-out-of-date-observability-queue"
+resource "aws_sqs_queue" "event_out_of_order_observability_queue" {
+  name                       = "${var.environment}-${var.component_name}-out-of-order-observability-queue"
   message_retention_seconds  = 1209600
-  kms_master_key_id = aws_kms_key.event_out_of_date.id
+  kms_master_key_id = aws_kms_key.event_out_of_order.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-out-of-date-observability-queue"
+    Name = "${var.environment}-${var.component_name}-out-of-order-observability-queue"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
-resource "aws_sns_topic_subscription" "event_out_of_date_audit" {
+resource "aws_sns_topic_subscription" "event_out_of_order_audit" {
   protocol             = "sqs"
   raw_message_delivery = true
-  topic_arn            = aws_sns_topic.event_out_of_date.arn
-  endpoint             = aws_sqs_queue.event_out_of_date_audit.arn
+  topic_arn            = aws_sns_topic.event_out_of_order.arn
+  endpoint             = aws_sqs_queue.event_out_of_order_audit.arn
 }
 
-resource "aws_sns_topic_subscription" "event_out_of_date_observability_queue" {
+resource "aws_sns_topic_subscription" "event_out_of_order_observability_queue" {
   protocol             = "sqs"
   raw_message_delivery = true
-  topic_arn            = aws_sns_topic.event_out_of_date.arn
-  endpoint             = aws_sqs_queue.event_out_of_date_observability_queue.arn
+  topic_arn            = aws_sns_topic.event_out_of_order.arn
+  endpoint             = aws_sqs_queue.event_out_of_order_observability_queue.arn
 }
 
 resource "aws_sqs_queue" "mof_not_updated_audit" {

@@ -12,7 +12,7 @@ public class LastUpdatedEventService {
         this.suspensionsDb = suspensionsDb;
     }
 
-    public boolean isOutOfDate(String nhsNumber, String lastUpdated) {
+    public boolean isOutOfOrder(String nhsNumber, String lastUpdated) {
         var recordFromDb = suspensionsDb.getByNhsNumber(nhsNumber);
         return recordFromDb != null
                 && isGreaterOrEqualThan(recordFromDb.getLastUpdated(), lastUpdated);

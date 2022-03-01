@@ -123,20 +123,20 @@ resource "aws_kms_alias" "non_sensitive_invalid_suspension_encryption" {
   target_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
 }
 
-resource "aws_kms_key" "event_out_of_date" {
-  description = "Custom KMS Key to enable server side encryption for event out of date topic"
+resource "aws_kms_key" "event_out_of_order" {
+  description = "Custom KMS Key to enable server side encryption for event out of order topic"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
 
   tags = {
-    Name        = "${var.environment}-event-out-of-date-kms-key"
+    Name        = "${var.environment}-event-out-of-order-kms-key"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
-resource "aws_kms_alias" "event_out_of_date_encryption" {
-  name          = "alias/event-out-of-date-encryption-kms-key"
-  target_key_id = aws_kms_key.event_out_of_date.id
+resource "aws_kms_alias" "event_out_of_order_encryption" {
+  name          = "alias/event-out-of-order-encryption-kms-key"
+  target_key_id = aws_kms_key.event_out_of_order.id
 }
 
 resource "aws_kms_key" "suspension_dynamodb_kms_key" {

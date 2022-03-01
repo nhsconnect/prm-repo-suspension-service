@@ -13,7 +13,7 @@ locals {
     { name = "PDS_ADAPTOR_URL", value = data.aws_ssm_parameter.pds_adaptor_service_url.value },
     { name = "MOF_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_updated.arn },
     { name = "MOF_NOT_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_not_updated.arn },
-    { name = "EVENT_OUT_OF_ORDER_SNS_TOPIC_ARN", value = aws_sns_topic.event_out_of_date.arn },
+    { name = "EVENT_OUT_OF_ORDER_SNS_TOPIC_ARN", value = aws_sns_topic.event_out_of_order.arn },
     { name = "INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.invalid_suspension.arn },
     { name = "NON_SENSITIVE_INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.non_sensitive_invalid_suspension.arn },
     { name = "DECEASED_PATIENT_SNS_TOPIC_ARN", value = aws_sns_topic.deceased_patient.arn },
