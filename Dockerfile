@@ -5,4 +5,11 @@ RUN useradd --home-dir /home/spring --uid 1000 --gid 102 --shell /bin/bash sprin
 RUN usermod -a -G spring spring
 USER spring
 COPY build/libs/*.jar app.jar
-ENTRYPOINT ["java","-Dlog4j2.formatMsgNoLookups=true","-XX:+ExitOnOutOfMemoryError","-XX:MaxRAMPercentage=80.0","-jar","/app.jar"]
+COPY run-application.sh ./
+
+ARG UTILS_VERSION
+RUN test -n "$UTILS_VERSION"
+COPY utils/$UTILS_VERSION/run-with-redaction.sh ./utils/
+COPY utils/$UTILS_VERSION/redactor              ./utils/
+
+ENTRYPOINT ["./utils/run-with-redaction.sh", "./run-application.sh"]
