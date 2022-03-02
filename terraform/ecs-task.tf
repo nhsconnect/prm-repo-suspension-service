@@ -10,7 +10,6 @@ locals {
     { name = "SUSPENSIONS_QUEUE_NAME", value = aws_sqs_queue.suspensions.name },
     { name = "NOT_SUSPENDED_SNS_TOPIC_ARN", value = aws_sns_topic.not_suspended.arn },
     { name = "NOT_SUSPENDED_QUEUE_NAME", value = aws_sqs_queue.not_suspended_observability.name },
-    { name = "PDS_ADAPTOR_URL", value = data.aws_ssm_parameter.pds_adaptor_service_url.value },
     { name = "MOF_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_updated.arn },
     { name = "MOF_NOT_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_not_updated.arn },
     { name = "EVENT_OUT_OF_ORDER_SNS_TOPIC_ARN", value = aws_sns_topic.event_out_of_order.arn },
@@ -20,7 +19,8 @@ locals {
     { name = "PDS_ADAPTOR_SUSPENSION_SERVICE_PASSWORD", value = data.aws_ssm_parameter.pds_adaptor_auth_key.value },
     { name = "PROCESS_ONLY_SYNTHETIC_PATIENTS", value = tostring(var.process_only_synthetic_patients) },
     { name = "SYNTHETIC_PATIENT_PREFIX", value = var.synthetic_patient_prefix },
-    { name = "DYNAMODB_TABLE_NAME", value = aws_dynamodb_table.suspensions.name }
+    { name = "DYNAMODB_TABLE_NAME", value = aws_dynamodb_table.suspensions.name },
+    { name = "PDS_ADAPTOR_URL", value = "https://pds-adaptor.${var.environment}.non-prod.patient-deductions.nhs.uk" }
   ]
 }
 
