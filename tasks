@@ -9,7 +9,7 @@ set -Eeo pipefail
 AWS_DEFAULT_REGION=eu-west-2
 IMAGE_REPO_NAME=repo/suspension-service
 export NHS_SERVICE=suspension-service
-AWS_HELPERS_VERSION=0.2.25
+AWS_HELPERS_VERSION=0.2.26
 echo "AWS helper scripts version: $AWS_HELPERS_VERSION"
 
 
