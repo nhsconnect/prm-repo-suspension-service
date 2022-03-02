@@ -7,6 +7,8 @@ import org.slf4j.MDC;
 
 import javax.jms.JMSException;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
 import static uk.nhs.prm.repo.suspension.service.config.Tracer.*;
@@ -33,12 +35,13 @@ class TracerTest {
     }
 
     @Test
-    void shouldCreateAndAddTraceIdToMDCWhenItIsNotPresentInMessage() throws JMSException {
+    void shouldCreateAndAddHyphenatedUuidTraceIdToMDCWhenItIsNotPresentInMessage() throws JMSException {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
 
         tracer.setMDCContext(message);
         String mdcTraceIdValue = MDC.get(TRACE_ID);
         assertThat(mdcTraceIdValue).isNotNull();
+        assertThat(UUID.fromString(mdcTraceIdValue)).isNotNull();
     }
 
     @Test

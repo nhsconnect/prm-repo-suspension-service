@@ -35,9 +35,7 @@ public class Tracer {
     }
 
     private String createTraceId() {
-        var traceIdUUID = UUID.randomUUID().toString();
-        var traceIdHex = traceIdUUID.replaceAll("-", "");
-        return traceIdHex;
+        return UUID.randomUUID().toString();
     }
 
     private void setTraceId(String traceId) {
