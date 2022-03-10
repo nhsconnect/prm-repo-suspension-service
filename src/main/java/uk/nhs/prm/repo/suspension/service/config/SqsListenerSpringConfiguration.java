@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.suspension.service.config;
 
 import com.amazon.sqs.javamessaging.ProviderConfiguration;
 import com.amazon.sqs.javamessaging.SQSConnectionFactory;
+import com.amazon.sqs.javamessaging.SQSSession;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +62,7 @@ public class SqsListenerSpringConfiguration {
         SQSConnectionFactory connectionFactory = new SQSConnectionFactory(providerConfiguration, amazonSQS);
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConcurrency(concurrencyMinMax);
-        factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
+        factory.setSessionAcknowledgeMode(SQSSession.UNORDERED_ACKNOWLEDGE);
         factory.setTaskExecutor(createDefaultTaskExecutor());
         factory.setMaxMessagesPerTask(maxMessagesPerTask);
         factory.setConnectionFactory(connectionFactory);
