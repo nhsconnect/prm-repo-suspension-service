@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +50,12 @@ public class MessageAcknowledgementTest {
             stubbedSuspensionProcessor.process(invocation.getArgument(0));
             return null;
         }).when(mockMessageProcessor).process(anyString());
+    }
+
+    @AfterEach
+    public void tearDown(){
+        queueUrl = amazonSQSAsync.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        purgeQueue(queueUrl);
     }
 
     @Test
