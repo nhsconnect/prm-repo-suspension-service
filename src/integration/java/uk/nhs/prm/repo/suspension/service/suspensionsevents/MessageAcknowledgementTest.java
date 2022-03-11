@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,7 @@ public class MessageAcknowledgementTest {
     }
 
     @Test
+    @Disabled
     void shouldNotImplicitlyAcknowledgeAFailedMessageWhenTheNextMessageIsProcessedOk_SoThatItIsThereToBeReprocessedAfterVisibilityTimeout() {
 
         amazonSQSAsync.sendMessage(queueUrl, "throw me");
