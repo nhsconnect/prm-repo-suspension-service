@@ -130,13 +130,13 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_ratio_of_received_to_a
 resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-out-of-order-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "300" # 5 mins
+  threshold                 = "900" # 15 mins
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
   alarm_description         = "Alarm for out of order audit queue"
   statistic                 = "Maximum"
-  period                    = "900" # 15 mins
+  period                    = "900"
   dimensions = {
     QueueName = aws_sqs_queue.event_out_of_order_audit.name
   }
@@ -146,13 +146,13 @@ resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
 resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-not-suspended-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "300" # 5 mins
+  threshold                 = "900"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
   alarm_description         = "Alarm for not suspended audit queue"
   statistic                 = "Maximum"
-  period                    = "900" # 15 mins
+  period                    = "900"
   dimensions = {
     QueueName = aws_sqs_queue.not_suspended_audit.name
   }
@@ -162,13 +162,13 @@ resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
 resource "aws_cloudwatch_metric_alarm" "suspension_mof_not_updated_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-mof-not-updated-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "300" # 5 mins
+  threshold                 = "900"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
   alarm_description         = "Alarm for MOF not updated audit queue"
   statistic                 = "Maximum"
-  period                    = "900" # 15 mins
+  period                    = "900"
   dimensions = {
     QueueName = aws_sqs_queue.mof_not_updated_audit.name
   }
@@ -178,13 +178,13 @@ resource "aws_cloudwatch_metric_alarm" "suspension_mof_not_updated_audit" {
 resource "aws_cloudwatch_metric_alarm" "suspension_mof_updated_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-mof-updated-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "300" # 5 mins
+  threshold                 = "900"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
   alarm_description         = "Alarm for MOF updated audit queue"
   statistic                 = "Maximum"
-  period                    = "900" # 15 mins
+  period                    = "900"
   dimensions = {
     QueueName = aws_sqs_queue.mof_updated_audit.name
   }
@@ -194,13 +194,13 @@ resource "aws_cloudwatch_metric_alarm" "suspension_mof_updated_audit" {
 resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-deceased-patient-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "300" # 5 mins
+  threshold                 = "900"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
   alarm_description         = "Alarm for deceased patient audit queue"
   statistic                 = "Maximum"
-  period                    = "900" # 15 mins
+  period                    = "900"
   dimensions = {
     QueueName = aws_sqs_queue.deceased_patient_audit.name
   }
