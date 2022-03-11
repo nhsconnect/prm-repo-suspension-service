@@ -122,9 +122,26 @@ resource "aws_sqs_queue" "non_sensitive_invalid_suspension" {
   name                       = local.non_sensitive_invalid_suspension_queue_name
   message_retention_seconds  = 1800
   kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.non_sensitive_invalid_suspension_splunk_dlq.arn
+    maxReceiveCount     = 4
+  })
 
   tags = {
     Name = local.non_sensitive_invalid_suspension_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "non_sensitive_invalid_suspension_splunk_dlq" {
+  name                       = "${local.non_sensitive_invalid_suspension_queue_name}-splunk-dlq"
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
+
+
+  tags = {
+    Name = "${local.non_sensitive_invalid_suspension_queue_name}-splunk-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
