@@ -66,6 +66,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.suspensionDynamoDbTableName}")
     private String suspensionDynamoDbTableName;
 
+    @Value("${aws.acknowledgementQueue}")
+    private String ackQueueName;
+
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
         return AmazonSQSAsyncClientBuilder.standard()
@@ -116,6 +119,7 @@ public class LocalStackAwsConfig {
     @PostConstruct
     public void setupTestQueuesAndTopics() {
         amazonSQSAsync.createQueue(suspensionsQueueName);
+        amazonSQSAsync.createQueue(ackQueueName);
         var notSuspendedQueue = amazonSQSAsync.createQueue(notSuspendedQueueName);
         var mofUpdatedQueue = amazonSQSAsync.createQueue(mofUpdatedQueueName);
         var eventOutOfOrderAuditQueue = amazonSQSAsync.createQueue(eventOutOfOrderAuditName);
