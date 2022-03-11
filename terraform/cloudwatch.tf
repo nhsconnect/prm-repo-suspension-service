@@ -127,7 +127,85 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_ratio_of_received_to_a
   }
 }
 
+resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
+  alarm_name                = "${var.environment}-${var.component_name}-out-of-order-audit"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "300" # 5 mins
+  evaluation_periods        = "1"
+  metric_name               = "ApproximateAgeOfOldestMessage"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm for out of order audit queue"
+  statistic                 = "Maximum"
+  period                    = "900" # 15 mins
+  dimensions = {
+    QueueName = aws_sqs_queue.event_out_of_order_audit.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+}
 
+resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
+  alarm_name                = "${var.environment}-${var.component_name}-not-suspended-audit"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "300" # 5 mins
+  evaluation_periods        = "1"
+  metric_name               = "ApproximateAgeOfOldestMessage"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm for not suspended audit queue"
+  statistic                 = "Maximum"
+  period                    = "900" # 15 mins
+  dimensions = {
+    QueueName = aws_sqs_queue.not_suspended_audit.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "suspension_mof_not_updated_audit" {
+  alarm_name                = "${var.environment}-${var.component_name}-mof-not-updated-audit"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "300" # 5 mins
+  evaluation_periods        = "1"
+  metric_name               = "ApproximateAgeOfOldestMessage"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm for MOF not updated audit queue"
+  statistic                 = "Maximum"
+  period                    = "900" # 15 mins
+  dimensions = {
+    QueueName = aws_sqs_queue.mof_not_updated_audit.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "suspension_mof_updated_audit" {
+  alarm_name                = "${var.environment}-${var.component_name}-mof-updated-audit"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "300" # 5 mins
+  evaluation_periods        = "1"
+  metric_name               = "ApproximateAgeOfOldestMessage"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm for MOF updated audit queue"
+  statistic                 = "Maximum"
+  period                    = "900" # 15 mins
+  dimensions = {
+    QueueName = aws_sqs_queue.mof_updated_audit.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit" {
+  alarm_name                = "${var.environment}-${var.component_name}-deceased-patient-audit"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "300" # 5 mins
+  evaluation_periods        = "1"
+  metric_name               = "ApproximateAgeOfOldestMessage"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm for deceased patient audit queue"
+  statistic                 = "Maximum"
+  period                    = "900" # 15 mins
+  dimensions = {
+    QueueName = aws_sqs_queue.deceased_patient_audit.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+}
 
 resource "aws_cloudwatch_metric_alarm" "suspensions_queue_age_of_message" {
   alarm_name                = "${var.environment}-${var.component_name}-queue-age-of-message"
@@ -144,7 +222,6 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_age_of_message" {
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
-
 
 resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
   alarm_name                = "${var.environment}-suspensions-service-scale-up"
@@ -178,7 +255,6 @@ resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
     }
   }
 }
-
 
 resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_down_alarm" {
   alarm_name                = "${var.environment}-${var.component_name}-scale-down"
