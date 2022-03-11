@@ -59,14 +59,20 @@ public class SuspensionsIntegrationTest {
 
     private WireMockServer stubPdsAdaptor;
 
+    private String suspensionQueueUrl;
+
     @BeforeEach
     public void setUp() {
         stubPdsAdaptor = initializeWebServer();
+        suspensionQueueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        purgeQueue(suspensionQueueUrl);
     }
 
     @AfterEach
     public void tearDown() {
         stubPdsAdaptor.stop();
+        suspensionQueueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        purgeQueue(suspensionQueueUrl);
     }
 
     private WireMockServer initializeWebServer() {
