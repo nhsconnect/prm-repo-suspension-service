@@ -7,10 +7,12 @@ locals {
   non_sensitive_invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
   not_suspended_audit_queue_name = "${var.environment}-${var.component_name}-not-suspended-audit"
   event_out_of_order_audit_queue_name = "${var.environment}-${var.component_name}-out-of-order-audit"
+  event_out_of_order_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-out-of-order-audit-splunk-dlq"
   mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
   mof_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-updated-audit"
   deceased_patient_queue_name = "${var.environment}-${var.component_name}-deceased-patient-queue"
   deceased_patient_audit_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit"
+  deceased_patient_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit-splunk-dlq"
 }
 
 resource "aws_sqs_queue" "suspensions" {
@@ -194,6 +196,23 @@ resource "aws_sqs_queue" "event_out_of_order_audit" {
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.event_out_of_order.id
 
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.event_out_of_order_audit_splunk_dlq.arn
+    maxReceiveCount     = 4
+  })
+
+  tags = {
+    Name = local.event_out_of_order_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "event_out_of_order_audit_splunk_dlq" {
+  name                       = local.event_out_of_order_audit_splunk_dlq_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_kms_key.event_out_of_order.id
+
   tags = {
     Name = local.event_out_of_order_audit_queue_name
     CreatedBy   = var.repo_name
@@ -325,6 +344,10 @@ resource "aws_sqs_queue" "deceased_patient_audit" {
   receive_wait_time_seconds = 20
   visibility_timeout_seconds = 240
 
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.deceased_patient_audit_splunk_dlq.arn
+    maxReceiveCount     = 4
+  })
   tags = {
     Name = local.deceased_patient_audit_queue_name
     CreatedBy   = var.repo_name
@@ -337,4 +360,18 @@ resource "aws_sns_topic_subscription" "deceased_patient_audit" {
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.deceased_patient.arn
   endpoint             = aws_sqs_queue.deceased_patient_audit.arn
+}
+
+resource "aws_sqs_queue" "deceased_patient_audit_splunk_dlq" {
+  name                       = local.deceased_patient_audit_splunk_dlq_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_kms_key.deceased_patient.id
+  receive_wait_time_seconds = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name = local.deceased_patient_audit_splunk_dlq_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
 }

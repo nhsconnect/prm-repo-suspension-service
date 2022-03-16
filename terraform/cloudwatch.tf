@@ -143,6 +143,22 @@ resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
+resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit_splunk_dlq" {
+  alarm_name                = "${var.environment}-${var.component_name}-out-of-order-audit-splunk-dlq"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "900" # 15 mins
+  evaluation_periods        = "1"
+  metric_name               = "ApproximateAgeOfOldestMessage"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm for out of order audit splunk dlq queue"
+  statistic                 = "Maximum"
+  period                    = "900"
+  dimensions = {
+    QueueName = aws_sqs_queue.event_out_of_order_audit_splunk_dlq.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
 resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-not-suspended-audit"
   comparison_operator       = "GreaterThanThreshold"
@@ -203,6 +219,22 @@ resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit" {
   period                    = "900"
   dimensions = {
     QueueName = aws_sqs_queue.deceased_patient_audit.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit_splunk_dlq" {
+  alarm_name                = "${var.environment}-${var.component_name}-deceased-patient-audit-spunk-dlq"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "900"
+  evaluation_periods        = "1"
+  metric_name               = "ApproximateAgeOfOldestMessage"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm for deceased patient audit splunk dlq queue"
+  statistic                 = "Maximum"
+  period                    = "900"
+  dimensions = {
+    QueueName = aws_sqs_queue.deceased_patient_audit_splunk_dlq.name
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
