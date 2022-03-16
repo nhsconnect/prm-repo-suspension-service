@@ -161,7 +161,7 @@ resource "aws_sqs_queue" "not_suspended_audit" {
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.not_suspended.id
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.not_suspended_audit_dlq.arn
+    deadLetterTargetArn = aws_sqs_queue.not_suspended_audit_splunk_dlq.arn
     maxReceiveCount     = 4
   })
 
@@ -172,13 +172,13 @@ resource "aws_sqs_queue" "not_suspended_audit" {
   }
 }
 
-resource "aws_sqs_queue" "not_suspended_audit_dlq" {
-  name                       = "${var.environment}-${var.component_name}-not-suspended-audit-dlq"
+resource "aws_sqs_queue" "not_suspended_audit_splunk_dlq" {
+  name                       = "${var.environment}-${var.component_name}-not-suspended-audit-splunk-dlq"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.not_suspended.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-not-suspended-audit-dlq"
+    Name = "${var.environment}-${var.component_name}-not-suspended-audit-splunk-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -251,7 +251,7 @@ resource "aws_sqs_queue" "mof_not_updated_audit" {
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_not_updated.id
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.mof_not_updated_audit_dlq.arn
+    deadLetterTargetArn = aws_sqs_queue.mof_not_updated_audit_splunk_dlq.arn
     maxReceiveCount     = 4
   })
 
@@ -262,13 +262,13 @@ resource "aws_sqs_queue" "mof_not_updated_audit" {
   }
 }
 
-resource "aws_sqs_queue" "mof_not_updated_audit_dlq" {
-  name                       = "${var.environment}-${var.component_name}-mof-not-updated-audit-dlq"
+resource "aws_sqs_queue" "mof_not_updated_audit_splunk_dlq" {
+  name                       = "${var.environment}-${var.component_name}-mof-not-updated-audit-splunk-dlq"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_not_updated.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-mof-not-updated-audit-dlq"
+    Name = "${var.environment}-${var.component_name}-mof-not-updated-audit-splunk-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -286,7 +286,7 @@ resource "aws_sqs_queue" "mof_updated_audit" {
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_updated.id
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.mof_updated_audit_dlq.arn
+    deadLetterTargetArn = aws_sqs_queue.mof_updated_audit_splunk_dlq.arn
     maxReceiveCount     = 4
   })
 
@@ -297,13 +297,13 @@ resource "aws_sqs_queue" "mof_updated_audit" {
   }
 }
 
-resource "aws_sqs_queue" "mof_updated_audit_dlq" {
-  name                       = "${var.environment}-${var.component_name}-mof-updated-audit-dlq"
+resource "aws_sqs_queue" "mof_updated_audit_splunk_dlq" {
+  name                       = "${var.environment}-${var.component_name}-mof-updated-audit-splunk-dlq"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_updated.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-mof-updated-audit-dlq"
+    Name = "${var.environment}-${var.component_name}-mof-updated-audit-splunk-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
