@@ -1,8 +1,8 @@
 locals {
-  task_role_arn       = aws_iam_role.component-ecs-role.arn
-  task_execution_role = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.environment}-${var.component_name}-EcsTaskRole"
-  task_ecr_url        = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
-  task_log_group      = "/nhs/deductions/${var.environment}-${data.aws_caller_identity.current.account_id}/${var.component_name}"
+  task_role_arn         = aws_iam_role.component-ecs-role.arn
+  task_execution_role   = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.environment}-${var.component_name}-EcsTaskRole"
+  task_ecr_url          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
+  task_log_group        = "/nhs/deductions/${var.environment}-${data.aws_caller_identity.current.account_id}/${var.component_name}"
   environment_variables = [
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "AWS_REGION", value = var.region },
@@ -14,7 +14,9 @@ locals {
     { name = "MOF_NOT_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_not_updated.arn },
     { name = "EVENT_OUT_OF_ORDER_SNS_TOPIC_ARN", value = aws_sns_topic.event_out_of_order.arn },
     { name = "INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.invalid_suspension.arn },
-    { name = "NON_SENSITIVE_INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.non_sensitive_invalid_suspension.arn },
+    { name  = "NON_SENSITIVE_INVALID_SUSPENSION_SNS_TOPIC_ARN",
+      value = aws_sns_topic.non_sensitive_invalid_suspension.arn
+    },
     { name = "DECEASED_PATIENT_SNS_TOPIC_ARN", value = aws_sns_topic.deceased_patient.arn },
     { name = "PDS_ADAPTOR_SUSPENSION_SERVICE_PASSWORD", value = data.aws_ssm_parameter.pds_adaptor_auth_key.value },
     { name = "PROCESS_ONLY_SYNTHETIC_PATIENTS", value = tostring(var.process_only_synthetic_patients) },
@@ -48,25 +50,41 @@ resource "aws_ecs_task_definition" "task" {
 
   tags = {
     Environment = var.environment
-    CreatedBy = var.repo_name
+    CreatedBy   = var.repo_name
   }
 }
 
 resource "aws_security_group" "ecs-tasks-sg" {
-  name        = "${var.environment}-${var.component_name}-ecs-tasks-sg"
-  vpc_id      = data.aws_ssm_parameter.deductions_private_vpc_id.value
+  name   = "${var.environment}-${var.component_name}-ecs-tasks-sg"
+  vpc_id = data.aws_ssm_parameter.deductions_private_vpc_id.value
 
   egress {
-    description = "Allow All Outbound"
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound HTTPS traffic in vpc"
+    protocol    = "tcp"
+    from_port   = 443
+    to_port     = 443
+    cidr_blocks = [cidrsubnet(data.aws_vpc.private_vpc.cidr_block, 4, 1)]
+  }
+
+  egress {
+    description     = "Allow outbound HTTPS traffic to dynamodb"
+    protocol        = "tcp"
+    from_port       = 443
+    to_port         = 443
+    prefix_list_ids = [data.aws_ssm_parameter.dynamodb_prefix_list_id.value]
   }
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-ecs-tasks-sg"
+    Name        = "${var.environment}-${var.component_name}-ecs-tasks-sg"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
+}
+
+data "aws_vpc" "private_vpc" {
+  id = data.aws_ssm_parameter.deductions_private_vpc_id.value
+}
+
+data "aws_ssm_parameter" "dynamodb_prefix_list_id" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/dynamodb_prefix_list_id"
 }
