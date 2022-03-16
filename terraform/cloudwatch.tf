@@ -130,11 +130,11 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_ratio_of_received_to_a
 resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-out-of-order-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "900" # 15 mins
+  threshold                 = "900"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
-  alarm_description         = "Alarm for out of order audit queue"
+  alarm_description         = "This alarm triggers when messages on the out of order audit queue is not polled by splunk in last 15 mins"
   statistic                 = "Maximum"
   period                    = "900"
   dimensions = {
@@ -150,7 +150,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
-  alarm_description         = "Alarm for not suspended audit queue"
+  alarm_description         = "This alarm triggers when messages on the not suspended audit queue is not polled by splunk in last 15 mins"
   statistic                 = "Maximum"
   period                    = "900"
   dimensions = {
@@ -166,7 +166,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_mof_not_updated_audit" {
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
-  alarm_description         = "Alarm for MOF not updated audit queue"
+  alarm_description         = "This alarm triggers when messages on the MOF not updated audit queue is not polled by splunk in last 15 mins"
   statistic                 = "Maximum"
   period                    = "900"
   dimensions = {
@@ -182,7 +182,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_mof_updated_audit" {
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
-  alarm_description         = "Alarm for MOF updated audit queue"
+  alarm_description         = "This alarm triggers when messages on the MOF updated audit queue is not polled by splunk in last 15 mins"
   statistic                 = "Maximum"
   period                    = "900"
   dimensions = {
@@ -198,7 +198,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit" {
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
-  alarm_description         = "Alarm for deceased patient audit queue"
+  alarm_description         = "This alarm triggers when messages on the deceased patient audit queue is not polled by splunk in last 15 mins"
   statistic                 = "Maximum"
   period                    = "900"
   dimensions = {
@@ -214,7 +214,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_invalid_suspension_dlq_audit"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
-  alarm_description         = "Alarm for invalid suspension dlq audit"
+  alarm_description         = "This alarm triggers when messages on the invalid suspensions dlq audit queue is not polled by splunk in last 15 mins"
   statistic                 = "Maximum"
   period                    = "900"
   dimensions = {

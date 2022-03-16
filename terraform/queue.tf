@@ -1,13 +1,13 @@
 locals {
   suspensions_queue_name = "${var.environment}-${var.component_name}-suspensions-queue"
-  not_suspended_queue_name = "${var.environment}-${var.component_name}-not-suspended-observability-queue"
+  not_suspended_observability_queue_name = "${var.environment}-${var.component_name}-not-suspended-observability-queue"
   mof_updated_queue_name = "${var.environment}-${var.component_name}-mof-updated-queue"
   mof_not_updated_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-queue"
-  invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
-  non_sensitive_invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
+  invalid_suspension_dlq_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
+  invalid_suspension_dlq_audit_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
   not_suspended_audit_queue_name = "${var.environment}-${var.component_name}-not-suspended-audit"
-  event_out_of_order_audit_queue_name = "${var.environment}-${var.component_name}-out-of-order-audit"
-  event_out_of_order_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-out-of-order-audit-splunk-dlq"
+  event_out_of_order_audit_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit"
+  event_out_of_order_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit-splunk-dlq"
   mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
   mof_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-updated-audit"
   deceased_patient_queue_name = "${var.environment}-${var.component_name}-deceased-patient-queue"
@@ -37,12 +37,12 @@ resource "aws_sns_topic_subscription" "suspensions_topic" {
 }
 
 resource "aws_sqs_queue" "not_suspended_observability" {
-  name                       = local.not_suspended_queue_name
+  name                       = local.not_suspended_observability_queue_name
   message_retention_seconds  = 1800
   kms_master_key_id = aws_kms_key.not_suspended.id
 
   tags = {
-    Name = local.not_suspended_queue_name
+    Name = local.not_suspended_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -101,12 +101,12 @@ resource "aws_sns_topic_subscription" "mof_updated" {
 }
 
 resource "aws_sqs_queue" "invalid_suspension" {
-  name                       = local.invalid_suspension_queue_name
+  name                       = local.invalid_suspension_dlq_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.invalid_suspension.id
 
   tags = {
-    Name = local.invalid_suspension_queue_name
+    Name = local.invalid_suspension_dlq_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -121,7 +121,7 @@ resource "aws_sns_topic_subscription" "invalid_suspension" {
 
 
 resource "aws_sqs_queue" "non_sensitive_invalid_suspension" {
-  name                       = local.non_sensitive_invalid_suspension_queue_name
+  name                       = local.invalid_suspension_dlq_queue_name
   message_retention_seconds  = 1800
   kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
   redrive_policy = jsonencode({
@@ -130,20 +130,20 @@ resource "aws_sqs_queue" "non_sensitive_invalid_suspension" {
   })
 
   tags = {
-    Name = local.non_sensitive_invalid_suspension_queue_name
+    Name = local.invalid_suspension_dlq_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
 resource "aws_sqs_queue" "non_sensitive_invalid_suspension_splunk_dlq" {
-  name                       = "${local.non_sensitive_invalid_suspension_queue_name}-splunk-dlq"
+  name                       = "${local.invalid_suspension_dlq_queue_name}-splunk-dlq"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
 
 
   tags = {
-    Name = "${local.non_sensitive_invalid_suspension_queue_name}-splunk-dlq"
+    Name = "${local.invalid_suspension_dlq_queue_name}-splunk-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
