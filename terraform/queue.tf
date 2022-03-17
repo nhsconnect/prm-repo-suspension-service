@@ -4,7 +4,7 @@ locals {
   mof_updated_queue_name = "${var.environment}-${var.component_name}-mof-updated-queue"
   mof_not_updated_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-queue"
   invalid_suspension_dlq_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
-  invalid_suspension_dlq_audit_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
+  invalid_suspension_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-splunk-dlq"
   not_suspended_audit_queue_name = "${var.environment}-${var.component_name}-not-suspended-audit"
   event_out_of_order_audit_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit"
   event_out_of_order_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit-splunk-dlq"
@@ -100,7 +100,7 @@ resource "aws_sns_topic_subscription" "mof_updated" {
   endpoint             = aws_sqs_queue.mof_updated.arn
 }
 
-resource "aws_sqs_queue" "invalid_suspension" {
+resource "aws_sqs_queue" "invalid_suspension_dlq" {
   name                       = local.invalid_suspension_dlq_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.invalid_suspension.id
@@ -116,16 +116,16 @@ resource "aws_sns_topic_subscription" "invalid_suspension" {
   protocol             = "sqs"
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.invalid_suspension.arn
-  endpoint             = aws_sqs_queue.invalid_suspension.arn
+  endpoint             = aws_sqs_queue.invalid_suspension_dlq.arn
 }
 
-
+# TODO: this block and the one above (aws_sqs_queue.invalid_suspension_dlq) point at the same queue, keep only one
 resource "aws_sqs_queue" "non_sensitive_invalid_suspension" {
   name                       = local.invalid_suspension_dlq_queue_name
   message_retention_seconds  = 1800
   kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.non_sensitive_invalid_suspension_splunk_dlq.arn
+    deadLetterTargetArn = aws_sqs_queue.invalid_suspension_splunk_dlq.arn
     maxReceiveCount     = 4
   })
 
@@ -136,8 +136,8 @@ resource "aws_sqs_queue" "non_sensitive_invalid_suspension" {
   }
 }
 
-resource "aws_sqs_queue" "non_sensitive_invalid_suspension_splunk_dlq" {
-  name                       = "${local.invalid_suspension_dlq_queue_name}-splunk-dlq"
+resource "aws_sqs_queue" "invalid_suspension_splunk_dlq" {
+  name                       = local.invalid_suspension_splunk_dlq_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
 
@@ -173,6 +173,7 @@ resource "aws_sqs_queue" "not_suspended_audit" {
 }
 
 resource "aws_sqs_queue" "not_suspended_audit_splunk_dlq" {
+  # TODO: extract full name in variable
   name                       = "${var.environment}-${var.component_name}-not-suspended-audit-splunk-dlq"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.not_suspended.id
@@ -214,13 +215,14 @@ resource "aws_sqs_queue" "event_out_of_order_audit_splunk_dlq" {
   kms_master_key_id = aws_kms_key.event_out_of_order.id
 
   tags = {
-    Name = local.event_out_of_order_audit_queue_name
+    Name = local.event_out_of_order_audit_splunk_dlq_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
 resource "aws_sqs_queue" "event_out_of_order_observability_queue" {
+  # TODO: extract full name in variable
   name                       = "${var.environment}-${var.component_name}-out-of-order-observability-queue"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.event_out_of_order.id
@@ -263,6 +265,7 @@ resource "aws_sqs_queue" "mof_not_updated_audit" {
 }
 
 resource "aws_sqs_queue" "mof_not_updated_audit_splunk_dlq" {
+  # TODO: extract full name in variable
   name                       = "${var.environment}-${var.component_name}-mof-not-updated-audit-splunk-dlq"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_not_updated.id
@@ -298,6 +301,7 @@ resource "aws_sqs_queue" "mof_updated_audit" {
 }
 
 resource "aws_sqs_queue" "mof_updated_audit_splunk_dlq" {
+  # TODO: extract full name in variable
   name                       = "${var.environment}-${var.component_name}-mof-updated-audit-splunk-dlq"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_updated.id
