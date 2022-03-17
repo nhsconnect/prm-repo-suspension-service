@@ -1,15 +1,19 @@
 locals {
   suspensions_queue_name = "${var.environment}-${var.component_name}-suspensions-queue"
   not_suspended_observability_queue_name = "${var.environment}-${var.component_name}-not-suspended-observability-queue"
+  not_suspended_audit_queue_name = "${var.environment}-${var.component_name}-not-suspended-audit"
+  not_suspended_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-not-suspended-audit-splunk-dlq"
   mof_updated_queue_name = "${var.environment}-${var.component_name}-mof-updated-queue"
+  mof_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-updated-audit"
+  mof_updated_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-mof-updated-audit-splunk-dlq"
   mof_not_updated_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-queue"
+  mof_not_updated_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit-splunk-dlq"
+  mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
   invalid_suspension_dlq_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
   invalid_suspension_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-splunk-dlq"
-  not_suspended_audit_queue_name = "${var.environment}-${var.component_name}-not-suspended-audit"
   event_out_of_order_audit_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit"
   event_out_of_order_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit-splunk-dlq"
-  mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
-  mof_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-updated-audit"
+  event_out_of_order_observability_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-observability-queue"
   deceased_patient_queue_name = "${var.environment}-${var.component_name}-deceased-patient-queue"
   deceased_patient_audit_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit"
   deceased_patient_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit-splunk-dlq"
@@ -160,13 +164,12 @@ resource "aws_sqs_queue" "not_suspended_audit" {
 }
 
 resource "aws_sqs_queue" "not_suspended_audit_splunk_dlq" {
-  # TODO: extract full name in variable
-  name                       = "${var.environment}-${var.component_name}-not-suspended-audit-splunk-dlq"
+  name                       = local.not_suspended_audit_splunk_dlq_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.not_suspended.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-not-suspended-audit-splunk-dlq"
+    Name = local.not_suspended_audit_splunk_dlq_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -209,13 +212,12 @@ resource "aws_sqs_queue" "event_out_of_order_audit_splunk_dlq" {
 }
 
 resource "aws_sqs_queue" "event_out_of_order_observability_queue" {
-  # TODO: extract full name in variable
-  name                       = "${var.environment}-${var.component_name}-out-of-order-observability-queue"
+  name                       = local.event_out_of_order_observability_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.event_out_of_order.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-out-of-order-observability-queue"
+    Name = local.event_out_of_order_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -252,13 +254,12 @@ resource "aws_sqs_queue" "mof_not_updated_audit" {
 }
 
 resource "aws_sqs_queue" "mof_not_updated_audit_splunk_dlq" {
-  # TODO: extract full name in variable
-  name                       = "${var.environment}-${var.component_name}-mof-not-updated-audit-splunk-dlq"
+  name                       = local.mof_not_updated_audit_splunk_dlq_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_not_updated.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-mof-not-updated-audit-splunk-dlq"
+    Name = local.mof_not_updated_audit_splunk_dlq_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -288,13 +289,12 @@ resource "aws_sqs_queue" "mof_updated_audit" {
 }
 
 resource "aws_sqs_queue" "mof_updated_audit_splunk_dlq" {
-  # TODO: extract full name in variable
-  name                       = "${var.environment}-${var.component_name}-mof-updated-audit-splunk-dlq"
+  name                       = local.mof_updated_audit_splunk_dlq_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.mof_updated.id
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-mof-updated-audit-splunk-dlq"
+    Name = local.mof_updated_audit_splunk_dlq_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
