@@ -63,7 +63,7 @@ resource "aws_security_group" "ecs-tasks-sg" {
     protocol    = "tcp"
     from_port   = 443
     to_port     = 443
-    cidr_blocks = [cidrsubnet(data.aws_vpc.private_vpc.cidr_block, 4, 1)]
+    cidr_blocks = [data.aws_vpc.private_vpc.cidr_block]
   }
 
   egress {
