@@ -104,7 +104,6 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
       aws_sqs_queue.mof_updated.arn,
       aws_sqs_queue.mof_not_updated.arn,
       aws_sqs_queue.invalid_suspension_dlq.arn,
-      aws_sqs_queue.non_sensitive_invalid_suspension.arn,
       aws_sqs_queue.not_suspended_audit.arn,
       aws_sqs_queue.mof_not_updated_audit.arn,
       aws_sqs_queue.mof_updated_audit.arn,
@@ -280,7 +279,7 @@ resource "aws_sqs_queue_policy" "invalid_suspension_subscription" {
 }
 
 resource "aws_sqs_queue_policy" "non_sensitive_invalid_suspension_subscription" {
-  queue_url = aws_sqs_queue.non_sensitive_invalid_suspension.id
+  queue_url = aws_sqs_queue.invalid_suspension_dlq.id
   policy    = data.aws_iam_policy_document.non_sensitive_invalid_suspension_policy_doc.json
 }
 
@@ -451,7 +450,7 @@ data "aws_iam_policy_document" "non_sensitive_invalid_suspension_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.non_sensitive_invalid_suspension.arn
+      aws_sqs_queue.invalid_suspension_dlq.arn
     ]
 
     condition {
