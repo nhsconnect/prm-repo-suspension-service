@@ -109,15 +109,14 @@ public class MessageProcessExecution {
     }
 
     SuspensionEvent getSuspensionEvent(String suspensionMessage) {
-        SuspensionEvent suspensionEvent;
         try {
-            suspensionEvent = parser.parse(suspensionMessage);
-        } catch (InvalidSuspensionMessageException exception) {
+            return parser.parse(suspensionMessage);
+        } catch (JsonProcessingException e) {
+            log.error("Got an exception while parsing suspensions message");
             invalidSuspensionPublisher.sendMessage(suspensionMessage);
             invalidSuspensionPublisher.sendNonSensitiveMessage(suspensionMessage);
-            throw new InvalidSuspensionMessageException("Encountered an invalid message", exception);
+            throw new InvalidSuspensionMessageException("Encountered an invalid message", e);
         }
-        return suspensionEvent;
     }
 
     boolean patientIsNonSynthetic(SuspensionEvent suspensionEvent) {

@@ -13,19 +13,7 @@ import java.util.HashMap;
 public class SuspensionEventParser {
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public SuspensionEvent parse(String suspensionMessage) {
-        return new SuspensionEvent(parseIntoMap(suspensionMessage));
-    }
-
-    private HashMap<String, Object> parseIntoMap(String suspensionMessage) {
-        HashMap<String, Object> map;
-        try {
-            map = mapper.readValue(suspensionMessage, new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            log.error("Got an exception while parsing suspensions message to a map.");
-            throw new InvalidSuspensionMessageException("Failed to parse Suspension Message", e);
-        }
-        return map;
+    public SuspensionEvent parse(String suspensionMessage) throws JsonProcessingException {
+        return new SuspensionEvent(mapper.readValue(suspensionMessage, new TypeReference<>() { }));
     }
 }
