@@ -7,15 +7,16 @@ import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 
 @Component
 public class NotSuspendedEventPublisher {
-    private final String suspensionsSnsTopicArn;
+    private final String notSuspensionsSnsTopicArn;
     private final MessagePublisher messagePublisher;
 
-    public NotSuspendedEventPublisher(MessagePublisher messagePublisher, @Value("${aws.notSuspendedSnsTopicArn}") String suspensionsSnsTopicArn) {
+    public NotSuspendedEventPublisher(MessagePublisher messagePublisher, @Value("${aws.notSuspendedSnsTopicArn}") String notSuspensionsSnsTopicArn) {
         this.messagePublisher = messagePublisher;
-        this.suspensionsSnsTopicArn = suspensionsSnsTopicArn;
+
+        this.notSuspensionsSnsTopicArn = notSuspensionsSnsTopicArn;
     }
 
     public void sendMessage(NonSensitiveDataMessage message) {
-        messagePublisher.sendMessage(this.suspensionsSnsTopicArn, message.toJsonString());
+        messagePublisher.sendMessage(this.notSuspensionsSnsTopicArn, message.toJsonString());
     }
 }
