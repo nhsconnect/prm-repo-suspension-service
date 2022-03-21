@@ -1,6 +1,7 @@
 resource "aws_kms_key" "not_suspended" {
   description = "Custom KMS Key to enable server side encryption for SNS and SQS"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-not-suspended-queue-encryption-kms-key"
@@ -62,6 +63,7 @@ data "aws_iam_policy_document" "kms_key_policy_doc" {
 resource "aws_kms_key" "mof_updated" {
   description = "Custom KMS Key to enable server side encryption for SNS and SQS"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-mof-updated-queue-encryption-kms-key"
@@ -78,6 +80,7 @@ resource "aws_kms_alias" "mof_updated_encryption" {
 resource "aws_kms_key" "mof_not_updated" {
   description = "Custom KMS Key to enable server side encryption for mof not updated topic"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-mof-not-updated-queue-encryption-kms-key"
@@ -94,6 +97,7 @@ resource "aws_kms_alias" "mof_not_updated_encryption" {
 resource "aws_kms_key" "invalid_suspension" {
   description = "Custom KMS Key to enable server side encryption for invalid suspension topic"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-invalid-suspension-kms-key"
@@ -110,6 +114,7 @@ resource "aws_kms_alias" "invalid_suspension_encryption" {
 resource "aws_kms_key" "non_sensitive_invalid_suspension" {
   description = "Custom KMS Key to enable server side encryption for non sensitive invalid suspension topic"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-non-sensitive-invalid-suspension-kms-key"
@@ -126,6 +131,7 @@ resource "aws_kms_alias" "non_sensitive_invalid_suspension_encryption" {
 resource "aws_kms_key" "event_out_of_order" {
   description = "Custom KMS Key to enable server side encryption for event out of order topic"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-event-out-of-order-kms-key"
@@ -142,6 +148,7 @@ resource "aws_kms_alias" "event_out_of_order_encryption" {
 resource "aws_kms_key" "suspension_dynamodb_kms_key" {
   description = "Custom KMS Key to enable server side encryption for Suspension DB"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-dynamodb-kms-key"
@@ -153,6 +160,7 @@ resource "aws_kms_key" "suspension_dynamodb_kms_key" {
 resource "aws_kms_key" "deceased_patient" {
   description = "Custom KMS Key to enable server side encryption for deceased patient topic"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-deceased-patient-kms-key"
