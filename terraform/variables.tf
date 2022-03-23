@@ -49,7 +49,7 @@ variable "synthetic_patient_prefix" {}
 
 variable "scale_up_expression" {
   type    = string
-  default = "((HOUR(m1)==11 && MINUTE(m1)==25 )),10,0"
+  default = "((HOUR(m1)==12 && MINUTE(m1)==30 )),10,0"
 }
 
 variable "enable_scale_action" {
