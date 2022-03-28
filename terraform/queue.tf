@@ -87,7 +87,7 @@ resource "aws_sns_topic_subscription" "mof_not_updated" {
 
 resource "aws_sqs_queue" "mof_updated" {
   name                       = local.mof_updated_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = 86400
   kms_master_key_id = aws_kms_key.mof_updated.id
 
   tags = {
