@@ -17,7 +17,7 @@ resource "aws_cloudwatch_log_group" "log_group" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "health_metric_failure_alarm" {
-  alarm_name                = "${var.component_name}-health-metric-failure"
+  alarm_name                = "${var.environment}-${var.component_name}-health-metric-failure"
   comparison_operator       = "LessThanThreshold"
   threshold                 = "1"
   evaluation_periods        = "3"
