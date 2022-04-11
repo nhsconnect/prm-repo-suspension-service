@@ -1,7 +1,7 @@
 resource "aws_dynamodb_table" "suspensions" {
     name = "${var.environment}-${var.component_name}-dynamodb"
     billing_mode = "PAY_PER_REQUEST"
-    hash_key = "nhs_number"
+    hash_key = "nhs_number_key"
 
     server_side_encryption {
         enabled =  true
@@ -13,7 +13,7 @@ resource "aws_dynamodb_table" "suspensions" {
     }
 
     attribute {
-        name = "nhs_number"
-        type = "N"
+        name = "nhs_number_key"
+        type = "S"
     }
 }

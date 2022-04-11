@@ -157,13 +157,13 @@ public class LocalStackAwsConfig {
         List<KeySchemaElement> keySchema = new ArrayList<>();
         keySchema.add(KeySchemaElement.builder()
                 .keyType(KeyType.HASH)
-                .attributeName("nhs_number")
+                .attributeName("nhs_number_key")
                 .build());
 
         List<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
         attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.N)
-                .attributeName("nhs_number")
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("nhs_number_key")
                 .build());
 
         var createTableRequest = CreateTableRequest.builder()
