@@ -71,11 +71,6 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
     ]
 
     resources = ["*"]
-    condition {
-      test     = "StringEquals"
-      values   = [aws_cloudwatch_metric_alarm.health_metric_failure_alarm.namespace]
-      variable = "cloudwatch:namespace"
-    }
   }
 }
 
