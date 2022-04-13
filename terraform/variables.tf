@@ -34,7 +34,7 @@ variable "log_level" {
 
 //this might change per environment.
 variable "threshold_for_suspensions_queue_age_of_message" {
-  default = "86400"
+  default = "64800"
 }
 
 variable "period_of_age_of_message_metric" {
