@@ -16,23 +16,6 @@ resource "aws_cloudwatch_log_group" "log_group" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "health_metric_failure_alarm" {
-  alarm_name                = "${var.environment}-${var.component_name}-health-metric-failure"
-  comparison_operator       = "LessThanThreshold"
-  threshold                 = "1"
-  evaluation_periods        = "3"
-  metric_name               = "Health"
-  namespace                 = local.suspension_service_metric_namespace
-  alarm_description         = "Alarm to flag failed health checks"
-  statistic                 = "Maximum"
-  treat_missing_data        = "breaching"
-  period                    = "60"
-  dimensions = {
-    "Environment" = var.environment
-  }
-  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
-}
-
 resource "aws_cloudwatch_log_metric_filter" "log_metric_filter" {
   name           = "${var.environment}-${var.component_name}-error-logs"
   pattern        = "{ $.level = \"ERROR\" }"
