@@ -36,13 +36,6 @@ public class MessageProcessExecution {
         try {
             threadLock.lock(suspensionEvent.nhsNumber());
 
-            // synthetic patient block
-            if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
-                var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
-                mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
-                return;
-            }
-
             // event out of order block
             if (lastUpdatedEventService.isOutOfOrder(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
                 log.info("Event is out of order");
@@ -59,6 +52,13 @@ public class MessageProcessExecution {
                 log.info("Patient is deceased");
                 var deceasedPatientMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:DECEASED_PATIENT");
                 deceasedPatientEventPublisher.sendMessage(deceasedPatientMessage);
+                return;
+            }
+
+            // synthetic patient block
+            if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
+                var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
+                mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
                 return;
             }
 

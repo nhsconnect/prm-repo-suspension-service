@@ -184,14 +184,19 @@ public class MessageProcessExecutionTest {
         setField(messageProcessExecution, "processOnlySyntheticPatients", "true");
         setField(messageProcessExecution, "syntheticPatientPrefix", "929");
 
+        var pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, "A1000", "", "", false);
+        when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
         messageProcessExecution.run(suspendedMessage);
 
         var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NOT_SYNTHETIC");
         assertEquals("NO_ACTION:NOT_SYNTHETIC", notSyntheticMessage.getStatus());
-        verify(pdsService, never()).isSuspended(any());
+        verify(pdsService).isSuspended(NHS_NUMBER);
         verify(mofNotUpdatedEventPublisher).sendMessage(notSyntheticMessage);
-        verify(mofUpdatedEventPublisher, never()).sendMessage(any());
-        verify(notSuspendedEventPublisher, never()).sendMessage(any());
+        verifyNoMoreInteractions(pdsService);
+        verifyNoInteractions(mofUpdatedEventPublisher);
+        verifyNoInteractions(notSuspendedEventPublisher);
         verifyLock(NHS_NUMBER);
     }
 
