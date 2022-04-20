@@ -141,6 +141,20 @@ function configure_local_envs {
   export NHS_ENVIRONMENT=local
 }
 
+function die_localstack_die {
+  echo docker processes running: $(docker ps)
+
+  DOCKER_CONTAINERS_ON_PORT=$(docker ps --filter publish=4566 -q)
+
+  echo docker processes running on expected localstack port: $DOCKER_CONTAINERS_ON_PORT
+
+  if [ -z "$DOCKER_CONTAINERS_ON_PORT" ]; then
+    echo no localstack nonsense going on, cool
+  else
+    echo trying to kill localstack...
+    docker stop $DOCKER_CONTAINERS_ON_PORT
+  fi
+}
 
 ###########
 ## TASKS ##
@@ -151,9 +165,12 @@ case "${command}" in
   fetch_utils)
       fetch_redaction_utils
       ;;
+  die_localstack_die)
+      die_localstack_die
+      ;;
   build_docker)
       configure_envs
-      dojo -c Dojofile-itest "./tasks _build"
+      dojo "./tasks _build"
       configure_docker_repository_uri
       fetch_redaction_utils
       build_docker_image
@@ -178,6 +195,7 @@ case "${command}" in
       ;;
   test_integration)
       configure_envs
+      die_localstack_die
       dojo -c Dojofile-itest "./tasks _test_integration"
       ;;
   _test_coverage)
@@ -185,12 +203,14 @@ case "${command}" in
       ;;
   test_coverage)
       configure_envs
+      die_localstack_die
       dojo -c Dojofile-itest "./tasks _test_coverage"
       ;;
   _code_quality)
       gradle check -x test -x integration
       ;;
   code_quality)
+      die_localstack_die
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _test_all)
