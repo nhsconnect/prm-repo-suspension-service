@@ -35,7 +35,7 @@ public class PdsService {
         final String url = getPatientUrl(nhsNumber);
         try {
             ResponseEntity<String> response = httpClient.getWithStatusCodeNoRateLimit(url, SUSPENSION_SERVICE_USERNAME, suspensionServicePassword);
-            if(response.getStatusCode().is4xxClientError()){
+            if (response.getStatusCode().is4xxClientError()){
                 throw new HttpClientErrorException(response.getStatusCode());
             }
             return responseParser.parse(response.getBody());
@@ -43,7 +43,7 @@ public class PdsService {
             log.error("Got client error");
             throw new InvalidPdsRequestException("Got client error", e);
         } catch (Exception e) {
-            log.error("Got server error");
+            log.error("Got server error", e);
             throw new IntermittentErrorPdsException("Got server error", e);
         }
     }

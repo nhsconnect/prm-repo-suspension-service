@@ -1,11 +1,13 @@
 package uk.nhs.prm.repo.suspension.service.pds;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -14,8 +16,11 @@ import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusRespon
 import uk.nhs.prm.repo.suspension.service.model.UpdateManagingOrganisationRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static uk.nhs.prm.repo.suspension.service.logging.TestLogAppender.addTestLogAppender;
 
 @ExtendWith(MockitoExtension.class)
 class PdsServiceTest {
@@ -70,7 +75,7 @@ class PdsServiceTest {
         ResponseEntity<String> response = ResponseEntity.notFound().build();
         when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS")).thenReturn(response);
 
-        Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
+        assertThrows(InvalidPdsRequestException.class, () -> {
             pdsService.isSuspended("1234567890");
         });
     }
@@ -82,7 +87,7 @@ class PdsServiceTest {
         when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(HttpClientErrorException.class);
 
-        Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
+        assertThrows(InvalidPdsRequestException.class, () -> {
             pdsService.isSuspended("1234567890");
         });
     }
@@ -95,19 +100,19 @@ class PdsServiceTest {
         when(client.putWithStatusCodeWithTwoSecRateLimit(expectedUrl, "suspension-service", "PASS", requestPayload))
                 .thenThrow(HttpClientErrorException.class);
 
-        Assertions.assertThrows(InvalidPdsRequestException.class, () -> {
+        assertThrows(InvalidPdsRequestException.class, () -> {
             pdsService.updateMof("1234567890", "hello", "bob");
         });
     }
 
     @Test
-    public void shouldThrowExceptionWhenPdsReturn500() {
+    public void shouldAssumeThisIsAnIntermittentExceptionWhenPdsReturn500() {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
 
         when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(HttpServerErrorException.class);
 
-        Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+        assertThrows(IntermittentErrorPdsException.class, () -> {
             pdsService.isSuspended("1234567890");
         });
     }
@@ -120,21 +125,48 @@ class PdsServiceTest {
         when(client.putWithStatusCodeWithTwoSecRateLimit(expectedUrl, "suspension-service", "PASS", requestPayload))
                 .thenThrow(HttpServerErrorException.class);
 
-        Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+        assertThrows(IntermittentErrorPdsException.class, () -> {
             pdsService.updateMof("1234567890", "hello", "bob");
         });
     }
 
     @Test
-    public void shouldThrowExceptionWhenPdsConnectionFails() {
+    public void shouldAssumeThisIsAnIntermittentExceptionWhenPdsConnectionFails() {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
 
         when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(RuntimeException.class);
 
-        Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+        assertThrows(IntermittentErrorPdsException.class, () -> {
             pdsService.isSuspended("1234567890");
         });
+    }
+
+    @Test
+    public void shouldAssumeThatAnyOldErrorIsIntermittentIfWeHaventClassifiedIt() {
+        when(client.getWithStatusCodeNoRateLimit(anyString(), anyString(), anyString()))
+                .thenThrow(IllegalArgumentException.class);
+
+        assertThrows(IntermittentErrorPdsException.class, () -> {
+            pdsService.isSuspended("1234567890");
+        });
+    }
+
+    @Test
+    public void shouldLogTheCausingExceptionIncludingDetailsOfAnyIntermittentException() {
+        var logged = addTestLogAppender();
+
+        var theCause = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Some more interesting detail");
+        when(client.getWithStatusCodeNoRateLimit(anyString(), anyString(), anyString()))
+                .thenThrow(theCause);
+
+        assertThrows(IntermittentErrorPdsException.class, () -> {
+            pdsService.isSuspended("1234567890");
+        });
+
+        var errorLog = logged.findLoggedEvent("server error");
+        assertThat(errorLog).isNotNull();
+        assertThat(errorLog.getThrowableProxy().getMessage()).contains("Some more interesting detail");
     }
 
     @Test
@@ -145,7 +177,7 @@ class PdsServiceTest {
         when(client.putWithStatusCodeWithTwoSecRateLimit(expectedUrl, "suspension-service", "PASS", requestPayload))
                 .thenThrow(RuntimeException.class);
 
-        Assertions.assertThrows(IntermittentErrorPdsException.class, () -> {
+        assertThrows(IntermittentErrorPdsException.class, () -> {
             pdsService.updateMof("1234567890", "hello", "bob");
         });
     }
