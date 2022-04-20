@@ -1,5 +1,5 @@
 environment          = "dev"
-environment_dns_zone = "not.the.right.zone"
+environment_dns_zone = "dev.non-prod"
 
 synthetic_patient_prefix = "96937"
 
