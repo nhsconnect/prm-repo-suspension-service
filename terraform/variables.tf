@@ -14,8 +14,8 @@ variable "component_name" {
   default = "suspension-service"
 }
 
-variable "dns_name" {
-  default = "suspension-service"
+variable "environment_dns_zone" {
+  description = "The environment-specific labels of the dns zone name, e.g. 'prod' or 'dev.non-prod'"
 }
 
 variable "task_image_tag" {}
@@ -63,5 +63,6 @@ variable "scale_down_number_of_empty_receives_count" {
 }
 
 variable "core_task_number" {
-  default = ""
+  description = "Something to do with number of threads used in metric alarm for scale down"
+  default = 5
 }

@@ -22,7 +22,7 @@ locals {
     { name = "PROCESS_ONLY_SYNTHETIC_PATIENTS", value = tostring(var.process_only_synthetic_patients) },
     { name = "SYNTHETIC_PATIENT_PREFIX", value = var.synthetic_patient_prefix },
     { name = "DYNAMODB_TABLE_NAME", value = aws_dynamodb_table.suspensions.name },
-    { name = "PDS_ADAPTOR_URL", value = "https://pds-adaptor.${var.environment}.non-prod.patient-deductions.nhs.uk" }
+    { name = "PDS_ADAPTOR_URL", value = "https://pds-adaptor.${var.environment_dns_zone}.patient-deductions.nhs.uk" }
   ]
 }
 
