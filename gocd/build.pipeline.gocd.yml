@@ -17,7 +17,7 @@ pipelines:
                 - build:
                     source: build
               tabs:
-                test_report: build/reports/tests/test/index.html
+                TestReport: build/reports/tests/test/index.html
               tasks:
                 - exec:
                     command: /bin/bash
@@ -33,6 +33,8 @@ pipelines:
               artifacts:
                 - build:
                     source: build
+              tabs:
+                TestReport: build/reports/tests/integration/index.html
               tasks:
                 - exec:
                     command: /bin/bash
@@ -45,7 +47,7 @@ pipelines:
                     source: build/reports/jacoco
               tabs:
                 coverage: jacoco/test/html/index.html
-                test_report: build/reports/tests/integration/index.html
+                TestReport: build/reports/tests/integration/index.html
               resources:
                 - docker
               tasks:
