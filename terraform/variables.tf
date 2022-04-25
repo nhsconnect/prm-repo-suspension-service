@@ -32,9 +32,9 @@ variable "log_level" {
   default = "debug"
 }
 
-//this might change per environment.
 variable "threshold_for_suspensions_queue_age_of_message" {
-  default = "64800"
+  description = "An alarm will be raised if any message gets to this many seconds old"
+  default = "86400"
 }
 
 variable "period_of_age_of_message_metric" {
