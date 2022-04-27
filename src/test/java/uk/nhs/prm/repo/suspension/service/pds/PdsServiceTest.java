@@ -173,7 +173,7 @@ class PdsServiceTest {
     }
 
     @Test
-    public void shouldLogTheCausingExceptionIncludingDetailsOfAnyIntermittentException() {
+    public void shouldLogTheCausingExceptionIncludingDetailsOfAnyUnexpectedExceptionClassifiedAsIntermittent() {
         var logged = addTestLogAppender();
 
         var theCause = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Some more interesting detail");
@@ -184,7 +184,7 @@ class PdsServiceTest {
             pdsService.isSuspended("1234567890");
         });
 
-        var errorLog = logged.findLoggedEvent("server error");
+        var errorLog = logged.findLoggedEvent("unexpected error");
         assertThat(errorLog).isNotNull();
         assertThat(errorLog.getThrowableProxy().getMessage()).contains("Some more interesting detail");
     }
