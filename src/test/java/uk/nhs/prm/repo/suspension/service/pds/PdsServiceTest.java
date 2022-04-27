@@ -81,15 +81,17 @@ class PdsServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenPdsReturn400() {
+    public void shouldThrowExceptionIncludingDetailWhenPdsReturn400() {
         String expectedUrl = "http://pds-adaptor/suspended-patient-status/1234567890";
 
         when(client.getWithStatusCodeNoRateLimit(expectedUrl, "suspension-service", "PASS"))
                 .thenThrow(HttpClientErrorException.class);
 
-        assertThrows(InvalidPdsRequestException.class, () -> {
+        var thrown = assertThrows(InvalidPdsRequestException.class, () -> {
             pdsService.isSuspended("1234567890");
         });
+
+        assertThat(thrown.getCause().getClass()).isEqualTo(HttpClientErrorException.class);
     }
 
     @Test
@@ -104,6 +106,24 @@ class PdsServiceTest {
             pdsService.updateMof("1234567890", "hello", "bob");
         });
     }
+
+    @Test
+    public void shouldLogTheCausingExceptionIncludingDetailsOfAny4xxTypeHttpClientErrorException() {
+        var logged = addTestLogAppender();
+
+        var theCause = new HttpClientErrorException(HttpStatus.NOT_FOUND, "Some more detail");
+        when(client.getWithStatusCodeNoRateLimit(anyString(), anyString(), anyString()))
+                .thenThrow(theCause);
+
+        assertThrows(InvalidPdsRequestException.class, () -> {
+            pdsService.isSuspended("1234567890");
+        });
+
+        var errorLog = logged.findLoggedEvent("client error");
+        assertThat(errorLog).isNotNull();
+        assertThat(errorLog.getThrowableProxy().getMessage()).contains("Some more detail");
+    }
+
 
     @Test
     public void shouldAssumeThisIsAnIntermittentExceptionWhenPdsReturn500() {

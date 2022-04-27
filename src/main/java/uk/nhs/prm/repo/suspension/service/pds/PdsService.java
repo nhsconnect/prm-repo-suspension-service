@@ -40,8 +40,8 @@ public class PdsService {
             }
             return responseParser.parse(response.getBody());
         } catch (HttpClientErrorException e) {
-            log.error("Got client error");
-            throw new InvalidPdsRequestException("Got client error", e);
+            log.error("Got client error", e);
+            throw new InvalidPqdsRequestException("Got client error", e);
         } catch (Exception e) {
             log.error("Got server error", e);
             throw new IntermittentErrorPdsException("Got server error", e);
