@@ -24,25 +24,11 @@ public class SuspensionMessageProcessorTest {
     private MessageProcessExecution messageProcessExecution;
 
     @Mock
-    private NotSuspendedEventPublisher notSuspendedEventPublisher;
+    private MessagePublisherBroker messagePublisherBroker;
 
-    @Mock
-    private MofUpdatedEventPublisher mofUpdatedEventPublisher;
-
-    @Mock
-    private MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
 
     @Mock
     private LastUpdatedEventService lastUpdatedEventService;
-
-    @Mock
-    private EventOutOfOrderPublisher eventOutOfOrderPublisher;
-
-    @Mock
-    private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
-
-    @Mock
-    private InvalidSuspensionPublisher invalidSuspensionPublisher;
 
     @Mock
     private ConcurrentThreadLock concurrentThreadLock;
@@ -56,9 +42,7 @@ public class SuspensionMessageProcessorTest {
 
     @BeforeEach
     public void setUp() {
-        var publisherBroker =  new MessagePublisherBroker(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfOrderPublisher, deceasedPatientEventPublisher);
-        messageProcessExecution = new MessageProcessExecution(publisherBroker,
+        messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
                 pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
         suspensionMessageProcessor = new SuspensionMessageProcessor(messageProcessExecution);
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
@@ -129,8 +113,7 @@ public class SuspensionMessageProcessorTest {
         Assertions.assertThrows(InvalidSuspensionMessageException.class, () ->
                 suspensionMessageProcessor.process(sampleMessage));
 
-        verify(invalidSuspensionPublisher).sendMessage(sampleMessage);
-        verify(invalidSuspensionPublisher).sendNonSensitiveMessage(sampleMessage);
+        verify(messagePublisherBroker).invalidFormattedMessage(sampleMessage, sampleMessage);
     }
 
     @Test

@@ -19,19 +19,9 @@ public class MessageProcessLastUpdatedEventTest {
     private MessageProcessExecution messageProcessExecution;
 
     @Mock
+    private MessagePublisherBroker messagePublisherBroker;
+    @Mock
     private LastUpdatedEventService lastUpdatedEventService;
-    @Mock
-    private NotSuspendedEventPublisher notSuspendedEventPublisher;
-    @Mock
-    private MofUpdatedEventPublisher mofUpdatedEventPublisher;
-    @Mock
-    private MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
-    @Mock
-    private InvalidSuspensionPublisher invalidSuspensionPublisher;
-    @Mock
-    private EventOutOfOrderPublisher eventOutOfOrderPublisher;
-    @Mock
-    private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
     @Mock
     private PdsService pdsService;
     @Mock
@@ -49,9 +39,7 @@ public class MessageProcessLastUpdatedEventTest {
 
     @BeforeEach
     public void setUp() {
-        var publisherBroker =  new MessagePublisherBroker(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfOrderPublisher, deceasedPatientEventPublisher);
-        messageProcessExecution = new MessageProcessExecution(publisherBroker,
+        messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
                 pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
     }
 
@@ -62,21 +50,21 @@ public class MessageProcessLastUpdatedEventTest {
         messageProcessExecution.run(suspendedMessage);
 
         verify(lastUpdatedEventService).isOutOfOrder(nhsNumber, lastUpdated);
-        verify(eventOutOfOrderPublisher).sendMessage(new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER"));
+        verify(messagePublisherBroker).eventOutOfOrderMessage(nemsMessageId);
+        verifyNoMoreInteractions(messagePublisherBroker);
     }
 
     @Test
     void shouldSaveRecordIfisNotOutOfOrder() {
         mockMofDependencies();
-        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId, "PREVIOUS_ODS_CODE", "ACTION:UPDATED_MANAGING_ORGANISATION");
         when(lastUpdatedEventService.isOutOfOrder(nhsNumber, lastUpdated)).thenReturn(false);
 
         messageProcessExecution.run(suspendedMessage);
 
         verify(lastUpdatedEventService).isOutOfOrder(nhsNumber, lastUpdated);
-        verify(eventOutOfOrderPublisher, never()).sendMessage(any());
         verify(lastUpdatedEventService).save(nhsNumber, lastUpdated);
-        verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
+        verify(messagePublisherBroker).mofUpdatedMessage(nemsMessageId, "PREVIOUS_ODS_CODE", false);
+
     }
 
     private void mockMofDependencies() {
