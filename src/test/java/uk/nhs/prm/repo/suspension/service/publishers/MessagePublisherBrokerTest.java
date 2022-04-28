@@ -29,7 +29,7 @@ class MessagePublisherBrokerTest {
     @InjectMocks
     private MessagePublisherBroker messagePublisherBroker;
 
-    private final String NEMS_MESSAGE_ID = "some-nems-id";
+    private final static String NEMS_MESSAGE_ID = "some-nems-id";
 
     @Test
     void notSuspendedMessage() {

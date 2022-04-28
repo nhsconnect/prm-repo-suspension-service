@@ -329,7 +329,7 @@ public class MessageProcessExecutionTest {
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, "B85612", "", false);
         when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
         messageProcessExecution.run(sampleMessage);
-        var expectedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
+
         verify(messagePublisherBroker).mofNotUpdatedMessage(nemsMessageId);
         verifyNoMoreInteractions(messagePublisherBroker);
     }

@@ -218,6 +218,7 @@ case "${command}" in
       ;;
   test_all)
       configure_envs
+      die_localstack_die
       dojo -c Dojofile-itest "./tasks _test_all"
       ;;
   run_local)
