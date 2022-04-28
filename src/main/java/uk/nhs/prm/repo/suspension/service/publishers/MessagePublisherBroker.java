@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.suspension.service.suspensionsevents;
+package uk.nhs.prm.repo.suspension.service.publishers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

@@ -10,6 +10,7 @@ import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessa
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
+import uk.nhs.prm.repo.suspension.service.publishers.*;
 
 import static org.mockito.Mockito.*;
 

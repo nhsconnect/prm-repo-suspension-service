@@ -10,6 +10,7 @@ import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
+import uk.nhs.prm.repo.suspension.service.publishers.MessagePublisherBroker;
 
 @Service
 @Slf4j
