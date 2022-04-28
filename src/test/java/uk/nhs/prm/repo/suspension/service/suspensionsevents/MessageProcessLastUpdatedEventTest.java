@@ -48,8 +48,9 @@ public class MessageProcessLastUpdatedEventTest {
 
     @BeforeEach
     public void setUp() {
-        messageProcessExecution = new MessageProcessExecution(notSuspendedEventPublisher, mofUpdatedEventPublisher,
-                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfOrderPublisher, deceasedPatientEventPublisher,
+        var publisherBroker =  new MessagePublisherBroker(notSuspendedEventPublisher, mofUpdatedEventPublisher,
+                mofNotUpdatedEventPublisher, invalidSuspensionPublisher, eventOutOfOrderPublisher, deceasedPatientEventPublisher);
+        messageProcessExecution = new MessageProcessExecution(publisherBroker,
                 pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
     }
 

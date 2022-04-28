@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
-import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
@@ -16,12 +15,7 @@ import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 @Slf4j
 @RequiredArgsConstructor
 public class MessageProcessExecution {
-    final NotSuspendedEventPublisher notSuspendedEventPublisher;
-    final MofUpdatedEventPublisher mofUpdatedEventPublisher;
-    final MofNotUpdatedEventPublisher mofNotUpdatedEventPublisher;
-    final InvalidSuspensionPublisher invalidSuspensionPublisher;
-    final EventOutOfOrderPublisher eventOutOfOrderPublisher;
-    final DeceasedPatientEventPublisher deceasedPatientEventPublisher;
+    final MessagePublisherBroker messagePublisherBroker;
     final PdsService pdsService;
     final LastUpdatedEventService lastUpdatedEventService;
     @Value("${process_only_synthetic_patients}")
@@ -39,8 +33,7 @@ public class MessageProcessExecution {
             // event out of order block
             if (lastUpdatedEventService.isOutOfOrder(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
                 log.info("Event is out of order");
-                var eventOutOfOrderMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:EVENT_PROCESSED_OUT_OF_ORDER");
-                eventOutOfOrderPublisher.sendMessage(eventOutOfOrderMessage);
+                messagePublisherBroker.eventOutOfOrderMessage(suspensionEvent.nemsMessageId());
                 return;
             }
 
@@ -50,15 +43,13 @@ public class MessageProcessExecution {
             // patient is deceased block
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsDeceased())) {
                 log.info("Patient is deceased");
-                var deceasedPatientMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:DECEASED_PATIENT");
-                deceasedPatientEventPublisher.sendMessage(deceasedPatientMessage);
+                messagePublisherBroker.deceasedPatientMessage(suspensionEvent.nemsMessageId());
                 return;
             }
 
             // synthetic patient block
             if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
-                var notSyntheticMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NOT_SYNTHETIC");
-                mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
+                messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
                 return;
             }
 
@@ -67,13 +58,13 @@ public class MessageProcessExecution {
                 publishMofUpdate(suspensionMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
                 lastUpdatedEventService.save(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated());
             } else {
-                var notSuspendedMessage = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
-                notSuspendedEventPublisher.sendMessage(notSuspendedMessage);
+                messagePublisherBroker.notSuspendedMessage(suspensionEvent.nemsMessageId());
             }
         } finally {
             threadLock.unlock(suspensionEvent.nhsNumber());
         }
     }
+
 
     void publishMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
         try {
@@ -102,9 +93,7 @@ public class MessageProcessExecution {
     }
 
     String publishInvalidSuspensionAndThrow(String suspensionMessage, String nemsMessageId, InvalidPdsRequestException invalidPdsRequestException) {
-        invalidSuspensionPublisher.sendMessage(suspensionMessage);
-        invalidSuspensionPublisher.sendNonSensitiveMessage(new NonSensitiveDataMessage(nemsMessageId,
-                "NO_ACTION:INVALID_SUSPENSION").toJsonString());
+        messagePublisherBroker.invalidFormattedMessage(suspensionMessage, new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:INVALID_SUSPENSION").toJsonString());
         throw invalidPdsRequestException;
     }
 
@@ -113,8 +102,7 @@ public class MessageProcessExecution {
             return parser.parse(suspensionMessage);
         } catch (JsonProcessingException e) {
             log.error("Got an exception while parsing suspensions message");
-            invalidSuspensionPublisher.sendMessage(suspensionMessage);
-            invalidSuspensionPublisher.sendNonSensitiveMessage(suspensionMessage);
+            messagePublisherBroker.invalidFormattedMessage(suspensionMessage, suspensionMessage);
             throw new InvalidSuspensionMessageException("Encountered an invalid message", e);
         }
     }
@@ -141,11 +129,11 @@ public class MessageProcessExecution {
         if (canUpdateManagingOrganisation(newManagingOrganisation, suspensionEvent)) {
             var updateMofResponse = pdsService.updateMof(nhsNumber, suspensionEvent.previousOdsCode(), recordETag);
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
-            publishMofUpdateMessage(nhsNumber, suspensionEvent);
+            var isSuperseded = nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), nhsNumber);
+            messagePublisherBroker.mofUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode() , isSuperseded);
         } else {
             log.info("Managing Organisation field is already set to previous GP");
-            var mofSameAsPreviousGp = new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
-            mofNotUpdatedEventPublisher.sendMessage(mofSameAsPreviousGp);
+            messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId());
         }
     }
 
@@ -153,11 +141,4 @@ public class MessageProcessExecution {
         return (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode()));
     }
 
-    void publishMofUpdateMessage(String pdsNhsNumber, SuspensionEvent suspensionEvent) {
-        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), "ACTION:UPDATED_MANAGING_ORGANISATION");
-        if (nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), pdsNhsNumber)) {
-            mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), "ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
-        }
-        mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
-    }
 }
