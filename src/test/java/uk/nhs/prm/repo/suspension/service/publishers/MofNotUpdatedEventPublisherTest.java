@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.suspension.service.suspensionsevents;
+package uk.nhs.prm.repo.suspension.service.publishers;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
