@@ -14,6 +14,6 @@ public class SuspensionEventParser {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public SuspensionEvent parse(String suspensionMessage) throws JsonProcessingException {
-        return new SuspensionEvent(mapper.readValue(suspensionMessage, new TypeReference<>() { }));
+        return mapper.readValue(suspensionMessage, SuspensionEvent.class);
     }
 }

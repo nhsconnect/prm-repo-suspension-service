@@ -1,37 +1,30 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
-import java.util.HashMap;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SuspensionEvent {
-
-    private HashMap<String, Object> fields;
-
-    public SuspensionEvent(HashMap<String, Object> fields) {
-        this.fields = fields;
-    }
-
-    public SuspensionEvent(String nhsNumber, String previousOdsCode, String nemsMessageId, String lastUpdated) {
-        var fields = new HashMap<String, Object>();
-        fields.put("nhsNumber", nhsNumber);
-        fields.put("previousOdsCode", previousOdsCode);
-        fields.put("nemsMessageId", nemsMessageId);
-        fields.put("lastUpdated", lastUpdated);
-        this.fields = fields;
-    }
+    private String nhsNumber;
+    private String previousOdsCode;
+    private String nemsMessageId;
+    private String lastUpdated;
 
     public String nhsNumber() {
-        return fields.get("nhsNumber").toString();
+        return nhsNumber;
     }
-
     public String previousOdsCode() {
-        return fields.get("previousOdsCode").toString();
+        return previousOdsCode;
     }
-
     public String nemsMessageId() {
-        return fields.get("nemsMessageId").toString();
+        return nemsMessageId;
     }
-
     public String lastUpdated() {
-        return fields.get("lastUpdated").toString();
+        return lastUpdated;
     }
 }
