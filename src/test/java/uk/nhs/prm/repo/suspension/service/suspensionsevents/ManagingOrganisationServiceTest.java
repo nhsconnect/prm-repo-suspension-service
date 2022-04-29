@@ -50,6 +50,23 @@ class ManagingOrganisationServiceTest {
     }
 
     @Test
+    void shouldSendMofUpdateForSuspendedPatientWhenCurrentOdsCodeIsDifferentValue() {
+        var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, NEMS_MESSAGE_ID, LAST_UPDATED_DATE);
+        var beforeUpdateResponse = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, "A1000",
+                null, RECORD_E_TAG, false);
+
+        var afterUpdateResponse = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null,
+                PREVIOUS_ODS_CODE, "E2", false);
+
+        when(pdsService.updateMof(NHS_NUMBER, PREVIOUS_ODS_CODE, RECORD_E_TAG)).thenReturn(afterUpdateResponse);
+
+        mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
+
+        verify(pdsService).updateMof(NHS_NUMBER, PREVIOUS_ODS_CODE, RECORD_E_TAG);
+        verify(messagePublisherBroker).mofUpdatedMessage(NEMS_MESSAGE_ID, PREVIOUS_ODS_CODE, false);
+    }
+
+    @Test
     void shouldSendMofUpdateForSuspendedPatientWhenSuperseded() {
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, NEMS_MESSAGE_ID, LAST_UPDATED_DATE);
         var supersededNhsNumber = "different-nhs-number";

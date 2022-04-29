@@ -6,8 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
-import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
-import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 import uk.nhs.prm.repo.suspension.service.publishers.*;
@@ -22,6 +20,8 @@ public class MessageProcessLastUpdatedEventTest {
     private MessagePublisherBroker messagePublisherBroker;
     @Mock
     private LastUpdatedEventService lastUpdatedEventService;
+    @Mock
+    private ManagingOrganisationService managingOrganisationService;
     @Mock
     private PdsService pdsService;
     @Mock
@@ -41,7 +41,7 @@ public class MessageProcessLastUpdatedEventTest {
     public void setUp() {
         var mofService = new ManagingOrganisationService(pdsService, messagePublisherBroker);
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
-                pdsService, lastUpdatedEventService, mofService, new SuspensionEventParser(), concurrentThreadLock);
+                pdsService, lastUpdatedEventService, managingOrganisationService, new SuspensionEventParser(), concurrentThreadLock);
     }
 
     @Test
@@ -53,28 +53,29 @@ public class MessageProcessLastUpdatedEventTest {
         verify(lastUpdatedEventService).isOutOfOrder(nhsNumber, lastUpdated);
         verify(messagePublisherBroker).eventOutOfOrderMessage(nemsMessageId);
         verifyNoMoreInteractions(messagePublisherBroker);
+        verifyNoMoreInteractions(managingOrganisationService);
     }
 
     @Test
     void shouldSaveRecordIfisNotOutOfOrder() {
-        mockMofDependencies();
+        var pdsAdaptorSuspensionStatusResponse = mockMofDependencies();
         when(lastUpdatedEventService.isOutOfOrder(nhsNumber, lastUpdated)).thenReturn(false);
 
         messageProcessExecution.run(suspendedMessage);
 
+        var suspensionEvent = new SuspensionEvent(nhsNumber, "PREVIOUS_ODS_CODE", nemsMessageId, "2017-11-01T15:00:33+00:00");
+
         verify(lastUpdatedEventService).isOutOfOrder(nhsNumber, lastUpdated);
         verify(lastUpdatedEventService).save(nhsNumber, lastUpdated);
-        verify(messagePublisherBroker).mofUpdatedMessage(nemsMessageId, "PREVIOUS_ODS_CODE", false);
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
 
     }
 
-    private void mockMofDependencies() {
+    private PdsAdaptorSuspensionStatusResponse mockMofDependencies() {
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(nhsNumber, true, null, null, "", false);
-        var pdsAdaptorMofUpdatedResponse
-                = new PdsAdaptorSuspensionStatusResponse(nhsNumber, true, null, "PREVIOUS_ODS_CODE", "", false);
 
         when(pdsService.isSuspended(nhsNumber)).thenReturn(pdsAdaptorSuspensionStatusResponse);
-        when(pdsService.updateMof(nhsNumber, "PREVIOUS_ODS_CODE", "")).thenReturn(pdsAdaptorMofUpdatedResponse);
+        return pdsAdaptorSuspensionStatusResponse;
     }
 }

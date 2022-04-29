@@ -26,6 +26,8 @@ public class SuspensionMessageProcessorTest {
     @Mock
     private MessagePublisherBroker messagePublisherBroker;
 
+    @Mock
+    private ManagingOrganisationService managingOrganisationService;
 
     @Mock
     private LastUpdatedEventService lastUpdatedEventService;
@@ -42,9 +44,8 @@ public class SuspensionMessageProcessorTest {
 
     @BeforeEach
     public void setUp() {
-        var mofService = new ManagingOrganisationService(pdsService, messagePublisherBroker);
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
-                pdsService, lastUpdatedEventService, mofService, new SuspensionEventParser(), concurrentThreadLock);
+                pdsService, lastUpdatedEventService, managingOrganisationService, new SuspensionEventParser(), concurrentThreadLock);
         suspensionMessageProcessor = new SuspensionMessageProcessor(messageProcessExecution);
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
         setField(suspensionMessageProcessor, "maxAttempts", 5);
