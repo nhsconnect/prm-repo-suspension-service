@@ -42,8 +42,9 @@ public class MessageProcessExecutionTest {
 
     @BeforeEach
     public void setUp() {
+        var mofService = new ManagingOrganisationService(pdsService, messagePublisherBroker);
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
-                pdsService, lastUpdatedEventService, new SuspensionEventParser(), concurrentThreadLock);
+                pdsService, lastUpdatedEventService, mofService, new SuspensionEventParser(), concurrentThreadLock);
     }
 
     @Test
