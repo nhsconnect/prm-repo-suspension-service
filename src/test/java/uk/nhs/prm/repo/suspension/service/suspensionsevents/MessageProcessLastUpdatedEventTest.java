@@ -39,7 +39,6 @@ public class MessageProcessLastUpdatedEventTest {
 
     @BeforeEach
     public void setUp() {
-        var mofService = new ManagingOrganisationService(pdsService, messagePublisherBroker);
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
                 pdsService, lastUpdatedEventService, managingOrganisationService, new SuspensionEventParser(), concurrentThreadLock);
     }
