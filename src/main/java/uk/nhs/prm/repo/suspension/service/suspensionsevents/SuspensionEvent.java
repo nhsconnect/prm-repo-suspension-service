@@ -10,6 +10,15 @@ public class SuspensionEvent {
         this.fields = fields;
     }
 
+    public SuspensionEvent(String nhsNumber, String previousOdsCode, String nemsMessageId, String lastUpdated) {
+        var fields = new HashMap<String, Object>();
+        fields.put("nhsNumber", nhsNumber);
+        fields.put("previousOdsCode", previousOdsCode);
+        fields.put("nemsMessageId", nemsMessageId);
+        fields.put("lastUpdated", lastUpdated);
+        this.fields = fields;
+    }
+
     public String nhsNumber() {
         return fields.get("nhsNumber").toString();
     }

@@ -60,7 +60,7 @@ public class MessageProcessExecution {
 
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
                 log.info("Patient is Suspended");
-                managingOrganisationService.publishMofUpdate(suspensionMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
+                managingOrganisationService.processMofUpdate(suspensionMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
                 lastUpdatedEventService.save(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated());
             } else {
                 messagePublisherBroker.notSuspendedMessage(suspensionEvent.nemsMessageId());
