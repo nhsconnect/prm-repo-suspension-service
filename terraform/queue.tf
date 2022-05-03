@@ -17,6 +17,7 @@ locals {
   deceased_patient_queue_name = "${var.environment}-${var.component_name}-deceased-patient-queue"
   deceased_patient_audit_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit"
   deceased_patient_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit-splunk-dlq"
+  repo_incoming_queue_name = "${var.environment}-${var.component_name}-repo-incoming-queue"
 }
 
 resource "aws_sqs_queue" "suspensions" {
@@ -365,4 +366,25 @@ resource "aws_sqs_queue" "deceased_patient_audit_splunk_dlq" {
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
+}
+
+resource "aws_sqs_queue" "repo_incoming" {
+  name                       = local.repo_incoming_queue_name
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_kms_key.repo_incoming.id
+  receive_wait_time_seconds = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name = local.repo_incoming_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "repo_incoming" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.repo_incoming.arn
+  endpoint             = aws_sqs_queue.repo_incoming.arn
 }
