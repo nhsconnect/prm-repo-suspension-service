@@ -222,6 +222,7 @@ public class SuspensionsIntegrationTest {
                 = new ReceiveMessageRequest().withQueueUrl(queueUrl)
                 .withMessageAttributeNames("traceId");
         List<Message> messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
+        System.out.printf("Found %s messages on queue: %s%n", messages.size(), queueUrl);
         assertThat(messages).hasSize(1);
         return messages;
     }

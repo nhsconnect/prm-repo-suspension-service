@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,21 +12,24 @@ import uk.nhs.prm.repo.suspension.service.publishers.MessagePublisherBroker;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ManagingOrganisationService {
 
     private final PdsService pdsService;
     private final MessagePublisherBroker messagePublisherBroker;
-
-    @Value("${repo.ods.code}")
-    private String repoOdsCode;
-
+    private final String repoOdsCode;
     private final ToggleConfig toggleConfig;
+
+    public ManagingOrganisationService(PdsService pdsService, MessagePublisherBroker messagePublisherBroker, @Value("${repo.ods.code}") String repoOdsCode, ToggleConfig toggleConfig) {
+        this.pdsService = pdsService;
+        this.messagePublisherBroker = messagePublisherBroker;
+        this.repoOdsCode = repoOdsCode;
+        this.toggleConfig = toggleConfig;
+    }
 
     void processMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
         try {
             if (toggleConfig.isCanUpdateManagingOrganisationToRepo()) {
-                updateMofToRepo(response, suspensionEvent);
+                updateMofToRepo(response);
             } else {
                 updateMofToPreviousGp(response, suspensionEvent);
             }
@@ -50,8 +52,8 @@ public class ManagingOrganisationService {
         }
     }
 
-    private void updateMofToRepo(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
-        var updateMofResponse = pdsService.updateMof(pdsResponse.getNhsNumber(), repoOdsCode, pdsResponse.getRecordETag());
+    private void updateMofToRepo(PdsAdaptorSuspensionStatusResponse pdsResponse) {
+        pdsService.updateMof(pdsResponse.getNhsNumber(), repoOdsCode, pdsResponse.getRecordETag());
     }
 
     private boolean canUpdateManagingOrganisation(String newManagingOrganisation, SuspensionEvent suspensionEvent) {
