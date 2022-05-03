@@ -1,9 +1,10 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.suspension.service.config.ToggleConfig;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
@@ -18,10 +19,18 @@ public class ManagingOrganisationService {
     private final PdsService pdsService;
     private final MessagePublisherBroker messagePublisherBroker;
 
+    @Value("${repo.ods.code}")
+    private String repoOdsCode;
+
+    private final ToggleConfig toggleConfig;
 
     void processMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
         try {
-            updateMof(response, suspensionEvent);
+            if (toggleConfig.isCanUpdateManagingOrganisationToRepo()) {
+                updateMofToRepo(response, suspensionEvent);
+            } else {
+                updateMofToPreviousGp(response, suspensionEvent);
+            }
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
             messagePublisherBroker.invalidFormattedMessage(suspensionMessage, new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),
                     "NO_ACTION:INVALID_SUSPENSION").toJsonString());
@@ -29,7 +38,7 @@ public class ManagingOrganisationService {
         }
     }
 
-    private void updateMof(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent)  {
+    private void updateMofToPreviousGp(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
         if (canUpdateManagingOrganisation(pdsResponse.getManagingOrganisation(), suspensionEvent)) {
             var updateMofResponse = pdsService.updateMof(pdsResponse.getNhsNumber(), suspensionEvent.previousOdsCode(), pdsResponse.getRecordETag());
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
@@ -39,6 +48,10 @@ public class ManagingOrganisationService {
             log.info("Managing Organisation field is already set to previous GP");
             messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId());
         }
+    }
+
+    private void updateMofToRepo(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
+        var updateMofResponse = pdsService.updateMof(pdsResponse.getNhsNumber(), repoOdsCode, pdsResponse.getRecordETag());
     }
 
     private boolean canUpdateManagingOrganisation(String newManagingOrganisation, SuspensionEvent suspensionEvent) {
