@@ -98,3 +98,4 @@ resource "aws_sns_topic" "repo_incoming" {
 data "aws_sns_topic" "alarm_notifications" {
   name = "${var.environment}-alarm-notifications-sns-topic"
 }
+
