@@ -66,3 +66,8 @@ variable "core_task_number" {
   description = "Something to do with number of threads used in metric alarm for scale down"
   default = 5
 }
+
+variable "can_update_managing_organisation_to_repo" {
+  description = "Toggle to allow updating managing organisation to repo ODS code"
+  default = false
+}
