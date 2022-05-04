@@ -29,7 +29,7 @@ public class ManagingOrganisationService {
     void processMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
         try {
             if (toggleConfig.isCanUpdateManagingOrganisationToRepo()) {
-                updateMofToRepo(response);
+                updateMofToRepo(response, suspensionEvent);
             } else {
                 updateMofToPreviousGp(response, suspensionEvent);
             }
@@ -52,8 +52,10 @@ public class ManagingOrganisationService {
         }
     }
 
-    private void updateMofToRepo(PdsAdaptorSuspensionStatusResponse pdsResponse) {
-        pdsService.updateMof(pdsResponse.getNhsNumber(), repoOdsCode, pdsResponse.getRecordETag());
+    private void updateMofToRepo(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
+        var updateResponse = pdsService.updateMof(pdsResponse.getNhsNumber(), repoOdsCode, pdsResponse.getRecordETag());
+        messagePublisherBroker.repoIncomingMessage(updateResponse, suspensionEvent);
+
     }
 
     private boolean canUpdateManagingOrganisation(String newManagingOrganisation, SuspensionEvent suspensionEvent) {

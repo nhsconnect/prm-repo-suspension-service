@@ -9,9 +9,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.config.ToggleConfig;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
+import uk.nhs.prm.repo.suspension.service.model.RepoIncomingRequest;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 import uk.nhs.prm.repo.suspension.service.publishers.MessagePublisherBroker;
+import uk.nhs.prm.repo.suspension.service.utils.ConversationIdGenerator;
 
 import static org.mockito.Mockito.*;
 
@@ -134,13 +136,14 @@ class ManagingOrganisationServiceTest {
         var afterUpdateResponse = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null,
                 REPO_ODS_CODE, "E2", false);
 
+
         when(toggleConfig.isCanUpdateManagingOrganisationToRepo()).thenReturn(true);
         when(pdsService.updateMof(NHS_NUMBER, REPO_ODS_CODE, RECORD_E_TAG)).thenReturn(afterUpdateResponse);
 
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
 
         verify(pdsService).updateMof(NHS_NUMBER, REPO_ODS_CODE, RECORD_E_TAG);
-//        verify(messagePublisherBroker).mofUpdatedMessage(NEMS_MESSAGE_ID, PREVIOUS_ODS_CODE, false);
+        verify(messagePublisherBroker).repoIncomingMessage(afterUpdateResponse, suspensionEvent);
     }
 
 }

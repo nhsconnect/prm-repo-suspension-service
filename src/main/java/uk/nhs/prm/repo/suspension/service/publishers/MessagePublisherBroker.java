@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
+import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
+import uk.nhs.prm.repo.suspension.service.model.RepoIncomingRequest;
+import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEvent;
 
 @Component
 @RequiredArgsConstructor
@@ -50,4 +53,11 @@ public class MessagePublisherBroker {
         var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId, previousOdsCode, status);
         mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
     }
+
+    public void repoIncomingMessage(PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse, SuspensionEvent suspensionEvent) {
+//        var status = isSuperseded ? "ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT" : "ACTION:UPDATED_MANAGING_ORGANISATION";
+//        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId, previousOdsCode, status);
+//        mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
+    }
+
 }
