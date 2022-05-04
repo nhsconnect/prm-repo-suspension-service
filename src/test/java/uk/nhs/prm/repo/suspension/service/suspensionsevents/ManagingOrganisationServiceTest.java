@@ -103,7 +103,7 @@ class ManagingOrganisationServiceTest {
 
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
 
-        verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID);
+        verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID,false);
         verifyNoInteractions(pdsService);
     }
 
@@ -141,6 +141,19 @@ class ManagingOrganisationServiceTest {
 
         verify(pdsService).updateMof(NHS_NUMBER, REPO_ODS_CODE, RECORD_E_TAG);
         verify(messagePublisherBroker).repoIncomingMessage(afterUpdateResponse, suspensionEvent);
+    }
+
+    @Test
+    void shouldSendMofNotUpdateWhenMofTheSameAsRepo() {
+        var suspensionEvent = new SuspensionEvent(NHS_NUMBER, REPO_ODS_CODE, NEMS_MESSAGE_ID, LAST_UPDATED_DATE);
+        var beforeUpdateResponse = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null,
+                REPO_ODS_CODE, RECORD_E_TAG, false);
+
+        when(toggleConfig.isCanUpdateManagingOrganisationToRepo()).thenReturn(true);
+        mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
+
+        verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID,true);
+        verifyNoInteractions(pdsService);
     }
 
 }

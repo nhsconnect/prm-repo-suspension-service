@@ -46,8 +46,9 @@ public class MessagePublisherBroker {
         invalidSuspensionPublisher.sendNonSensitiveMessage(nonSensitiveMessage);
     }
 
-    public void mofNotUpdatedMessage(String nemsMessageId) {
-        var mofSameAsPreviousGp = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
+    public void mofNotUpdatedMessage(String nemsMessageId, boolean toRepoOdsCode) {
+        var status = toRepoOdsCode ? "NO_ACTION:MOF_SAME_AS_REPO" :  "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP";
+        var mofSameAsPreviousGp = new NonSensitiveDataMessage(nemsMessageId, status);
         mofNotUpdatedEventPublisher.sendMessage(mofSameAsPreviousGp);
     }
 
@@ -58,7 +59,7 @@ public class MessagePublisherBroker {
     }
 
     public void repoIncomingMessage(PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse, SuspensionEvent suspensionEvent) {
-        var repoIncomingEvent = new RepoIncomingEvent(pdsAdaptorSuspensionStatusResponse,suspensionEvent, UUID.randomUUID().toString());
+        var repoIncomingEvent = new RepoIncomingEvent(pdsAdaptorSuspensionStatusResponse, suspensionEvent, UUID.randomUUID().toString());
         repoIncomingEventPublisher.sendMessage(repoIncomingEvent);
     }
 

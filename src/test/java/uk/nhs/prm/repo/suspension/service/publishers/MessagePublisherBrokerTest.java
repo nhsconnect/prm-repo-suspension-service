@@ -87,8 +87,15 @@ class MessagePublisherBrokerTest {
 
     @Test
     void mofNotUpdatedMessage() {
-        messagePublisherBroker.mofNotUpdatedMessage(NEMS_MESSAGE_ID);
+        messagePublisherBroker.mofNotUpdatedMessage(NEMS_MESSAGE_ID,false);
         var nonSensitiveDataMessage = new NonSensitiveDataMessage(NEMS_MESSAGE_ID, "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
+        verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage);
+    }
+
+    @Test
+    void mofNotUpdatedMessageWithRepoStatusTrue() {
+        messagePublisherBroker.mofNotUpdatedMessage(NEMS_MESSAGE_ID,true);
+        var nonSensitiveDataMessage = new NonSensitiveDataMessage(NEMS_MESSAGE_ID, "NO_ACTION:MOF_SAME_AS_REPO");
         verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage);
     }
 

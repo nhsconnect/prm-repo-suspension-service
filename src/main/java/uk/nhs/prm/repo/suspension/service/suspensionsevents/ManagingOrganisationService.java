@@ -41,26 +41,31 @@ public class ManagingOrganisationService {
     }
 
     private void updateMofToPreviousGp(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
-        if (canUpdateManagingOrganisation(pdsResponse.getManagingOrganisation(), suspensionEvent)) {
+        if (canUpdateManagingOrganisation(pdsResponse.getManagingOrganisation(), suspensionEvent.previousOdsCode())) {
             var updateMofResponse = pdsService.updateMof(pdsResponse.getNhsNumber(), suspensionEvent.previousOdsCode(), pdsResponse.getRecordETag());
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
             var isSuperseded = nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), pdsResponse.getNhsNumber());
             messagePublisherBroker.mofUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), isSuperseded);
         } else {
             log.info("Managing Organisation field is already set to previous GP");
-            messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId());
+            messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId(), false);
         }
-        //Error Scenario: If the field is already set to RepoOdsCode then throw an error.
     }
 
     private void updateMofToRepo(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
-        var updateResponse = pdsService.updateMof(pdsResponse.getNhsNumber(), repoOdsCode, pdsResponse.getRecordETag());
-        messagePublisherBroker.repoIncomingMessage(updateResponse, suspensionEvent);
+        if (canUpdateManagingOrganisation(pdsResponse.getManagingOrganisation(), repoOdsCode)) {
+            var updateResponse = pdsService.updateMof(pdsResponse.getNhsNumber(), repoOdsCode, pdsResponse.getRecordETag());
+            log.info("Managing Organisation field Updated to REPO ODS Code " + repoOdsCode);
+            messagePublisherBroker.repoIncomingMessage(updateResponse, suspensionEvent);
+        } else {
+            log.error("Managing Organisation field is already set to Repo ODS code");
+            messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId(), true);
+        }
 
     }
 
-    private boolean canUpdateManagingOrganisation(String newManagingOrganisation, SuspensionEvent suspensionEvent) {
-        return (newManagingOrganisation == null || !newManagingOrganisation.equals(suspensionEvent.previousOdsCode()));
+    private boolean canUpdateManagingOrganisation(String currentManagingOrganisation, String newManagingOrganisation) {
+        return (currentManagingOrganisation == null || !currentManagingOrganisation.equals(newManagingOrganisation));
     }
 
     private boolean nhsNumberIsSuperseded(String nemsEventNhsNumber, String pdsNhsNumber) {
