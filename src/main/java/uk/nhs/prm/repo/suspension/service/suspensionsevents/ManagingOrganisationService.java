@@ -50,6 +50,7 @@ public class ManagingOrganisationService {
             log.info("Managing Organisation field is already set to previous GP");
             messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId());
         }
+        //Error Scenario: If the field is already set to RepoOdsCode then throw an error.
     }
 
     private void updateMofToRepo(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {

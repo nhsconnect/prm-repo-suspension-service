@@ -1,13 +1,24 @@
 package uk.nhs.prm.repo.suspension.service.publishers;
 
+import org.assertj.core.api.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
+import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
+import uk.nhs.prm.repo.suspension.service.model.RepoIncomingEvent;
+import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEvent;
 
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +36,12 @@ class MessagePublisherBrokerTest {
     private EventOutOfOrderPublisher eventOutOfOrderPublisher;
     @Mock
     private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
+
+    @Mock
+    private RepoIncomingEventPublisher repoIncomingEventPublisher;
+
+    @Captor
+    private ArgumentCaptor<RepoIncomingEvent> repoIncomingEventArgumentCaptor;
 
     @InjectMocks
     private MessagePublisherBroker messagePublisherBroker;
@@ -88,5 +105,21 @@ class MessagePublisherBrokerTest {
         var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(NEMS_MESSAGE_ID, "A1000",
                 "ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT");
         verify(mofUpdatedEventPublisher).sendMessage(mofUpdatedMessage);
+    }
+
+    @Test
+    void repoIncomingMessage() {
+        var suspensionEvent = new SuspensionEvent("NHS_NUMBER", "PREVIOUS_ODS_CODE", NEMS_MESSAGE_ID, "LAST_UPDATED_DATE");
+        var afterUpdateResponse = new PdsAdaptorSuspensionStatusResponse("NHS_NUMBER", true, null,
+                "REPO_ODS_CODE", "E2", false);
+        messagePublisherBroker.repoIncomingMessage(afterUpdateResponse,suspensionEvent);
+        verify(repoIncomingEventPublisher).sendMessage(repoIncomingEventArgumentCaptor.capture());
+        var repoIncomingEventArgumentCaptorValue = repoIncomingEventArgumentCaptor.getValue();
+        assertThat(repoIncomingEventArgumentCaptorValue.getNhsNumber()).isEqualTo("NHS_NUMBER");
+        assertThat(repoIncomingEventArgumentCaptorValue.getNemsMessageID()).isEqualTo(NEMS_MESSAGE_ID);
+        assertThat(repoIncomingEventArgumentCaptorValue.getDestinationGp()).isEqualTo("REPO_ODS_CODE");
+        assertThat(repoIncomingEventArgumentCaptorValue.getNemsEventLastUpdated()).isEqualTo("LAST_UPDATED_DATE");
+        assertThat(repoIncomingEventArgumentCaptorValue.getSourceGp()).isEqualTo("PREVIOUS_ODS_CODE");
+        assertDoesNotThrow(()-> UUID.fromString(repoIncomingEventArgumentCaptorValue.getConversationId()));
     }
 }

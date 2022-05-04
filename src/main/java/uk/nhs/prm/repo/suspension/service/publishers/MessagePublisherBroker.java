@@ -5,8 +5,10 @@ import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
-import uk.nhs.prm.repo.suspension.service.model.RepoIncomingRequest;
+import uk.nhs.prm.repo.suspension.service.model.RepoIncomingEvent;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEvent;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -17,6 +19,7 @@ public class MessagePublisherBroker {
     public final InvalidSuspensionPublisher invalidSuspensionPublisher;
     public final EventOutOfOrderPublisher eventOutOfOrderPublisher;
     public final DeceasedPatientEventPublisher deceasedPatientEventPublisher;
+    public final RepoIncomingEventPublisher repoIncomingEventPublisher;
 
     public void notSuspendedMessage(String nemsMessageId) {
         var notSuspendedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
@@ -55,9 +58,8 @@ public class MessagePublisherBroker {
     }
 
     public void repoIncomingMessage(PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse, SuspensionEvent suspensionEvent) {
-//        var status = isSuperseded ? "ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT" : "ACTION:UPDATED_MANAGING_ORGANISATION";
-//        var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId, previousOdsCode, status);
-//        mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
+        var repoIncomingEvent = new RepoIncomingEvent(pdsAdaptorSuspensionStatusResponse,suspensionEvent, UUID.randomUUID().toString());
+        repoIncomingEventPublisher.sendMessage(repoIncomingEvent);
     }
 
 }
