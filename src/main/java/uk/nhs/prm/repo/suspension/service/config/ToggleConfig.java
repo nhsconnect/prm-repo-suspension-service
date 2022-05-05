@@ -7,6 +7,6 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Configuration
 public class ToggleConfig {
-    @Value("${can.update.managing.organisation.to.repo}")
+    @Value("${toggle.canUpdateManagingOrganisationToRepo}")
     private boolean canUpdateManagingOrganisationToRepo;
 }

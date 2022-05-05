@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest()
@@ -56,6 +57,9 @@ public class SuspensionsIntegrationTest {
 
     @Value("${aws.invalidSuspensionQueueName}")
     private String invalidSuspensionQueueName;
+
+    @Value("${aws.repoIncomingQueueName}")
+    private String repoIncomingQueueName;
 
     private WireMockServer stubPdsAdaptor;
 
@@ -213,6 +217,37 @@ public class SuspensionsIntegrationTest {
         purgeQueue(invalidSuspensionQueueUrl);
         purgeQueue(nonSensitiveInvalidSuspensionQueueUrl);
 
+    }
+
+    @Test
+    void shouldSetMOFAsRepoOdsCodeWhenToggleOn(){
+        var nhsNumber = Long.toString(System.currentTimeMillis());
+        stubFor(get(urlMatching("/suspended-patient-status/" + nhsNumber))
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getSuspendedResponseWith(nhsNumber))));
+        stubFor(put(urlMatching("/suspended-patient-status/" + nhsNumber))
+                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getSuspendedResponseWith(nhsNumber))));
+
+
+        var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+        var repoIncomingQueueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
+        sqs.sendMessage(queueUrl, getSuspensionEventWith(nhsNumber));
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            List<Message> receivedMessageHolder = checkMessageInRelatedQueue(repoIncomingQueueUrl);
+
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("ACTION:UPDATED_MANAGING_ORGANISATION"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("TEST-NEMS-ID"));
+            assertFalse(receivedMessageHolder.get(0).getBody().contains("B85612"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("A1234"));
+            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+        });
+        purgeQueue(repoIncomingQueueUrl);
     }
 
     private List<Message> checkMessageInRelatedQueue(String queueUrl) {

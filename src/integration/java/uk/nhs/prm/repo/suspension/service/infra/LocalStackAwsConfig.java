@@ -68,6 +68,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.acknowledgementQueue}")
     private String ackQueueName;
 
+    @Value("${aws.repoIncomingQueueName}")
+    private String repoIncomingQueueName;
+
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
         return AmazonSQSAsyncClientBuilder.standard()
@@ -125,12 +128,14 @@ public class LocalStackAwsConfig {
         var eventOutOfOrderObservabilityQueue = amazonSQSAsync.createQueue(eventOutOfOrderObservabilityQueueName);
         var invalidSuspensionQueue = amazonSQSAsync.createQueue(invalidSuspensionQueueName);
         var nonSensitiveInvalidSuspensionQueue = amazonSQSAsync.createQueue(nonSensitiveInvalidSuspensionQueueName);
+        var incomingQueue = amazonSQSAsync.createQueue(repoIncomingQueueName);
 
         var topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
         var mofUpdatedTopic = snsClient.createTopic(CreateTopicRequest.builder().name("mof_updated_sns_topic").build());
         var eventOutOfOrderTopic = snsClient.createTopic(CreateTopicRequest.builder().name("event_out_of_order_topic").build());
         var invalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("invalid_suspension_topic").build());
         var nonSensitiveInvalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("non_sensitive_invalid_suspension_topic").build());
+        var repoIncomingTopic = snsClient.createTopic(CreateTopicRequest.builder().name("repo_incoming_sns_topic").build());
 
         createSnsTestReceiverSubscription(topic, getQueueArn(notSuspendedQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(mofUpdatedTopic, getQueueArn(mofUpdatedQueue.getQueueUrl()));
@@ -138,6 +143,7 @@ public class LocalStackAwsConfig {
         createSnsTestReceiverSubscription(eventOutOfOrderTopic, getQueueArn(eventOutOfOrderAuditQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(invalidSuspensionTopic, getQueueArn(invalidSuspensionQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(nonSensitiveInvalidSuspensionTopic, getQueueArn(nonSensitiveInvalidSuspensionQueue.getQueueUrl()));
+        createSnsTestReceiverSubscription(repoIncomingTopic, getQueueArn(incomingQueue.getQueueUrl()));
 
         setupDbAndTable();
     }

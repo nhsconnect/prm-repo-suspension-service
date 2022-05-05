@@ -6,8 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
-import uk.nhs.prm.repo.suspension.service.publishers.DeceasedPatientEventPublisher;
-import uk.nhs.prm.repo.suspension.service.publishers.MessagePublisher;
 
 import static org.mockito.Mockito.verify;
 
