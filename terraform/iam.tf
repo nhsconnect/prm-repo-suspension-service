@@ -106,14 +106,14 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
     ]
   }
 }
-resource "aws_iam_policy" "not_suspended_processor_sns" {
+resource "aws_iam_policy" "suspension_service_sns" {
   name   = "${var.environment}-${var.component_name}-sns"
   policy = data.aws_iam_policy_document.sns_policy_doc.json
 }
 
-resource "aws_iam_role_policy_attachment" "nems_events_processor_sns" {
+resource "aws_iam_role_policy_attachment" "suspension_service_sns" {
   role       = aws_iam_role.component-ecs-role.name
-  policy_arn = aws_iam_policy.not_suspended_processor_sns.arn
+  policy_arn = aws_iam_policy.suspension_service_sns.arn
 }
 
 data "aws_iam_policy_document" "sns_policy_doc" {
@@ -129,7 +129,8 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       aws_sns_topic.invalid_suspension.arn,
       aws_sns_topic.non_sensitive_invalid_suspension.arn,
       aws_sns_topic.deceased_patient.arn,
-      aws_sns_topic.event_out_of_order.arn
+      aws_sns_topic.event_out_of_order.arn,
+      aws_sns_topic.repo_incoming.arn
     ]
   }
 }
