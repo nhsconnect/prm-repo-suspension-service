@@ -51,3 +51,15 @@ resource "aws_ssm_parameter" "repo_incoming_observability_kms_key" {
   type  = "String"
   value = aws_kms_key.repo_incoming_observability.id
 }
+
+resource "aws_ssm_parameter" "repo_incoming_audit_topic_arn" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/repo-incoming-audit-topic-arn"
+  type  = "String"
+  value = aws_sns_topic.repo_incoming_audit.arn
+}
+
+resource "aws_ssm_parameter" "repo_incoming_audit_kms_key" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/repo-incoming-audit-kms-key"
+  type  = "String"
+  value = aws_kms_key.repo_incoming_audit.id
+}

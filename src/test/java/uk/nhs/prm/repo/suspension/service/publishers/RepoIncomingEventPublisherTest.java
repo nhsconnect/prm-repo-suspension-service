@@ -4,9 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
+import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.RepoIncomingEvent;
 
 import static org.mockito.Mockito.verify;
@@ -17,12 +16,13 @@ class RepoIncomingEventPublisherTest {
 
     private final static String topicArn = "topicArn";
     private final static String secondTopicArn = "secondTopicArn";
+    private final static String thirdTopicArn = "thirdTopicArn";
 
     private RepoIncomingEventPublisher repoIncomingEventPublisher;
 
     @BeforeEach
     void setUp() {
-        repoIncomingEventPublisher = new RepoIncomingEventPublisher(messagePublisher, topicArn, secondTopicArn);
+        repoIncomingEventPublisher = new RepoIncomingEventPublisher(messagePublisher, topicArn, secondTopicArn, thirdTopicArn);
     }
 
     @Test
@@ -32,6 +32,7 @@ class RepoIncomingEventPublisherTest {
         repoIncomingEventPublisher.sendMessage(repoIncomingEvent);
         verify(messagePublisher).sendMessage(topicArn, messageBody);
         verify(messagePublisher).sendMessage(secondTopicArn, messageBody);
+        verify(messagePublisher).sendMessage(thirdTopicArn, new NonSensitiveDataMessage(repoIncomingEvent.getNemsMessageID(), "ACTION:REPO-INCOMING").toJsonString());
     }
 
 }

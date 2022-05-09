@@ -130,7 +130,9 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       aws_sns_topic.non_sensitive_invalid_suspension.arn,
       aws_sns_topic.deceased_patient.arn,
       aws_sns_topic.event_out_of_order.arn,
-      aws_sns_topic.repo_incoming.arn
+      aws_sns_topic.repo_incoming.arn,
+      aws_sns_topic.repo_incoming_observability.arn,
+      aws_sns_topic.repo_incoming_audit.arn
     ]
   }
 }
