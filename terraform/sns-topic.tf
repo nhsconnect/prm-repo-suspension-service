@@ -94,6 +94,18 @@ resource "aws_sns_topic" "repo_incoming" {
   }
 }
 
+resource "aws_sns_topic" "repo_incoming_observability" {
+  name = "${var.environment}-${var.component_name}-repo-incoming-observability"
+  kms_master_key_id = aws_kms_key.repo_incoming.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-repo-incoming-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 
 data "aws_sns_topic" "alarm_notifications" {
   name = "${var.environment}-alarm-notifications-sns-topic"

@@ -16,12 +16,13 @@ class RepoIncomingEventPublisherTest {
     private MessagePublisher messagePublisher;
 
     private final static String topicArn = "topicArn";
+    private final static String secondTopicArn = "secondTopicArn";
 
     private RepoIncomingEventPublisher repoIncomingEventPublisher;
 
     @BeforeEach
     void setUp() {
-        repoIncomingEventPublisher = new RepoIncomingEventPublisher(messagePublisher, topicArn);
+        repoIncomingEventPublisher = new RepoIncomingEventPublisher(messagePublisher, topicArn, secondTopicArn);
     }
 
     @Test
@@ -30,6 +31,7 @@ class RepoIncomingEventPublisherTest {
         String messageBody = "{\"nhsNumber\":\"nhsNumber\",\"destinationGp\":\"DGP123\",\"sourceGp\":\"SRC123\",\"nemsMessageID\":\"NEMS123\",\"conversationId\":\"C123\",\"nemsEventLastUpdated\":\"lastUpdated\"}";
         repoIncomingEventPublisher.sendMessage(repoIncomingEvent);
         verify(messagePublisher).sendMessage(topicArn, messageBody);
+        verify(messagePublisher).sendMessage(secondTopicArn, messageBody);
     }
 
 }

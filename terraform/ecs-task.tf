@@ -19,6 +19,7 @@ locals {
     },
     { name = "DECEASED_PATIENT_SNS_TOPIC_ARN", value = aws_sns_topic.deceased_patient.arn },
     { name = "REPO_INCOMING_SNS_TOPIC_ARN", value = aws_sns_topic.repo_incoming.arn },
+    { name = "REPO_INCOMING_OBSERVABILITY_SNS_TOPIC_ARN", value = aws_sns_topic.repo_incoming_observability.arn },
     { name = "PDS_ADAPTOR_SUSPENSION_SERVICE_PASSWORD", value = data.aws_ssm_parameter.pds_adaptor_auth_key.value },
     { name = "PROCESS_ONLY_SYNTHETIC_PATIENTS", value = tostring(var.process_only_synthetic_patients) },
     { name = "SYNTHETIC_PATIENT_PREFIX", value = var.synthetic_patient_prefix },
