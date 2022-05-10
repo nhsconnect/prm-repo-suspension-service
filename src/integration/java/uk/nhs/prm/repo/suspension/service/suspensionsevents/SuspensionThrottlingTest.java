@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -35,8 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = LocalStackAwsConfig.class)
-@EnableScheduling
+@ContextConfiguration( classes = LocalStackAwsConfig.class)
+@DirtiesContext
 public class SuspensionThrottlingTest {
 
     @Autowired
@@ -63,6 +63,7 @@ public class SuspensionThrottlingTest {
 
     @AfterEach
     public void tearDown() {
+        stubPdsAdaptor.resetAll();
         stubPdsAdaptor.stop();
         purgeQueues(suspensionQueueUrl, mofUpdatedQueueUrl);
     }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -24,12 +25,13 @@ import static org.mockito.Mockito.doAnswer;
 @SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {
+@ContextConfiguration( classes = {
         LocalStackAwsConfig.class
 })
 @TestPropertySource(properties = {
         "aws.suspensionsQueueName=test_ack_queue",
 })
+@DirtiesContext
 public class MessageAcknowledgementTest {
 
     @Autowired

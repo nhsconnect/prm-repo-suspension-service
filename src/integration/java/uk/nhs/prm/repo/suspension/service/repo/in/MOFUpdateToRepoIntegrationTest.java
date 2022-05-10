@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.suspension.service.suspensionsevents;
+package uk.nhs.prm.repo.suspension.service.repo.in;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
@@ -12,14 +12,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.nhs.prm.repo.suspension.service.config.ToggleConfig;
 import uk.nhs.prm.repo.suspension.service.infra.LocalStackAwsConfig;
+import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEventBuilder;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -29,23 +27,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest()
+@SpringBootTest(properties = "toggle.canUpdateManagingOrganisationToRepo=true")
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
-@EnableScheduling
+@DirtiesContext
 public class MOFUpdateToRepoIntegrationTest {
-
-    @Configuration
-    static class ContextConfiguration {
-        @Bean
-        public ToggleConfig toggleConfig() {
-            ToggleConfig toggle = new ToggleConfig();
-            //Setting feature toggle on for only this test.
-            toggle.setCanUpdateManagingOrganisationToRepo(true);
-            return toggle;
-        }
-    }
 
     @Autowired
     private AmazonSQSAsync sqs;
@@ -69,6 +56,7 @@ public class MOFUpdateToRepoIntegrationTest {
 
     @AfterEach
     public void tearDown() {
+        stubPdsAdaptor.resetAll();
         stubPdsAdaptor.stop();
         suspensionQueueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         purgeQueue(suspensionQueueUrl);
@@ -99,6 +87,7 @@ public class MOFUpdateToRepoIntegrationTest {
         var repoIncomingQueueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
         purgeQueue(repoIncomingQueueUrl);
         sqs.sendMessage(queueUrl, getSuspensionEventWith(nhsNumber));
+        System.out.println("Sent message to queue url " + queueUrl);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             List<Message> receivedMessageHolder = checkMessageInRelatedQueue(repoIncomingQueueUrl);
