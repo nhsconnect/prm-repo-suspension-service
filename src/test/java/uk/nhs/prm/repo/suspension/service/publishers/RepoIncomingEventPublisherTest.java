@@ -16,13 +16,11 @@ class RepoIncomingEventPublisherTest {
 
     private final static String topicArn = "topicArn";
     private final static String secondTopicArn = "secondTopicArn";
-    private final static String thirdTopicArn = "thirdTopicArn";
-
     private RepoIncomingEventPublisher repoIncomingEventPublisher;
 
     @BeforeEach
     void setUp() {
-        repoIncomingEventPublisher = new RepoIncomingEventPublisher(messagePublisher, topicArn, secondTopicArn, thirdTopicArn);
+        repoIncomingEventPublisher = new RepoIncomingEventPublisher(messagePublisher, topicArn, secondTopicArn);
     }
 
     @Test
@@ -31,8 +29,7 @@ class RepoIncomingEventPublisherTest {
         String messageBody = "{\"nhsNumber\":\"nhsNumber\",\"destinationGp\":\"DGP123\",\"sourceGp\":\"SRC123\",\"nemsMessageID\":\"NEMS123\",\"conversationId\":\"C123\",\"nemsEventLastUpdated\":\"lastUpdated\"}";
         repoIncomingEventPublisher.sendMessage(repoIncomingEvent);
         verify(messagePublisher).sendMessage(topicArn, messageBody);
-        verify(messagePublisher).sendMessage(secondTopicArn, messageBody);
-        verify(messagePublisher).sendMessage(thirdTopicArn, new NonSensitiveDataMessage(repoIncomingEvent.getNemsMessageID(), "ACTION:REPO-INCOMING").toJsonString());
+        verify(messagePublisher).sendMessage(secondTopicArn, new NonSensitiveDataMessage(repoIncomingEvent.getNemsMessageID(), "ACTION:REPO-INCOMING").toJsonString());
     }
 
 }

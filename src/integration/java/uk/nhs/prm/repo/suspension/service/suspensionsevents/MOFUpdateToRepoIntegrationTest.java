@@ -12,11 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.nhs.prm.repo.suspension.service.config.ToggleConfig;
 import uk.nhs.prm.repo.suspension.service.infra.LocalStackAwsConfig;
 
 import java.util.List;
@@ -32,8 +34,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
 @EnableScheduling
-@TestPropertySource(properties = "toggle.canUpdateManagingOrganisationToRepo=true")
 public class MOFUpdateToRepoIntegrationTest {
+
+    @Configuration
+    static class ContextConfiguration {
+        @Bean
+        public ToggleConfig toggleConfig() {
+            ToggleConfig toggle = new ToggleConfig();
+            //Setting feature toggle on for only this test.
+            toggle.setCanUpdateManagingOrganisationToRepo(true);
+            return toggle;
+        }
+    }
 
     @Autowired
     private AmazonSQSAsync sqs;
