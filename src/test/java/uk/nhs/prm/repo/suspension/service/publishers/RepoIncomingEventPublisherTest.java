@@ -29,7 +29,7 @@ class RepoIncomingEventPublisherTest {
         String messageBody = "{\"nhsNumber\":\"nhsNumber\",\"destinationGp\":\"DGP123\",\"sourceGp\":\"SRC123\",\"nemsMessageID\":\"NEMS123\",\"conversationId\":\"C123\",\"nemsEventLastUpdated\":\"lastUpdated\"}";
         repoIncomingEventPublisher.sendMessage(repoIncomingEvent);
         verify(messagePublisher).sendMessage(topicArn, messageBody);
-        verify(messagePublisher).sendMessage(secondTopicArn, new NonSensitiveDataMessage(repoIncomingEvent.getNemsMessageID(), "ACTION:REPO-INCOMING").toJsonString());
+        verify(messagePublisher).sendMessage(secondTopicArn, new NonSensitiveDataMessage(repoIncomingEvent.getNemsMessageId(), "ACTION:REPO-INCOMING").toJsonString());
     }
 
 }

@@ -23,7 +23,7 @@ public class RepoIncomingEventPublisher {
     public void sendMessage(RepoIncomingEvent repoIncomingEvent) {
         messagePublisher.sendMessage(this.repoIncomingSnsTopicArn, repoIncomingEvent.toJsonString());
         messagePublisher.sendMessage(this.repoIncomingAuditSnsTopicArn,
-                new NonSensitiveDataMessage(repoIncomingEvent.getNemsMessageID(), "ACTION:REPO-INCOMING").toJsonString());
+                new NonSensitiveDataMessage(repoIncomingEvent.getNemsMessageId(), "ACTION:REPO-INCOMING").toJsonString());
 
     }
 }

@@ -8,18 +8,18 @@ import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEvent;
 @Data
 @AllArgsConstructor
 public class RepoIncomingEvent {
-    private String nhsNumber; //PDS Response
-    private String destinationGp; //PDS Response Managing Organisation
-    private String sourceGp; //Suspension Event - Previous GP
-    private String nemsMessageID; //Suspension Event - NEMS Message ID
-    private String conversationId; //Generate
-    private String nemsEventLastUpdated; //Suspension Event - LAST UPDATED
+    private String nhsNumber;
+    private String destinationGp;
+    private String sourceGp;
+    private String nemsMessageId;
+    private String conversationId;
+    private String nemsEventLastUpdated;
 
     public RepoIncomingEvent(PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse, SuspensionEvent suspensionEvent, String conversationId) {
         this.nhsNumber = pdsAdaptorSuspensionStatusResponse.getNhsNumber();
         this.destinationGp = pdsAdaptorSuspensionStatusResponse.getManagingOrganisation();
         this.sourceGp = suspensionEvent.getPreviousOdsCode();
-        this.nemsMessageID = suspensionEvent.getNemsMessageId();
+        this.nemsMessageId = suspensionEvent.getNemsMessageId();
         this.conversationId = conversationId;
         this.nemsEventLastUpdated = suspensionEvent.lastUpdated();
     }

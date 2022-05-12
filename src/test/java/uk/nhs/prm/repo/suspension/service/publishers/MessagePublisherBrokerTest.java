@@ -123,7 +123,7 @@ class MessagePublisherBrokerTest {
         verify(repoIncomingEventPublisher).sendMessage(repoIncomingEventArgumentCaptor.capture());
         var repoIncomingEventArgumentCaptorValue = repoIncomingEventArgumentCaptor.getValue();
         assertThat(repoIncomingEventArgumentCaptorValue.getNhsNumber()).isEqualTo("NHS_NUMBER");
-        assertThat(repoIncomingEventArgumentCaptorValue.getNemsMessageID()).isEqualTo(NEMS_MESSAGE_ID);
+        assertThat(repoIncomingEventArgumentCaptorValue.getNemsMessageId()).isEqualTo(NEMS_MESSAGE_ID);
         assertThat(repoIncomingEventArgumentCaptorValue.getDestinationGp()).isEqualTo("REPO_ODS_CODE");
         assertThat(repoIncomingEventArgumentCaptorValue.getNemsEventLastUpdated()).isEqualTo("LAST_UPDATED_DATE");
         assertThat(repoIncomingEventArgumentCaptorValue.getSourceGp()).isEqualTo("PREVIOUS_ODS_CODE");
