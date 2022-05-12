@@ -26,7 +26,7 @@ class RepoIncomingEventPublisherTest {
     @Test
     void shouldPublishStringMessageToTopic() {
         var repoIncomingEvent = new RepoIncomingEvent("nhsNumber", "DGP123", "SRC123", "NEMS123", "C123", "lastUpdated");
-        String messageBody = "{\"nhsNumber\":\"nhsNumber\",\"destinationGp\":\"DGP123\",\"sourceGp\":\"SRC123\",\"nemsMessageId\":\"NEMS123\",\"conversationId\":\"C123\",\"nemsEventLastUpdated\":\"lastUpdated\"}";
+        String messageBody = "{\"nhsNumber\":\"nhsNumber\",\"destinationGp\":\"DGP123\",\"sourceGp\":\"SRC123\",\"nemsMessageId\":\"NEMS123\",\"conversationId\":\"C123\"}";
         repoIncomingEventPublisher.sendMessage(repoIncomingEvent);
         verify(messagePublisher).sendMessage(topicArn, messageBody);
         verify(messagePublisher).sendMessage(secondTopicArn, new NonSensitiveDataMessage(repoIncomingEvent.getNemsMessageId(), "ACTION:REPO-INCOMING").toJsonString());

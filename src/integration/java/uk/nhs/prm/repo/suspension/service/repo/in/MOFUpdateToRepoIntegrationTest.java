@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(properties = "toggle.canUpdateManagingOrganisationToRepo=true")
@@ -94,7 +95,9 @@ public class MOFUpdateToRepoIntegrationTest {
 
             assertTrue(receivedMessageHolder.get(0).getBody().contains("TEST-NEMS-ID"));
             assertTrue(receivedMessageHolder.get(0).getBody().contains("A1234"));
+            assertFalse(receivedMessageHolder.get(0).getBody().contains("nemsEventLastUpdated"));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+
         });
     }
 
