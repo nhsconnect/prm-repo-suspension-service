@@ -45,11 +45,8 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.mofUpdatedQueueName}")
     private String mofUpdatedQueueName;
 
-    @Value("${aws.eventOutOfOrderAuditName}")
-    private String eventOutOfOrderAuditName;
-
-    @Value("${aws.eventOutOfOrderObservabilityQueueName}")
-    private String eventOutOfOrderObservabilityQueueName;
+    @Value("${aws.eventOutOfOrderQueueName}")
+    private String eventOutOfOrderQueueName;
 
     @Value("${aws.nonSensitiveInvalidSuspensionQueueName}")
     private String nonSensitiveInvalidSuspensionQueueName;
@@ -150,8 +147,7 @@ public class SuspensionsIntegrationTest {
 
         var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
-        var eventOutOfOrderAuditQueueUrl = sqs.getQueueUrl(eventOutOfOrderAuditName).getQueueUrl();
-        var eventOutOfOrderObservabilityQueueUrl = sqs.getQueueUrl(eventOutOfOrderObservabilityQueueName).getQueueUrl();
+        var eventOutOfOrderQueue = sqs.getQueueUrl(eventOutOfOrderQueueName).getQueueUrl();
 
         var suspensionEvent = getSuspensionEventWith(nhsNumber);
         sqs.sendMessage(queueUrl, suspensionEvent);
@@ -167,18 +163,12 @@ public class SuspensionsIntegrationTest {
         sqs.sendMessage(queueUrl, secondSuspensionEvent);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageInAuditQueue = checkMessageInRelatedQueue(eventOutOfOrderAuditQueueUrl);
-            assertTrue(receivedMessageInAuditQueue.get(0).getBody().contains(nemsMessageId));
-        });
-
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageInObservabilityQueue = checkMessageInRelatedQueue(eventOutOfOrderObservabilityQueueUrl);
+            var receivedMessageInObservabilityQueue = checkMessageInRelatedQueue(eventOutOfOrderQueue);
             assertTrue(receivedMessageInObservabilityQueue.get(0).getBody().contains(nemsMessageId));
         });
 
         purgeQueue(mofUpdatedQueueUrl);
-        purgeQueue(eventOutOfOrderAuditQueueUrl);
-        purgeQueue(eventOutOfOrderObservabilityQueueUrl);
+        purgeQueue(eventOutOfOrderQueue);
     }
 
     @Test
