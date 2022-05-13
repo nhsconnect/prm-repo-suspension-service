@@ -98,7 +98,8 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
       aws_sqs_queue.not_suspended_observability.arn,
       aws_sqs_queue.mof_updated.arn,
       aws_sqs_queue.mof_not_updated.arn,
-      aws_sqs_queue.invalid_suspension_dlq.arn,
+      aws_sqs_queue.invalid_suspension.arn,
+      aws_sqs_queue.invalid_suspension_audit.arn,
       aws_sqs_queue.not_suspended_audit.arn,
       aws_sqs_queue.mof_not_updated_audit.arn,
       aws_sqs_queue.mof_updated_audit.arn,
@@ -127,7 +128,7 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       aws_sns_topic.mof_updated.arn,
       aws_sns_topic.mof_not_updated.arn,
       aws_sns_topic.invalid_suspension.arn,
-      aws_sns_topic.non_sensitive_invalid_suspension.arn,
+      aws_sns_topic.invalid_suspension_audit_topic.arn,
       aws_sns_topic.deceased_patient.arn,
       aws_sns_topic.event_out_of_order.arn,
       aws_sns_topic.repo_incoming.arn,
@@ -271,13 +272,13 @@ resource "aws_sqs_queue_policy" "suspensions_subscription" {
 }
 
 resource "aws_sqs_queue_policy" "invalid_suspension_subscription" {
-  queue_url = aws_sqs_queue.invalid_suspension_dlq.id
+  queue_url = aws_sqs_queue.invalid_suspension.id
   policy    = data.aws_iam_policy_document.invalid_suspension_policy_doc.json
 }
 
-resource "aws_sqs_queue_policy" "non_sensitive_invalid_suspension_subscription" {
-  queue_url = aws_sqs_queue.invalid_suspension_dlq.id
-  policy    = data.aws_iam_policy_document.non_sensitive_invalid_suspension_policy_doc.json
+resource "aws_sqs_queue_policy" "invalid_suspension_audit_subscription" {
+  queue_url = aws_sqs_queue.invalid_suspension_audit.id
+  policy    = data.aws_iam_policy_document.invalid_suspension_audit_policy_doc.json
 }
 
 resource "aws_sqs_queue_policy" "non_sensitive_deceased_subscription" {
@@ -421,7 +422,7 @@ data "aws_iam_policy_document" "invalid_suspension_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.invalid_suspension_dlq.arn
+      aws_sqs_queue.invalid_suspension.arn
     ]
 
     condition {
@@ -432,7 +433,7 @@ data "aws_iam_policy_document" "invalid_suspension_policy_doc" {
   }
 }
 
-data "aws_iam_policy_document" "non_sensitive_invalid_suspension_policy_doc" {
+data "aws_iam_policy_document" "invalid_suspension_audit_policy_doc" {
   statement {
 
     effect = "Allow"
@@ -447,12 +448,12 @@ data "aws_iam_policy_document" "non_sensitive_invalid_suspension_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.invalid_suspension_dlq.arn
+      aws_sqs_queue.invalid_suspension_audit.arn
     ]
 
     condition {
       test     = "ArnEquals"
-      values   = [aws_sns_topic.non_sensitive_invalid_suspension.arn]
+      values   = [aws_sns_topic.invalid_suspension_audit_topic.arn]
       variable = "aws:SourceArn"
     }
   }

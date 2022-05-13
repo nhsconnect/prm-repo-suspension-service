@@ -9,7 +9,8 @@ locals {
   mof_not_updated_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-queue"
   mof_not_updated_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit-splunk-dlq"
   mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
-  invalid_suspension_dlq_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
+  invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
+  invalid_suspension_audit_queue = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
   invalid_suspension_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-splunk-dlq"
   event_out_of_order_audit_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit"
   event_out_of_order_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit-splunk-dlq"
@@ -106,17 +107,13 @@ resource "aws_sns_topic_subscription" "mof_updated" {
   endpoint             = aws_sqs_queue.mof_updated.arn
 }
 
-resource "aws_sqs_queue" "invalid_suspension_dlq" {
-  name                       = local.invalid_suspension_dlq_queue_name
+resource "aws_sqs_queue" "invalid_suspension" {
+  name                       = local.invalid_suspension_queue_name
   message_retention_seconds  = 1209600
-  kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
+  kms_master_key_id = aws_kms_key.invalid_suspension.id
 
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.invalid_suspension_splunk_dlq.arn
-    maxReceiveCount     = 4
-  })
   tags = {
-    Name = local.invalid_suspension_dlq_queue_name
+    Name = local.invalid_suspension_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -126,13 +123,29 @@ resource "aws_sns_topic_subscription" "invalid_suspension" {
   protocol             = "sqs"
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.invalid_suspension.arn
-  endpoint             = aws_sqs_queue.invalid_suspension_dlq.arn
+  endpoint             = aws_sqs_queue.invalid_suspension.arn
+}
+
+resource "aws_sqs_queue" "invalid_suspension_audit" {
+  name                       = local.invalid_suspension_audit_queue
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_kms_key.invalid_suspension_audit.id
+
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.invalid_suspension_splunk_dlq.arn
+    maxReceiveCount     = 4
+  })
+  tags = {
+    Name = local.invalid_suspension_audit_queue
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
 }
 
 resource "aws_sqs_queue" "invalid_suspension_splunk_dlq" {
   name                       = local.invalid_suspension_splunk_dlq_queue_name
   message_retention_seconds  = 1209600
-  kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
+  kms_master_key_id = aws_kms_key.invalid_suspension_audit.id
 
 
   tags = {
@@ -142,11 +155,11 @@ resource "aws_sqs_queue" "invalid_suspension_splunk_dlq" {
   }
 }
 
-resource "aws_sns_topic_subscription" "non_sensitive_invalid_suspension" {
+resource "aws_sns_topic_subscription" "invalid_suspension_audit" {
   protocol             = "sqs"
   raw_message_delivery = true
-  topic_arn            = aws_sns_topic.non_sensitive_invalid_suspension.arn
-  endpoint             = aws_sqs_queue.invalid_suspension_dlq.arn
+  topic_arn            = aws_sns_topic.invalid_suspension_audit_topic.arn
+  endpoint             = aws_sqs_queue.invalid_suspension_audit.arn
 }
 
 resource "aws_sqs_queue" "not_suspended_audit" {

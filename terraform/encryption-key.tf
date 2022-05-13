@@ -111,8 +111,8 @@ resource "aws_kms_alias" "invalid_suspension_encryption" {
   target_key_id = aws_kms_key.invalid_suspension.id
 }
 
-resource "aws_kms_key" "non_sensitive_invalid_suspension" {
-  description = "Custom KMS Key to enable server side encryption for non sensitive invalid suspension topic"
+resource "aws_kms_key" "invalid_suspension_audit" {
+  description = "Custom KMS Key to enable server side encryption for invalid suspension audit topic"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
@@ -123,9 +123,9 @@ resource "aws_kms_key" "non_sensitive_invalid_suspension" {
   }
 }
 
-resource "aws_kms_alias" "non_sensitive_invalid_suspension_encryption" {
+resource "aws_kms_alias" "invalid_suspension_audit_encryption" {
   name          = "alias/non-sensitive-invalid-suspension-encryption-kms-key"
-  target_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
+  target_key_id = aws_kms_key.invalid_suspension_audit.id
 }
 
 resource "aws_kms_key" "event_out_of_order" {

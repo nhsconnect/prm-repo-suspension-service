@@ -201,7 +201,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_invalid_suspension_dlq_audit"
   statistic                 = "Maximum"
   period                    = "900"
   dimensions = {
-    QueueName = aws_sqs_queue.invalid_suspension_dlq.name
+    QueueName = aws_sqs_queue.invalid_suspension.name
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }

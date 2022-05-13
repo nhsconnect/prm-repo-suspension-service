@@ -46,13 +46,13 @@ resource "aws_sns_topic" "invalid_suspension" {
   }
 }
 
-resource "aws_sns_topic" "non_sensitive_invalid_suspension" {
-  name = "${var.environment}-${var.component_name}-non-sensitive-invalid-suspension-sns-topic"
-  kms_master_key_id = aws_kms_key.non_sensitive_invalid_suspension.id
+resource "aws_sns_topic" "invalid_suspension_audit_topic" {
+  name = "${var.environment}-${var.component_name}-invalid-suspension-audit-sns-topic"
+  kms_master_key_id = aws_kms_key.invalid_suspension_audit.id
   sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-non-sensitive-invalid-suspension-sns-topic"
+    Name = "${var.environment}-${var.component_name}-invalid-suspension-audit-sns-topic"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
