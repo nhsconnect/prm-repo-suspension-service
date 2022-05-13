@@ -64,4 +64,16 @@ public class SuspensionsEventListenerTest {
 
         verify(message).acknowledge();
     }
+
+    @Test
+    void shouldAcknowledgeMessageWhenInvalidSuspensionMessageExceptionThrown() throws JMSException {
+        var exception = new InvalidSuspensionMessageException("some exception", new Throwable());
+        var message = spy(new SQSTextMessage("bob"));
+
+        doThrow(exception).when(suspensionsEventProcessor).process(any());
+
+        suspensionsEventListener.onMessage(message);
+
+        verify(message).acknowledge();
+    }
 }

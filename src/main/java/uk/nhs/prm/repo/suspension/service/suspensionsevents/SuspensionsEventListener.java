@@ -25,7 +25,7 @@ public class SuspensionsEventListener implements MessageListener {
             var payload = ((TextMessage) message).getText();
             suspensionsEventProcessor.process(payload);
             deleteMessage(message);
-        } catch (InvalidPdsRequestException invalidPdsRequestException) {
+        } catch (InvalidPdsRequestException | InvalidSuspensionMessageException e) {
             deleteMessage(message);
         } catch (Exception e) {
             log.error("Failure to handle message", e);
