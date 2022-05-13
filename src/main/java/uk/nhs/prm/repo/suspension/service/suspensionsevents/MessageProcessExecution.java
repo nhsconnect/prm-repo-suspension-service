@@ -21,11 +21,14 @@ public class MessageProcessExecution {
     private final LastUpdatedEventService lastUpdatedEventService;
     private final ManagingOrganisationService managingOrganisationService;
 
-    @Value("${process_only_synthetic_patients}")
-    private String processOnlySyntheticPatients;
+    @Value("${process_only_synthetic_or_safe_listed_patients}")
+    private String processOnlySyntheticOrSafeListedPatients;
 
     @Value("${synthetic_patient_prefix}")
     private String syntheticPatientPrefix;
+
+    @Value("${safe_listed_patients_nhs_numbers}")
+    private String allowedPatientsNhsNumbers;
 
     private final SuspensionEventParser parser;
     private final ConcurrentThreadLock threadLock;
@@ -53,9 +56,13 @@ public class MessageProcessExecution {
             }
 
             // synthetic patient block
-            if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
-                messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
-                return;
+            if (processingOnlySyntheticOrSafeListedPatients() && patientIsNonSynthetic(suspensionEvent)) {
+                if(!patientIsSafeListed(suspensionEvent)) {
+                    messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
+                    return;
+                }
+                else
+                    log.info("Patient is safe-listed for testing");
             }
 
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
@@ -69,6 +76,7 @@ public class MessageProcessExecution {
             threadLock.unlock(suspensionEvent.nhsNumber());
         }
     }
+
 
     private PdsAdaptorSuspensionStatusResponse getPdsAdaptorSuspensionStatusResponse(String suspensionMessage, SuspensionEvent suspensionEvent) {
         try {
@@ -102,9 +110,14 @@ public class MessageProcessExecution {
         return isNonSynthetic;
     }
 
-    private boolean processingOnlySyntheticPatients() {
-        log.info("Process only synthetic patients: " + processOnlySyntheticPatients);
-        return Boolean.parseBoolean(processOnlySyntheticPatients);
+
+    private boolean patientIsSafeListed(SuspensionEvent suspensionEvent) {
+        return allowedPatientsNhsNumbers != null && allowedPatientsNhsNumbers.contains(suspensionEvent.nhsNumber());
+    }
+
+    private boolean processingOnlySyntheticOrSafeListedPatients() {
+        log.info("Process only synthetic and safe listed patients: " + processOnlySyntheticOrSafeListedPatients);
+        return Boolean.parseBoolean(processOnlySyntheticOrSafeListedPatients);
     }
 
     private boolean nhsNumberIsSuperseded(String nemsEventNhsNumber, String pdsNhsNumber) {

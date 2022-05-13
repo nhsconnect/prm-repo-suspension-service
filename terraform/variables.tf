@@ -41,7 +41,7 @@ variable "period_of_age_of_message_metric" {
   default = "1800"
 }
 
-variable "process_only_synthetic_patients" {
+variable "process_only_synthetic_or_safe_listed_patients" {
   default = true
 }
 

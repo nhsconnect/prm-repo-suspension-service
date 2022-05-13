@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
@@ -60,7 +62,7 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticPatients", "true");
+        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "true");
         setField(messageProcessExecution, "syntheticPatientPrefix", "969");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
@@ -86,7 +88,7 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticPatients", "false");
+        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "false");
         setField(messageProcessExecution, "syntheticPatientPrefix", "999");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
@@ -103,6 +105,32 @@ public class MessageProcessExecutionTest {
     }
 
     @Test
+    void shouldUpdateMofForNonSyntheticPatientsWhoAreSafeListedWhenToggleIsOn() {
+        var suspendedMessageOfRealPatient = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
+                "\"environment\":\"local\"}";
+
+        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "true");
+        setField(messageProcessExecution, "syntheticPatientPrefix", "999");
+        setField(messageProcessExecution, "allowedPatientsNhsNumbers", "9692294951,9222294955");
+        var pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
+
+        when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
+        messageProcessExecution.run(suspendedMessageOfRealPatient);
+
+        var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
+
+        verify(managingOrganisationService).processMofUpdate(suspendedMessageOfRealPatient, suspensionEvent, pdsAdaptorSuspensionStatusResponse );
+        verifyNoInteractions(messagePublisherBroker);
+        verifyLock(NHS_NUMBER);
+    }
+
+    @Test
     void shouldUpdateMofIncludingNemsMessageId() {
         var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
@@ -111,7 +139,7 @@ public class MessageProcessExecutionTest {
                 "\"nhsNumber\":\"9692294951\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticPatients", "false");
+        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "false");
         setField(messageProcessExecution, "syntheticPatientPrefix", "999");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
@@ -138,7 +166,7 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticPatients", "false");
+        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "false");
         setField(messageProcessExecution, "syntheticPatientPrefix", "969");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
@@ -162,7 +190,7 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticPatients", "true");
+        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "true");
         setField(messageProcessExecution, "syntheticPatientPrefix", "929");
 
         var pdsAdaptorSuspensionStatusResponse
@@ -171,8 +199,36 @@ public class MessageProcessExecutionTest {
 
         messageProcessExecution.run(suspendedMessage);
 
-        var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NOT_SYNTHETIC");
-        assertEquals("NO_ACTION:NOT_SYNTHETIC", notSyntheticMessage.getStatus());
+        var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NOT_SYNTHETIC_OR_SAFE_LISTED");
+        assertEquals("NO_ACTION:NOT_SYNTHETIC_OR_SAFE_LISTED", notSyntheticMessage.getStatus());
+        verify(pdsService).isSuspended(NHS_NUMBER);
+        verify(messagePublisherBroker).notSyntheticMessage(nemsMessageId);
+        verifyNoMoreInteractions(pdsService);
+        verifyNoMoreInteractions(messagePublisherBroker);
+        verifyLock(NHS_NUMBER);
+    }
+
+    @Test
+    void shouldNotUpdateMofForNonSyntheticPatientsNotInSafeList() {
+        var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
+                "\"environment\":\"local\"}";
+
+        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "true");
+        setField(messageProcessExecution, "syntheticPatientPrefix", "929");
+        setField(messageProcessExecution, "allowedPatientsNhsNumbers", "9692294950,9222294955");
+
+        var pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, "A1000", "", "", false);
+        when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
+        messageProcessExecution.run(suspendedMessage);
+
+        var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NOT_SYNTHETIC_OR_SAFE_LISTED");
+        assertEquals("NO_ACTION:NOT_SYNTHETIC_OR_SAFE_LISTED", notSyntheticMessage.getStatus());
         verify(pdsService).isSuspended(NHS_NUMBER);
         verify(messagePublisherBroker).notSyntheticMessage(nemsMessageId);
         verifyNoMoreInteractions(pdsService);
