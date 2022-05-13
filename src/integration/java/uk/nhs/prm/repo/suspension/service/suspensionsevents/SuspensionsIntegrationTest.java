@@ -168,8 +168,11 @@ public class SuspensionsIntegrationTest {
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageInAuditQueue = checkMessageInRelatedQueue(eventOutOfOrderAuditQueueUrl);
-            var receivedMessageInObservabilityQueue = checkMessageInRelatedQueue(eventOutOfOrderObservabilityQueueUrl);
             assertTrue(receivedMessageInAuditQueue.get(0).getBody().contains(nemsMessageId));
+        });
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageInObservabilityQueue = checkMessageInRelatedQueue(eventOutOfOrderObservabilityQueueUrl);
             assertTrue(receivedMessageInObservabilityQueue.get(0).getBody().contains(nemsMessageId));
         });
 
@@ -199,10 +202,6 @@ public class SuspensionsIntegrationTest {
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             List<Message> receivedMessageHolderForInvalidSuspensions = checkMessageInRelatedQueue(invalidSuspensionQueueUrl);
-            List<Message> receivedMessageHolderForNonSensitiveInvalidSuspensions = checkMessageInRelatedQueue(nonSensitiveInvalidSuspensionQueueUrl);
-
-            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions.get(0).getBody().contains("NO_ACTION:INVALID_SUSPENSION"));
-            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions.get(0).getBody().contains("TEST-NEMS-ID"));
 
             assertTrue(receivedMessageHolderForInvalidSuspensions.get(0).getBody().contains("nhsNumber"));
             assertTrue(receivedMessageHolderForInvalidSuspensions.get(0).getBody().contains(nhsNumber));
@@ -211,6 +210,14 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolderForInvalidSuspensions.get(0).getMessageAttributes().containsKey("traceId"));
 
         });
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            List<Message> receivedMessageHolderForNonSensitiveInvalidSuspensions = checkMessageInRelatedQueue(nonSensitiveInvalidSuspensionQueueUrl);
+
+            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions.get(0).getBody().contains("NO_ACTION:INVALID_SUSPENSION"));
+            assertTrue(receivedMessageHolderForNonSensitiveInvalidSuspensions.get(0).getBody().contains("TEST-NEMS-ID"));
+        });
+
         purgeQueue(invalidSuspensionQueueUrl);
         purgeQueue(nonSensitiveInvalidSuspensionQueueUrl);
 
