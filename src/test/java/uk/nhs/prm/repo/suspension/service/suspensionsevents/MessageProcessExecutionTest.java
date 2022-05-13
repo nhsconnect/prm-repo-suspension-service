@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
@@ -13,7 +11,7 @@ import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
-import uk.nhs.prm.repo.suspension.service.publishers.*;
+import uk.nhs.prm.repo.suspension.service.publishers.MessagePublisherBroker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -73,7 +71,7 @@ public class MessageProcessExecutionTest {
 
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
 
-        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse );
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
         verifyNoInteractions(messagePublisherBroker);
 
         verifyLock(NHS_NUMBER);
@@ -99,7 +97,7 @@ public class MessageProcessExecutionTest {
 
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
 
-        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse );
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
         verifyNoInteractions(messagePublisherBroker);
         verifyLock(NHS_NUMBER);
     }
@@ -125,7 +123,7 @@ public class MessageProcessExecutionTest {
 
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
 
-        verify(managingOrganisationService).processMofUpdate(suspendedMessageOfRealPatient, suspensionEvent, pdsAdaptorSuspensionStatusResponse );
+        verify(managingOrganisationService).processMofUpdate(suspendedMessageOfRealPatient, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
         verifyNoInteractions(messagePublisherBroker);
         verifyLock(NHS_NUMBER);
     }
@@ -150,7 +148,7 @@ public class MessageProcessExecutionTest {
 
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
 
-        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse );
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
         verifyNoInteractions(messagePublisherBroker);
 
         verifyLock(NHS_NUMBER);
@@ -176,7 +174,7 @@ public class MessageProcessExecutionTest {
         messageProcessExecution.run(suspendedMessage);
 
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
-        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse );
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
         verifyNoInteractions(messagePublisherBroker);
         verifyLock(NHS_NUMBER);
     }
@@ -270,7 +268,7 @@ public class MessageProcessExecutionTest {
         messageProcessExecution.run(suspendedMessage);
 
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, "ORIGINAL_ODS_CODE", nemsMessageId, LAST_UPDATED_DATE);
-        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse );
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
 
         verifyNoInteractions(messagePublisherBroker);
     }
@@ -296,7 +294,7 @@ public class MessageProcessExecutionTest {
 
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, "ORIGINAL_ODS_CODE", nemsMessageId, LAST_UPDATED_DATE);
 
-        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponseSuperseded );
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponseSuperseded);
         verifyNoInteractions(messagePublisherBroker);
     }
 
@@ -317,7 +315,7 @@ public class MessageProcessExecutionTest {
         messageProcessExecution.run(suspendedMessage);
 
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, "LAST_GP_BEFORE_SUSPENSION_ODS_CODE", nemsMessageId, LAST_UPDATED_DATE);
-        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorLookUpSuspensionStatusResponse );
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorLookUpSuspensionStatusResponse);
         verifyNoInteractions(messagePublisherBroker);
     }
 
@@ -340,45 +338,6 @@ public class MessageProcessExecutionTest {
         verifyNoMoreInteractions(messagePublisherBroker);
     }
 
-//    @Test
-//    void shouldParsePdsResponseWhenCurrentOdsCodeFieldNull() {
-//        String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
-//                "\"previousOdsCode\":\"B85612\"," +
-//                "\"eventType\":\"SUSPENSION\"," +
-//                "\"nhsNumber\":\"9692294951\"," +
-//                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
-//                "\"environment\":\"local\"}";
-//
-//        PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse
-//                = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, "B85612", "", false);
-//        when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
-//        messageProcessExecution.run(sampleMessage);
-//
-//        verify(messagePublisherBroker).mofNotUpdatedMessage(nemsMessageId);
-//        verifyNoMoreInteractions(messagePublisherBroker);
-//    }
-
-//    @Test
-//    void shouldParseSuspendedPdsResponseWhenMofFieldNull() {
-//        var sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
-//                "\"previousOdsCode\":\"B85612\"," +
-//                "\"eventType\":\"SUSPENSION\"," +
-//                "\"nhsNumber\":\"9692294951\"," +
-//                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
-//                "\"environment\":\"local\"}";
-//
-//        var pdsAdaptorSuspensionStatusResponse
-//                = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
-//        when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
-//        messageProcessExecution.run(sampleMessage);
-//
-//        var suspensionEvent = new SuspensionEvent(NHS_NUMBER, "B85612", nemsMessageId, LAST_UPDATED_DATE);
-//
-//        verify(managingOrganisationService).processMofUpdate(sampleMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse );
-//        verifyNoInteractions(messagePublisherBroker);
-//    }
-
-
     @Test
     void shouldLandOnDlqWhenSuspensionInvalid() {
         String sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
@@ -392,10 +351,7 @@ public class MessageProcessExecutionTest {
         Assertions.assertThrows(InvalidPdsRequestException.class, () ->
                 messageProcessExecution.run(sampleMessage));
 
-        String sampleNonSensitiveMessage = "{\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
-                "\"status\":\"NO_ACTION:INVALID_SUSPENSION\"}";
-
-        verify(messagePublisherBroker).invalidFormattedMessage(sampleMessage, sampleNonSensitiveMessage);
+        verify(messagePublisherBroker).invalidMessage(sampleMessage, nemsMessageId);
         verifyNoMoreInteractions(messagePublisherBroker);
     }
 
@@ -414,6 +370,17 @@ public class MessageProcessExecutionTest {
         messageProcessExecution.run(sampleMessage);
 
         verify(messagePublisherBroker).deceasedPatientMessage(nemsMessageId);
+        verifyNoMoreInteractions(messagePublisherBroker);
+    }
+
+    @Test
+    void shouldSendToInvalidSuspensionWhenCannotParseSuspensionMessage() {
+        String sampleMessage = "bad_message";
+
+        Assertions.assertThrows(InvalidSuspensionMessageException.class, () ->
+                messageProcessExecution.run(sampleMessage));
+
+        verify(messagePublisherBroker).invalidMessage(sampleMessage, null);
         verifyNoMoreInteractions(messagePublisherBroker);
     }
 

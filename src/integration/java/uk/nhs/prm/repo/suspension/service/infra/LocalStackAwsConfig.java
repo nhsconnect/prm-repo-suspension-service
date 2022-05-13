@@ -53,8 +53,8 @@ public class LocalStackAwsConfig {
     @Value("${aws.eventOutOfOrderQueueName}")
     private String eventOutOfOrderQueueName;
 
-    @Value("${aws.nonSensitiveInvalidSuspensionQueueName}")
-    private String nonSensitiveInvalidSuspensionQueueName;
+    @Value("${aws.invalidSuspensionAuditQueueName}")
+    private String invalidSuspensionAuditQueueName;
 
     @Value("${aws.invalidSuspensionQueueName}")
     private String invalidSuspensionQueueName;
@@ -123,21 +123,21 @@ public class LocalStackAwsConfig {
         var mofUpdatedQueue = amazonSQSAsync.createQueue(mofUpdatedQueueName);
         var eventOutOfOrderQueue = amazonSQSAsync.createQueue(eventOutOfOrderQueueName);
         var invalidSuspensionQueue = amazonSQSAsync.createQueue(invalidSuspensionQueueName);
-        var nonSensitiveInvalidSuspensionQueue = amazonSQSAsync.createQueue(nonSensitiveInvalidSuspensionQueueName);
+        var invalidSuspensionAuditQueue = amazonSQSAsync.createQueue(invalidSuspensionAuditQueueName);
         var incomingQueue = amazonSQSAsync.createQueue(repoIncomingQueueName);
 
         var topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
         var mofUpdatedTopic = snsClient.createTopic(CreateTopicRequest.builder().name("mof_updated_sns_topic").build());
         var eventOutOfOrderTopic = snsClient.createTopic(CreateTopicRequest.builder().name("event_out_of_order_topic").build());
         var invalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("invalid_suspension_topic").build());
-        var nonSensitiveInvalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("non_sensitive_invalid_suspension_topic").build());
+        var nonSensitiveInvalidSuspensionTopic = snsClient.createTopic(CreateTopicRequest.builder().name("invalid_suspension_audit_topic").build());
         var repoIncomingTopic = snsClient.createTopic(CreateTopicRequest.builder().name("repo_incoming_sns_topic").build());
 
         createSnsTestReceiverSubscription(topic, getQueueArn(notSuspendedQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(mofUpdatedTopic, getQueueArn(mofUpdatedQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(eventOutOfOrderTopic, getQueueArn(eventOutOfOrderQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(invalidSuspensionTopic, getQueueArn(invalidSuspensionQueue.getQueueUrl()));
-        createSnsTestReceiverSubscription(nonSensitiveInvalidSuspensionTopic, getQueueArn(nonSensitiveInvalidSuspensionQueue.getQueueUrl()));
+        createSnsTestReceiverSubscription(nonSensitiveInvalidSuspensionTopic, getQueueArn(invalidSuspensionAuditQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(repoIncomingTopic, getQueueArn(incomingQueue.getQueueUrl()));
 
         setupDbAndTable();
@@ -152,7 +152,8 @@ public class LocalStackAwsConfig {
 
         if (dynamoDbClient.listTables().tableNames().contains(suspensionDynamoDbTableName)) {
             resetTableForLocalEnvironment(waiter, tableRequest);
-        };
+        }
+        ;
 
         List<KeySchemaElement> keySchema = new ArrayList<>();
         keySchema.add(KeySchemaElement.builder()
@@ -160,7 +161,7 @@ public class LocalStackAwsConfig {
                 .attributeName("nhs_number")
                 .build());
 
-        List<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
+        List<AttributeDefinition> attributeDefinitions = new ArrayList<AttributeDefinition>();
         attributeDefinitions.add(AttributeDefinition.builder()
                 .attributeType(ScalarAttributeType.S)
                 .attributeName("nhs_number")

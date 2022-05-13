@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.config.ToggleConfig;
-import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
@@ -34,8 +33,7 @@ public class ManagingOrganisationService {
                 updateMofToPreviousGp(response, suspensionEvent);
             }
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
-            messagePublisherBroker.invalidFormattedMessage(suspensionMessage, new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(),
-                    "NO_ACTION:INVALID_SUSPENSION").toJsonString());
+            messagePublisherBroker.invalidMessage(suspensionMessage, suspensionEvent.getNemsMessageId());
             throw invalidPdsRequestException;
         }
     }

@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.suspension.service.publishers;
 
-import org.assertj.core.api.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -8,7 +7,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
 import uk.nhs.prm.repo.suspension.service.config.Tracer;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
@@ -16,10 +14,7 @@ import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusRespon
 import uk.nhs.prm.repo.suspension.service.model.RepoIncomingEvent;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEvent;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,24 +74,22 @@ class MessagePublisherBrokerTest {
     }
 
     @Test
-    void invalidFormattedMessage() {
+    void shouldSendInvalidSuspensionAndInvalidAuditMessage() {
         var sensitiveMessage = "sensitive-data";
-        var nonSensitiveMessage = "non-sensitive-data";
-        messagePublisherBroker.invalidFormattedMessage(sensitiveMessage, nonSensitiveMessage);
-        verify(invalidSuspensionPublisher).sendMessage(sensitiveMessage);
-        verify(invalidSuspensionPublisher).sendNonSensitiveMessage(nonSensitiveMessage);
+        messagePublisherBroker.invalidMessage(sensitiveMessage, NEMS_MESSAGE_ID);
+        verify(invalidSuspensionPublisher).sendInvalidMessageAndAuditMessage(sensitiveMessage, NEMS_MESSAGE_ID);
     }
 
     @Test
     void mofNotUpdatedMessage() {
-        messagePublisherBroker.mofNotUpdatedMessage(NEMS_MESSAGE_ID,false);
+        messagePublisherBroker.mofNotUpdatedMessage(NEMS_MESSAGE_ID, false);
         var nonSensitiveDataMessage = new NonSensitiveDataMessage(NEMS_MESSAGE_ID, "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP");
         verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage);
     }
 
     @Test
     void mofNotUpdatedMessageWithRepoStatusTrue() {
-        messagePublisherBroker.mofNotUpdatedMessage(NEMS_MESSAGE_ID,true);
+        messagePublisherBroker.mofNotUpdatedMessage(NEMS_MESSAGE_ID, true);
         var nonSensitiveDataMessage = new NonSensitiveDataMessage(NEMS_MESSAGE_ID, "NO_ACTION:MOF_SAME_AS_REPO");
         verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage);
     }
@@ -121,7 +114,7 @@ class MessagePublisherBrokerTest {
         var suspensionEvent = new SuspensionEvent("NHS_NUMBER", "PREVIOUS_ODS_CODE", NEMS_MESSAGE_ID, "LAST_UPDATED_DATE");
         var afterUpdateResponse = new PdsAdaptorSuspensionStatusResponse("NHS_NUMBER", true, null,
                 "REPO_ODS_CODE", "E2", false);
-        messagePublisherBroker.repoIncomingMessage(afterUpdateResponse,suspensionEvent);
+        messagePublisherBroker.repoIncomingMessage(afterUpdateResponse, suspensionEvent);
         verify(repoIncomingEventPublisher).sendMessage(repoIncomingEventArgumentCaptor.capture());
         var repoIncomingEventArgumentCaptorValue = repoIncomingEventArgumentCaptor.getValue();
         assertThat(repoIncomingEventArgumentCaptorValue.getNhsNumber()).isEqualTo("NHS_NUMBER");

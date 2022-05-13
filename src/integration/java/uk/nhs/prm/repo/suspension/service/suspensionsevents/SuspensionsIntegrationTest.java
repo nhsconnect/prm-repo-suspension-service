@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration( classes = LocalStackAwsConfig.class)
+@ContextConfiguration(classes = LocalStackAwsConfig.class)
 @DirtiesContext
 public class SuspensionsIntegrationTest {
 
@@ -48,8 +48,8 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.eventOutOfOrderQueueName}")
     private String eventOutOfOrderQueueName;
 
-    @Value("${aws.nonSensitiveInvalidSuspensionQueueName}")
-    private String nonSensitiveInvalidSuspensionQueueName;
+    @Value("${aws.invalidSuspensionAuditQueueName}")
+    private String invalidSuspensionAuditQueueName;
 
     @Value("${aws.invalidSuspensionQueueName}")
     private String invalidSuspensionQueueName;
@@ -187,7 +187,7 @@ public class SuspensionsIntegrationTest {
 
         var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         var invalidSuspensionQueueUrl = sqs.getQueueUrl(invalidSuspensionQueueName).getQueueUrl();
-        var nonSensitiveInvalidSuspensionQueueUrl = sqs.getQueueUrl(nonSensitiveInvalidSuspensionQueueName).getQueueUrl();
+        var nonSensitiveInvalidSuspensionQueueUrl = sqs.getQueueUrl(invalidSuspensionAuditQueueName).getQueueUrl();
         sqs.sendMessage(queueUrl, getSuspensionEventWith(nhsNumber));
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {

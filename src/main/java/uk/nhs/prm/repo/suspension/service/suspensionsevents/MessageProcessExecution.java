@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
-import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
@@ -57,11 +56,10 @@ public class MessageProcessExecution {
 
             // synthetic patient block
             if (processingOnlySyntheticOrSafeListedPatients() && patientIsNonSynthetic(suspensionEvent)) {
-                if(!patientIsSafeListed(suspensionEvent)) {
+                if (!patientIsSafeListed(suspensionEvent)) {
                     messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
                     return;
-                }
-                else
+                } else
                     log.info("Patient is safe-listed for testing");
             }
 
@@ -89,7 +87,7 @@ public class MessageProcessExecution {
             }
             return response;
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
-            messagePublisherBroker.invalidFormattedMessage(suspensionMessage, new NonSensitiveDataMessage(suspensionEvent.nemsMessageId(), "NO_ACTION:INVALID_SUSPENSION").toJsonString());
+            messagePublisherBroker.invalidMessage(suspensionMessage, suspensionEvent.getNemsMessageId());
             throw invalidPdsRequestException;
         }
     }
@@ -99,7 +97,7 @@ public class MessageProcessExecution {
             return parser.parse(suspensionMessage);
         } catch (JsonProcessingException e) {
             log.error("Got an exception while parsing suspensions message");
-            messagePublisherBroker.invalidFormattedMessage(suspensionMessage, suspensionMessage);
+            messagePublisherBroker.invalidMessage(suspensionMessage, null);
             throw new InvalidSuspensionMessageException("Encountered an invalid message", e);
         }
     }

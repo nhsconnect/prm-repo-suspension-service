@@ -11,7 +11,7 @@ import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusRespon
 import uk.nhs.prm.repo.suspension.service.pds.IntermittentErrorPdsException;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
-import uk.nhs.prm.repo.suspension.service.publishers.*;
+import uk.nhs.prm.repo.suspension.service.publishers.MessagePublisherBroker;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
@@ -106,16 +106,6 @@ public class SuspensionMessageProcessorTest {
                 suspensionMessageProcessor.process(sampleMessage));
 
         verify(pdsService, times(1)).isSuspended(NHS_NUMBER);
-    }
-
-    @Test
-    void shouldPutInvalidBogusMessageOnInvalidSuspensionMessageOnDLQ() {
-        var sampleMessage = "invalid-bogus";
-
-        Assertions.assertThrows(InvalidSuspensionMessageException.class, () ->
-                suspensionMessageProcessor.process(sampleMessage));
-
-        verify(messagePublisherBroker).invalidFormattedMessage(sampleMessage, sampleMessage);
     }
 
     @Test

@@ -9,8 +9,6 @@ import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusRespon
 import uk.nhs.prm.repo.suspension.service.model.RepoIncomingEvent;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEvent;
 
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class MessagePublisherBroker {
@@ -43,13 +41,12 @@ public class MessagePublisherBroker {
         eventOutOfOrderPublisher.sendMessage(eventOutOfOrderMessage);
     }
 
-    public void invalidFormattedMessage(String sensitiveMessage, String nonSensitiveMessage) {
-        invalidSuspensionPublisher.sendMessage(sensitiveMessage);
-        invalidSuspensionPublisher.sendNonSensitiveMessage(nonSensitiveMessage);
+    public void invalidMessage(String sensitiveMessage, String nemsMessageId) {
+        invalidSuspensionPublisher.sendInvalidMessageAndAuditMessage(sensitiveMessage, nemsMessageId);
     }
 
     public void mofNotUpdatedMessage(String nemsMessageId, boolean toRepoOdsCode) {
-        var status = toRepoOdsCode ? "NO_ACTION:MOF_SAME_AS_REPO" :  "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP";
+        var status = toRepoOdsCode ? "NO_ACTION:MOF_SAME_AS_REPO" : "NO_ACTION:MOF_SAME_AS_PREVIOUS_GP";
         var mofSameAsPreviousGp = new NonSensitiveDataMessage(nemsMessageId, status);
         mofNotUpdatedEventPublisher.sendMessage(mofSameAsPreviousGp);
     }

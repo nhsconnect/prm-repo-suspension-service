@@ -14,7 +14,8 @@ locals {
     { name = "MOF_NOT_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_not_updated.arn },
     { name = "EVENT_OUT_OF_ORDER_SNS_TOPIC_ARN", value = aws_sns_topic.event_out_of_order.arn },
     { name = "INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.invalid_suspension.arn },
-    { name  = "NON_SENSITIVE_INVALID_SUSPENSION_SNS_TOPIC_ARN",
+    {
+      name  = "INVALID_SUSPENSION_AUDIT_SNS_TOPIC_ARN",
       value = aws_sns_topic.invalid_suspension_audit_topic.arn
     },
     { name = "DECEASED_PATIENT_SNS_TOPIC_ARN", value = aws_sns_topic.deceased_patient.arn },

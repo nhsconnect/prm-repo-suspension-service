@@ -103,7 +103,7 @@ class ManagingOrganisationServiceTest {
 
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
 
-        verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID,false);
+        verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID, false);
         verifyNoInteractions(pdsService);
     }
 
@@ -118,10 +118,7 @@ class ManagingOrganisationServiceTest {
         Assertions.assertThrows(InvalidPdsRequestException.class, () ->
                 mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse));
 
-        String sampleNonSensitiveMessage = "{\"nemsMessageId\":\"" + NEMS_MESSAGE_ID + "\"," +
-                "\"status\":\"NO_ACTION:INVALID_SUSPENSION\"}";
-
-        verify(messagePublisherBroker).invalidFormattedMessage(STRING_SUSPENSION_MESSAGE, sampleNonSensitiveMessage);
+        verify(messagePublisherBroker).invalidMessage(STRING_SUSPENSION_MESSAGE, NEMS_MESSAGE_ID);
     }
 
     @Test
@@ -152,7 +149,7 @@ class ManagingOrganisationServiceTest {
         when(toggleConfig.isCanUpdateManagingOrganisationToRepo()).thenReturn(true);
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
 
-        verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID,true);
+        verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID, true);
         verifyNoInteractions(pdsService);
     }
 
