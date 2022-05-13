@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.suspension.service.publishers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.suspension.service.config.Tracer;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
@@ -20,6 +21,7 @@ public class MessagePublisherBroker {
     public final EventOutOfOrderPublisher eventOutOfOrderPublisher;
     public final DeceasedPatientEventPublisher deceasedPatientEventPublisher;
     public final RepoIncomingEventPublisher repoIncomingEventPublisher;
+    public final Tracer tracer;
 
     public void notSuspendedMessage(String nemsMessageId) {
         var notSuspendedMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NO_LONGER_SUSPENDED_ON_PDS");
@@ -59,7 +61,7 @@ public class MessagePublisherBroker {
     }
 
     public void repoIncomingMessage(PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse, SuspensionEvent suspensionEvent) {
-        var repoIncomingEvent = new RepoIncomingEvent(pdsAdaptorSuspensionStatusResponse, suspensionEvent, UUID.randomUUID().toString());
+        var repoIncomingEvent = new RepoIncomingEvent(pdsAdaptorSuspensionStatusResponse, suspensionEvent, tracer.getTraceId());
         repoIncomingEventPublisher.sendMessage(repoIncomingEvent);
     }
 

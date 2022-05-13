@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
+import uk.nhs.prm.repo.suspension.service.config.Tracer;
 import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
@@ -36,9 +37,10 @@ class MessagePublisherBrokerTest {
     private EventOutOfOrderPublisher eventOutOfOrderPublisher;
     @Mock
     private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
-
     @Mock
     private RepoIncomingEventPublisher repoIncomingEventPublisher;
+    @Mock
+    private Tracer tracer;
 
     @Captor
     private ArgumentCaptor<RepoIncomingEvent> repoIncomingEventArgumentCaptor;
@@ -127,6 +129,6 @@ class MessagePublisherBrokerTest {
         assertThat(repoIncomingEventArgumentCaptorValue.getDestinationGp()).isEqualTo("REPO_ODS_CODE");
         assertThat(repoIncomingEventArgumentCaptorValue.getNemsEventLastUpdated()).isEqualTo("LAST_UPDATED_DATE");
         assertThat(repoIncomingEventArgumentCaptorValue.getSourceGp()).isEqualTo("PREVIOUS_ODS_CODE");
-        assertDoesNotThrow(()-> UUID.fromString(repoIncomingEventArgumentCaptorValue.getConversationId()));
+        assertThat(repoIncomingEventArgumentCaptorValue.getConversationId()).isEqualTo(tracer.getTraceId());
     }
 }
