@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.suspension.service.config.MessageProcessProperties;
 import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
 import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
@@ -44,11 +45,14 @@ public class MessageProcessExecutionTest {
     private static final String NHS_NUMBER = "9692294951";
 
     private static final String LAST_UPDATED_DATE = "2017-11-01T15:00:33+00:00";
+    private MessageProcessProperties config;
 
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
                 pdsService, lastUpdatedEventService, managingOrganisationService, new SuspensionEventParser(), concurrentThreadLock);
+        config = new MessageProcessProperties();
+        setField(messageProcessExecution, "config", config);
     }
 
     @Test
@@ -60,8 +64,8 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "true");
-        setField(messageProcessExecution, "syntheticPatientPrefix", "969");
+        config.setProcessOnlySyntheticOrSafeListedPatients("true");
+        config.setSyntheticPatientPrefix("969");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -86,8 +90,8 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "false");
-        setField(messageProcessExecution, "syntheticPatientPrefix", "999");
+        config.setProcessOnlySyntheticOrSafeListedPatients("false");
+        config.setSyntheticPatientPrefix("999");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -111,9 +115,9 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "true");
-        setField(messageProcessExecution, "syntheticPatientPrefix", "999");
-        setField(messageProcessExecution, "allowedPatientsNhsNumbers", "9692294951,9222294955");
+        config.setProcessOnlySyntheticOrSafeListedPatients("true");
+        config.setSyntheticPatientPrefix("999");
+        config.setAllowedPatientsNhsNumbers("9692294951,9222294955");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -137,8 +141,8 @@ public class MessageProcessExecutionTest {
                 "\"nhsNumber\":\"9692294951\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "false");
-        setField(messageProcessExecution, "syntheticPatientPrefix", "999");
+        config.setProcessOnlySyntheticOrSafeListedPatients("false");
+        config.setSyntheticPatientPrefix("999");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -164,8 +168,8 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "false");
-        setField(messageProcessExecution, "syntheticPatientPrefix", "969");
+        config.setProcessOnlySyntheticOrSafeListedPatients("false");
+        config.setSyntheticPatientPrefix("969");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -188,8 +192,8 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "true");
-        setField(messageProcessExecution, "syntheticPatientPrefix", "929");
+        config.setProcessOnlySyntheticOrSafeListedPatients("true");
+        config.setSyntheticPatientPrefix("929");
 
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, "A1000", "", "", false);
@@ -215,9 +219,9 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setField(messageProcessExecution, "processOnlySyntheticOrSafeListedPatients", "true");
-        setField(messageProcessExecution, "syntheticPatientPrefix", "929");
-        setField(messageProcessExecution, "allowedPatientsNhsNumbers", "9692294950,9222294955");
+        config.setProcessOnlySyntheticOrSafeListedPatients("true");
+        config.setSyntheticPatientPrefix("929");
+        config.setAllowedPatientsNhsNumbers("9692294950,9222294955");
 
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, "A1000", "", "", false);

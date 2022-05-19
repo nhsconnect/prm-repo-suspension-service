@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.suspension.service.config.MessageProcessProperties;
 import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
 import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
 import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
@@ -19,15 +20,7 @@ public class MessageProcessExecution {
     private final PdsService pdsService;
     private final LastUpdatedEventService lastUpdatedEventService;
     private final ManagingOrganisationService managingOrganisationService;
-
-    @Value("${process_only_synthetic_or_safe_listed_patients}")
-    private String processOnlySyntheticOrSafeListedPatients;
-
-    @Value("${synthetic_patient_prefix}")
-    private String syntheticPatientPrefix;
-
-    @Value("${safe_listed_patients_nhs_numbers}")
-    private String allowedPatientsNhsNumbers;
+    private MessageProcessProperties config;
 
     private final SuspensionEventParser parser;
     private final ConcurrentThreadLock threadLock;
@@ -103,23 +96,26 @@ public class MessageProcessExecution {
     }
 
     private boolean patientIsNonSynthetic(SuspensionEvent suspensionEvent) {
-        boolean isNonSynthetic = !suspensionEvent.nhsNumber().startsWith(syntheticPatientPrefix);
+        boolean isNonSynthetic = !suspensionEvent.nhsNumber().startsWith(this.config.getSyntheticPatientPrefix());
         log.info(isNonSynthetic ? "Processing Non-Synthetic Patient" : "Processing Synthetic Patient");
         return isNonSynthetic;
     }
 
 
     private boolean patientIsSafeListed(SuspensionEvent suspensionEvent) {
-        return allowedPatientsNhsNumbers != null && allowedPatientsNhsNumbers.contains(suspensionEvent.nhsNumber());
+        return this.config.getAllowedPatientsNhsNumbers() != null && this.config.getAllowedPatientsNhsNumbers().contains(suspensionEvent.nhsNumber());
     }
 
     private boolean processingOnlySyntheticOrSafeListedPatients() {
-        log.info("Process only synthetic and safe listed patients: " + processOnlySyntheticOrSafeListedPatients);
-        return Boolean.parseBoolean(processOnlySyntheticOrSafeListedPatients);
+        log.info("Process only synthetic and safe listed patients: " + this.config.getProcessOnlySyntheticOrSafeListedPatients());
+        return Boolean.parseBoolean(this.config.getProcessOnlySyntheticOrSafeListedPatients());
     }
 
     private boolean nhsNumberIsSuperseded(String nemsEventNhsNumber, String pdsNhsNumber) {
         return !nemsEventNhsNumber.equals(pdsNhsNumber);
     }
 
+    public void setConfig(MessageProcessProperties config) {
+        this.config = config;
+    }
 }
