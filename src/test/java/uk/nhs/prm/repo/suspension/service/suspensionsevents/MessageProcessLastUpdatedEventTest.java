@@ -44,7 +44,6 @@ public class MessageProcessLastUpdatedEventTest {
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
                 pdsService, lastUpdatedEventService, managingOrganisationService,config, new SuspensionEventParser(), concurrentThreadLock);
-        messageProcessExecution.setConfig(new MessageProcessProperties());
     }
 
     @Test

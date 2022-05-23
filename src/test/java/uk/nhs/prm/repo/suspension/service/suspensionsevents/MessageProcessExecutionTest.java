@@ -52,7 +52,7 @@ public class MessageProcessExecutionTest {
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
-                pdsService, lastUpdatedEventService, managingOrganisationService, config,new SuspensionEventParser(), concurrentThreadLock);
+                pdsService, lastUpdatedEventService, managingOrganisationService, config, new SuspensionEventParser(), concurrentThreadLock);
         setField(messageProcessExecution, "config", config);
     }
 
@@ -64,9 +64,7 @@ public class MessageProcessExecutionTest {
                 "\"nhsNumber\":\"9692294951\"," +
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
-
-        config.setProcessOnlySyntheticOrSafeListedPatients("true");
-        config.setSyntheticPatientPrefix("969");
+        setPropertiesWhenProcessOnlySyntheticIsTrue();
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -82,6 +80,7 @@ public class MessageProcessExecutionTest {
         verifyLock(NHS_NUMBER);
     }
 
+
     @Test
     void shouldUpdateMofForNonSyntheticPatientsWhenToggleIsOff() {
         var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
@@ -91,8 +90,7 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        config.setProcessOnlySyntheticOrSafeListedPatients("false");
-        config.setSyntheticPatientPrefix("999");
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("false");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -115,10 +113,9 @@ public class MessageProcessExecutionTest {
                 "\"nhsNumber\":\"9692294951\"," +
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
-
-        config.setProcessOnlySyntheticOrSafeListedPatients("true");
-        config.setSyntheticPatientPrefix("999");
-        config.setAllowedPatientsNhsNumbers("9692294951,9222294955");
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("true");
+        when(config.getSyntheticPatientPrefix()).thenReturn("999");
+        when(config.getAllowedPatientsNhsNumbers()).thenReturn("9692294951,9222294955");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -141,9 +138,7 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"nhsNumber\":\"9692294951\"," +
                 "\"environment\":\"local\"}";
-
-        config.setProcessOnlySyntheticOrSafeListedPatients("false");
-        config.setSyntheticPatientPrefix("999");
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("false");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -168,9 +163,7 @@ public class MessageProcessExecutionTest {
                 "\"nhsNumber\":\"9692294951\"," +
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
-
-        config.setProcessOnlySyntheticOrSafeListedPatients("false");
-        config.setSyntheticPatientPrefix("969");
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("false");
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
@@ -193,8 +186,9 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        config.setProcessOnlySyntheticOrSafeListedPatients("true");
-        config.setSyntheticPatientPrefix("929");
+
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("true");
+        when(config.getSyntheticPatientPrefix()).thenReturn("929");
 
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, "A1000", "", "", false);
@@ -220,9 +214,10 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        config.setProcessOnlySyntheticOrSafeListedPatients("true");
-        config.setSyntheticPatientPrefix("929");
-        config.setAllowedPatientsNhsNumbers("9692294950,9222294955");
+
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("true");
+        when(config.getSyntheticPatientPrefix()).thenReturn("929");
+        when(config.getAllowedPatientsNhsNumbers()).thenReturn("9692294950,9222294955");
 
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, "A1000", "", "", false);
@@ -387,6 +382,11 @@ public class MessageProcessExecutionTest {
 
         verify(messagePublisherBroker).invalidMessage(sampleMessage, null);
         verifyNoMoreInteractions(messagePublisherBroker);
+    }
+
+    private void setPropertiesWhenProcessOnlySyntheticIsTrue() {
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("true");
+        when(config.getSyntheticPatientPrefix()).thenReturn("969");
     }
 
     private void verifyLock(String nhsNumber) {

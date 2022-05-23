@@ -54,7 +54,6 @@ public class SuspensionProcessingTest {
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
                 pdsService, lastUpdatedEventService, managingOrganisationService,config, new SuspensionEventParser(), concurrentThreadLock);
         suspensionMessageProcessor = new SuspensionMessageProcessor(messageProcessExecution);
-        messageProcessExecution.setConfig(new MessageProcessProperties());
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);
         setField(suspensionMessageProcessor, "maxAttempts", 5);
         setField(suspensionMessageProcessor, "multiplier", 2.0);
