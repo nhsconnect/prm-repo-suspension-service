@@ -36,6 +36,8 @@ public class SuspensionProcessingTest {
 
     @Mock
     private LastUpdatedEventService lastUpdatedEventService;
+    @Mock
+    private MessageProcessProperties config;
 
     @Mock
     private ConcurrentThreadLock concurrentThreadLock;
@@ -50,7 +52,7 @@ public class SuspensionProcessingTest {
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
-                pdsService, lastUpdatedEventService, managingOrganisationService, new SuspensionEventParser(), concurrentThreadLock);
+                pdsService, lastUpdatedEventService, managingOrganisationService,config, new SuspensionEventParser(), concurrentThreadLock);
         suspensionMessageProcessor = new SuspensionMessageProcessor(messageProcessExecution);
         messageProcessExecution.setConfig(new MessageProcessProperties());
         setField(suspensionMessageProcessor, "initialIntervalMillis", 1);

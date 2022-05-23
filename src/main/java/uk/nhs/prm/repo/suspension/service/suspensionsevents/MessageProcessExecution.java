@@ -20,7 +20,7 @@ public class MessageProcessExecution {
     private final PdsService pdsService;
     private final LastUpdatedEventService lastUpdatedEventService;
     private final ManagingOrganisationService managingOrganisationService;
-    private MessageProcessProperties config;
+    private final MessageProcessProperties config;
 
     private final SuspensionEventParser parser;
     private final ConcurrentThreadLock threadLock;
@@ -115,7 +115,4 @@ public class MessageProcessExecution {
         return !nemsEventNhsNumber.equals(pdsNhsNumber);
     }
 
-    public void setConfig(MessageProcessProperties config) {
-        this.config = config;
-    }
 }

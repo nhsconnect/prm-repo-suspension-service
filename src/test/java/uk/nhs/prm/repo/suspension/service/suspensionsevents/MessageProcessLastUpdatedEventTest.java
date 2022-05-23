@@ -26,6 +26,8 @@ public class MessageProcessLastUpdatedEventTest {
     @Mock
     private PdsService pdsService;
     @Mock
+    private MessageProcessProperties config;
+    @Mock
     private ConcurrentThreadLock concurrentThreadLock;
 
     private static final String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
@@ -41,7 +43,7 @@ public class MessageProcessLastUpdatedEventTest {
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
-                pdsService, lastUpdatedEventService, managingOrganisationService, new SuspensionEventParser(), concurrentThreadLock);
+                pdsService, lastUpdatedEventService, managingOrganisationService,config, new SuspensionEventParser(), concurrentThreadLock);
         messageProcessExecution.setConfig(new MessageProcessProperties());
     }
 

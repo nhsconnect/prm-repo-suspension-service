@@ -33,6 +33,9 @@ public class MessageProcessExecutionTest {
     private ManagingOrganisationService managingOrganisationService;
 
     @Mock
+    private MessageProcessProperties config;
+
+    @Mock
     private ConcurrentThreadLock concurrentThreadLock;
 
     private static final String nemsMessageId = "A6FBE8C3-9144-4DDD-BFFE-B49A96456B29";
@@ -45,13 +48,11 @@ public class MessageProcessExecutionTest {
     private static final String NHS_NUMBER = "9692294951";
 
     private static final String LAST_UPDATED_DATE = "2017-11-01T15:00:33+00:00";
-    private MessageProcessProperties config;
 
     @BeforeEach
     public void setUp() {
         messageProcessExecution = new MessageProcessExecution(messagePublisherBroker,
-                pdsService, lastUpdatedEventService, managingOrganisationService, new SuspensionEventParser(), concurrentThreadLock);
-        config = new MessageProcessProperties();
+                pdsService, lastUpdatedEventService, managingOrganisationService, config,new SuspensionEventParser(), concurrentThreadLock);
         setField(messageProcessExecution, "config", config);
     }
 
