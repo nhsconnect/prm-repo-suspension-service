@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
-import org.junit.jupiter.api.Assertions;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.IThrowableProxy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,11 +15,14 @@ import uk.nhs.prm.repo.suspension.service.pds.InvalidPdsRequestException;
 import uk.nhs.prm.repo.suspension.service.pds.PdsService;
 import uk.nhs.prm.repo.suspension.service.publishers.MessagePublisherBroker;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static uk.nhs.prm.repo.suspension.service.logging.TestLogAppender.addTestLogAppender;
 
 @ExtendWith(MockitoExtension.class)
-public class SuspensionMessageProcessorTest {
+public class SuspensionProcessingTest {
 
     private SuspensionMessageProcessor suspensionMessageProcessor;
 
@@ -55,7 +59,7 @@ public class SuspensionMessageProcessorTest {
     }
 
     @Test
-    void shouldRetryAsMaxAttemptNumber() {
+    void shouldRetryUpToFiveTimes() {
         var sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -65,7 +69,7 @@ public class SuspensionMessageProcessorTest {
         when(pdsService.isSuspended(NHS_NUMBER)).thenThrow(IntermittentErrorPdsException.class);
 
 
-        Assertions.assertThrows(IntermittentErrorPdsException.class, () ->
+        assertThrows(IntermittentErrorPdsException.class, () ->
                 suspensionMessageProcessor.process(sampleMessage));
 
         int numberOfInvocations = 5;
@@ -75,7 +79,7 @@ public class SuspensionMessageProcessorTest {
     }
 
     @Test
-    void shouldNotRetryIfNotGetException() {
+    void shouldNotRetryIfDoNotGetException() {
         var sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"B85612\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -95,24 +99,66 @@ public class SuspensionMessageProcessorTest {
 
     @Test
     void shouldNotRetryWhenGotInvalidPdsRequestException() {
-        var sampleMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
-                "\"previousOdsCode\":\"B85612\"," +
-                "\"eventType\":\"SUSPENSION\"," +
-                "\"nhsNumber\":\"9692294951\"," +
-                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
-                "\"environment\":\"local\"}";
+        var sampleMessage = createSuspensionMessage(NHS_NUMBER);
 
         when(pdsService.isSuspended(NHS_NUMBER)).thenThrow(InvalidPdsRequestException.class);
 
-        Assertions.assertThrows(InvalidPdsRequestException.class, () ->
+        assertThrows(InvalidPdsRequestException.class, () ->
                 suspensionMessageProcessor.process(sampleMessage));
 
         verify(pdsService, times(1)).isSuspended(NHS_NUMBER);
     }
 
     @Test
+    void shouldLogExceptionsThatAreRetriedAtInfoLevel() {
+        var logged = addTestLogAppender();
+
+        var cause = new IntermittentErrorPdsException("some retryable exception", new IllegalArgumentException());
+        when(pdsService.isSuspended(NHS_NUMBER)).thenThrow(cause);
+
+        assertThrows(Exception.class, () ->
+            suspensionMessageProcessor.process(createSuspensionMessage(NHS_NUMBER)));
+
+        var logline = logged.findLoggedEvent("Retrying after exception");
+        assertThat(logline).isNotNull();
+        assertThat(logline.getLevel().toString()).isEqualTo("INFO");
+
+        var loggedException = logline.getThrowableProxy();
+        assertThat(loggedException.getMessage()).isEqualTo("some retryable exception");
+        assertThat(loggedException.getCause().getClassName()).contains("IllegalArgumentException");
+    }
+
+    @Test
+    void shouldAlsoLogUncaughtExceptionsThatAreNotRetriedButAtErrorLevel() {
+        var logged = addTestLogAppender();
+
+        var cause = new IllegalArgumentException("some uncaught exception");
+
+        when(pdsService.isSuspended(NHS_NUMBER)).thenThrow(cause);
+
+        assertThrows(Exception.class, () ->
+                suspensionMessageProcessor.process(createSuspensionMessage(NHS_NUMBER)));
+
+        var logline = logged.findLoggedEvent("Uncaught exception");
+        assertThat(logline).isNotNull();
+        assertThat(logline.getLevel().toString()).isEqualTo("ERROR");
+
+        var loggedException = logline.getThrowableProxy();
+        assertThat(loggedException.getMessage()).isEqualTo("some uncaught exception");
+    }
+
+    @Test
     void shouldNotProcessMessagesWhichAreNotInCorrectFormat() {
         var message = "invalid message";
-        Assertions.assertThrows(Exception.class, () -> suspensionMessageProcessor.process(message));
+        assertThrows(Exception.class, () -> suspensionMessageProcessor.process(message));
+    }
+
+    private String createSuspensionMessage(String nhsNumber) {
+        return "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"" + nhsNumber + "\"," +
+                "\"nemsMessageId\":\"A6FBE8C3-9144-4DDD-BFFE-B49A96456B29\"," +
+                "\"environment\":\"local\"}";
     }
 }

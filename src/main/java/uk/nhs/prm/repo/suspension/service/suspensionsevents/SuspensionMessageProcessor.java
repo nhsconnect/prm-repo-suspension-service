@@ -15,6 +15,8 @@ import java.util.function.Function;
 @Slf4j
 @RequiredArgsConstructor
 public class SuspensionMessageProcessor {
+    private static final Class RETRYABLE_EXCEPTION_CLASS = IntermittentErrorPdsException.class;
+
     @Value("${suspension.processor.retry.max.attempts}")
     private int maxAttempts;
 
@@ -33,15 +35,26 @@ public class SuspensionMessageProcessor {
     }
 
     private Void processOnce(String message) {
-         messageProcessExecution.run(message);
-         return null;
+        try {
+            messageProcessExecution.run(message);
+        }
+        catch (Exception e) {
+            if (RETRYABLE_EXCEPTION_CLASS.isInstance(e)) {
+                log.info("Retrying after exception", e);
+            }
+            else {
+                log.error("Uncaught exception", e);
+            }
+            throw e;
+        }
+        return null;
     }
 
     private RetryConfig createRetryConfig() {
         return RetryConfig.custom()
                 .maxAttempts(maxAttempts)
                 .intervalFunction(IntervalFunction.ofExponentialBackoff(initialIntervalMillis, multiplier))
-                .retryExceptions(IntermittentErrorPdsException.class)
+                .retryExceptions(RETRYABLE_EXCEPTION_CLASS)
                 .build();
     }
 }
