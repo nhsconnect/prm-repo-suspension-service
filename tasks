@@ -198,6 +198,10 @@ case "${command}" in
       die_localstack_die
       dojo -c Dojofile-itest "./tasks _test_integration"
       ;;
+  dojo_integration)
+      configure_envs
+      dojo -c Dojofile-itest "./tasks _test_integration"
+      ;;
   _test_coverage)
       gradle jacocoTestCoverageVerification
       ;;

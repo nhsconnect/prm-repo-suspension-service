@@ -26,7 +26,6 @@ pipelines:
                       - ./tasks test_unit
             test_integration:
               environment_variables:
-                PIPELINE_INTEGRATION_TEST: true
                 NHS_ENVIRONMENT: dev
               resources:
                 - docker
