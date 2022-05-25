@@ -10,9 +10,10 @@ import org.springframework.context.annotation.Configuration;
 public class SyntheticPatientConfig {
 
     @Bean
-    public void logNumberInSyntheticPatientList(@Value("${safe_listed_patients_nhs_numbers}") String safeList) {
+    public Void logNumberInSyntheticPatientList(@Value("${safe_listed_patients_nhs_numbers}") String safeList) {
         var numberOfNhsNumbersInSafeList = safeList.split(",").length;
         log.info("Safe list of nhs number has a size of {}", numberOfNhsNumbersInSafeList);
+        return null;
     }
 
 }

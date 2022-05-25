@@ -3,7 +3,6 @@ package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.suspension.service.config.MessageProcessProperties;
 import uk.nhs.prm.repo.suspension.service.data.LastUpdatedEventService;
@@ -52,8 +51,8 @@ public class MessageProcessExecution {
                 if (!patientIsSafeListed(suspensionEvent)) {
                     messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
                     return;
-                } else
-                    log.info("Patient is safe-listed for testing");
+                }
+                log.info("Patient is safe-listed for testing");
             }
 
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
@@ -107,7 +106,7 @@ public class MessageProcessExecution {
     }
 
     private boolean processingOnlySyntheticOrSafeListedPatients() {
-        log.info("Process only synthetic and safe listed patients: " + this.config.getProcessOnlySyntheticOrSafeListedPatients());
+        log.info("Process only synthetic or safe listed patients: " + this.config.getProcessOnlySyntheticOrSafeListedPatients());
         return Boolean.parseBoolean(this.config.getProcessOnlySyntheticOrSafeListedPatients());
     }
 
