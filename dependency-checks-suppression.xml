@@ -8,4 +8,23 @@
       <packageUrl regex="true">^pkg:maven/io\.netty/netty\-tcnative\-classes@.*$</packageUrl>
       <cpe>cpe:/a:netty:netty</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+     Suppress this CVE that is a wontfix from spring because it is about how spring provides
+     a java deserialisation and invocation endpoint implementation that if you expose
+     unauthenticated would be risky.  They argue that's a you (app) problem.
+     ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-.*$</packageUrl>
+      <cve>CVE-2016-1000027</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+     Spring-framework libraries always have groupId org.springframework with no further extension, so suppress the
+     spring_framework package identification for old and third party libs that merely include spring jars
+     ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-.*$</packageUrl>
+      <cpe>cpe:/a:springsource:spring_framework</cpe>
+      <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
+      <cpe>cpe:/a:vmware:spring_framework</cpe>
+   </suppress>
 </suppressions>
