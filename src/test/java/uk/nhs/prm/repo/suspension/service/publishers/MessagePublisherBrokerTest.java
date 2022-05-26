@@ -110,7 +110,7 @@ class MessagePublisherBrokerTest {
     }
 
     @Test
-    void repoIncomingMessage() {
+    void sendExpectedRepoIncomingMessage() {
         var suspensionEvent = new SuspensionEvent("NHS_NUMBER", "PREVIOUS_ODS_CODE", NEMS_MESSAGE_ID, "LAST_UPDATED_DATE");
         var afterUpdateResponse = new PdsAdaptorSuspensionStatusResponse("NHS_NUMBER", true, null,
                 "REPO_ODS_CODE", "E2", false);
