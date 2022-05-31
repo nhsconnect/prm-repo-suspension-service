@@ -584,3 +584,33 @@ data "aws_iam_policy_document" "repo_incoming_observability_topic_access_to_queu
     }
   }
 }
+
+resource "aws_sqs_queue_policy" "splunk_audit_uploader_access_policy" {
+  queue_url = data.aws_sqs_queue.splunk_audit_uploader.id
+  policy    = data.aws_iam_policy_document.splunk_audit_uploader_access_policy_doc.json
+}
+
+data "aws_iam_policy_document" "splunk_audit_uploader_access_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      data.aws_sqs_queue.splunk_audit_uploader.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.repo_incoming_audit.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
