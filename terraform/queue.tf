@@ -400,3 +400,14 @@ resource "aws_sns_topic_subscription" "repo_incoming_observability_queue" {
   topic_arn            = aws_sns_topic.repo_incoming.arn
   endpoint             = aws_sqs_queue.repo_incoming_observability_queue.arn
 }
+
+data "aws_sqs_queue" "splunk_audit_uploader" {
+  name = "${var.environment}-splunk-audit-uploader"
+}
+
+resource "aws_sns_topic_subscription" "repo_incoming_audit_splunk" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.repo_incoming_audit.arn
+  endpoint             = data.aws_sqs_queue.splunk_audit_uploader.arn
+}
