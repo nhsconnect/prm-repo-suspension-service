@@ -10,7 +10,7 @@ locals {
   mof_not_updated_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit-splunk-dlq"
   mof_not_updated_audit_queue_name = "${var.environment}-${var.component_name}-mof-not-updated-audit"
   invalid_suspension_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq"
-  invalid_suspension_audit_queue = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
+  invalid_suspension_audit_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-audit"
   invalid_suspension_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-invalid-suspension-dlq-splunk-dlq"
   event_out_of_order_audit_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit"
   event_out_of_order_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit-splunk-dlq"
@@ -127,7 +127,7 @@ resource "aws_sns_topic_subscription" "invalid_suspension" {
 }
 
 resource "aws_sqs_queue" "invalid_suspension_audit" {
-  name                       = local.invalid_suspension_audit_queue
+  name                       = local.invalid_suspension_audit_queue_name
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.invalid_suspension_audit.id
 
@@ -136,7 +136,7 @@ resource "aws_sqs_queue" "invalid_suspension_audit" {
     maxReceiveCount     = 4
   })
   tags = {
-    Name = local.invalid_suspension_audit_queue
+    Name = local.invalid_suspension_audit_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
