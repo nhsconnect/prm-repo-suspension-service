@@ -157,6 +157,11 @@ resource "aws_kms_key" "suspension_dynamodb_kms_key" {
   }
 }
 
+resource "aws_kms_alias" "suspension_dynamodb_encryption" {
+  name          = "alias/suspension-dynamodb-encryption-kms-key"
+  target_key_id = aws_kms_key.suspension_dynamodb_kms_key.id
+}
+
 resource "aws_kms_key" "deceased_patient" {
   description = "Custom KMS Key to enable server side encryption for deceased patient topic"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
