@@ -40,10 +40,10 @@ public class SuspensionMessageProcessor {
         }
         catch (Exception e) {
             if (RETRYABLE_EXCEPTION_CLASS.isInstance(e)) {
-                log.info("Retrying after exception", e);
+                log.info("Caught retryable exception in SuspensionMessageProcessor.processOnce", e);
             }
             else {
-                log.error("Uncaught exception", e);
+                log.error("Uncaught exception in SuspensionMessageProcessor.processOnce", e);
             }
             throw e;
         }

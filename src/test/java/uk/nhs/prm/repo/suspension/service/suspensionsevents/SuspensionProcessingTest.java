@@ -120,7 +120,7 @@ public class SuspensionProcessingTest {
         assertThrows(Exception.class, () ->
             suspensionMessageProcessor.process(createSuspensionMessage(NHS_NUMBER)));
 
-        var logline = logged.findLoggedEvent("Retrying after exception");
+        var logline = logged.findLoggedEvent("Caught retryable exception");
         assertThat(logline).isNotNull();
         assertThat(logline.getLevel().toString()).isEqualTo("INFO");
 
