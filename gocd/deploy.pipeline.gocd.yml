@@ -5,7 +5,7 @@ common:
       - docker
     artifacts:
       - build:
-          source: terraform/nhs_deployment.tfplan
+          source: terraform/suspension-service.tfplan
           destination: terraform/
     tasks:
       - exec:
@@ -20,7 +20,7 @@ common:
       - fetch:
           stage: plan
           job: plan
-          source: terraform/nhs_deployment.tfplan
+          source: terraform/suspension-service.tfplan
           destination: terraform/
           is_file: yes
       - exec:
