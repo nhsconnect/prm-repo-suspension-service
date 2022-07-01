@@ -5,7 +5,6 @@ variable "region" {
 
 variable "repo_name" {
   type = string
-  default = "prm-repo-suspension-service"
 }
 
 variable "environment" {}
