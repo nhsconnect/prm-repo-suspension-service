@@ -1,3 +1,4 @@
+component_name = "suspension-service"
 environment          = "pre-prod"
 environment_dns_zone = "pre-prod.non-prod"
 

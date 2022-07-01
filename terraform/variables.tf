@@ -10,9 +10,7 @@ variable "repo_name" {
 
 variable "environment" {}
 
-variable "component_name" {
-  default = "suspension-service"
-}
+variable "component_name" {}
 
 variable "environment_dns_zone" {
   description = "The environment-specific labels of the dns zone name, e.g. 'prod' or 'dev.non-prod'"
