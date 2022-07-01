@@ -89,6 +89,7 @@ pipelines:
         stage: deploy_dev
     environment_variables:
       NHS_ENVIRONMENT: dev
+      NHS_SERVICE: suspension-service
     stages: *common_stages
 
   suspension-service.test:
@@ -111,6 +112,7 @@ pipelines:
         stage: test
     environment_variables:
       NHS_ENVIRONMENT: test
+      NHS_SERVICE: suspension-service
     stages: *common_stages
 
   suspension-service.pre-prod:
@@ -133,6 +135,7 @@ pipelines:
         stage: test
     environment_variables:
       NHS_ENVIRONMENT: pre-prod
+      NHS_SERVICE: suspension-service
     stages: *common_stages
 
   suspension-service.perf:
@@ -155,6 +158,7 @@ pipelines:
         stage: test
     environment_variables:
       NHS_ENVIRONMENT: perf
+      NHS_SERVICE: suspension-service
     stages: *common_stages
 
   suspension-service.prod:
@@ -174,4 +178,5 @@ pipelines:
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: prod
+      NHS_SERVICE: suspension-service
     stages: *prod_stages
