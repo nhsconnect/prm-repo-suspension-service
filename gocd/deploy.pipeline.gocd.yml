@@ -75,7 +75,7 @@ common:
         jobs:
           deploy: *deploy_job
 pipelines:
-  'prm-repo-suspension-service.dev':
+  suspension-service.dev:
     group: continuity-service
     label_template: '${git[:8]}'
     materials:
@@ -91,7 +91,7 @@ pipelines:
       NHS_ENVIRONMENT: dev
     stages: *common_stages
 
-  'prm-repo-suspension-service.test':
+  suspension-service.test:
     group: continuity-service
     label_template: '${git[:8]}'
     materials:
@@ -104,7 +104,7 @@ pipelines:
         pipeline: prm-deductions-infra
         stage: deploy_test
       dev_env:
-        pipeline: prm-repo-suspension-service.dev
+        pipeline: suspension-service.dev
         stage: deploy
       e2e:
         pipeline: continuity-e2e-tests.dev
@@ -113,7 +113,7 @@ pipelines:
       NHS_ENVIRONMENT: test
     stages: *common_stages
 
-  'prm-repo-suspension-service.pre-prod':
+  suspension-service.pre-prod:
     group: continuity-service
     label_template: '${git[:8]}'
     materials:
@@ -126,7 +126,7 @@ pipelines:
         pipeline: prm-deductions-infra
         stage: deploy_pre_prod
       test_env:
-        pipeline: prm-repo-suspension-service.test
+        pipeline: suspension-service.test
         stage: deploy
       e2e:
         pipeline: continuity-e2e-tests.test
@@ -135,7 +135,7 @@ pipelines:
       NHS_ENVIRONMENT: pre-prod
     stages: *common_stages
 
-  'prm-repo-suspension-service.perf':
+  suspension-service.perf:
     group: continuity-service
     label_template: '${git[:8]}'
     materials:
@@ -148,7 +148,7 @@ pipelines:
         pipeline: prm-deductions-infra
         stage: deploy_perf
       test_env:
-        pipeline: prm-repo-suspension-service.test
+        pipeline: suspension-service.test
         stage: deploy
       e2e:
         pipeline: continuity-e2e-tests.test
@@ -157,7 +157,7 @@ pipelines:
       NHS_ENVIRONMENT: perf
     stages: *common_stages
 
-  'prm-repo-suspension-service.prod':
+  suspension-service.prod:
     group: continuity-service
     label_template: '${git[:8]}'
     materials:
@@ -170,7 +170,7 @@ pipelines:
         pipeline: prm-deductions-infra
         stage: deploy_prod
       pre-prod_env:
-        pipeline: prm-repo-suspension-service.pre-prod
+        pipeline: suspension-service.pre-prod
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: prod
