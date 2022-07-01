@@ -8,7 +8,6 @@ set -Eeo pipefail
 
 AWS_DEFAULT_REGION=eu-west-2
 IMAGE_REPO_NAME=repo/suspension-service
-export NHS_SERVICE=suspension-service
 AWS_HELPERS_VERSION=0.2.27
 echo "AWS helper scripts version: $AWS_HELPERS_VERSION"
 
@@ -50,6 +49,11 @@ function check_env {
     echo "Must set NHS_ENVIRONMENT"
     exit 1
   fi
+
+  if [[ -z "${NHS_SERVICE}" ]]; then
+      echo "Must set NHS_SERVICE"
+      exit 1
+    fi
 }
 
 function set_image_tag() {
