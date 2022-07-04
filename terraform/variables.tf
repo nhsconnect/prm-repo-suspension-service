@@ -68,3 +68,8 @@ variable "can_update_managing_organisation_to_repo" {
   description = "Toggle to allow updating managing organisation to repo ODS code"
   default = false
 }
+
+variable "is_end_of_transfer_service" {
+  type = bool
+  default = false
+}

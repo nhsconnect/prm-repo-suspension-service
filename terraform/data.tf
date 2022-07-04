@@ -35,3 +35,7 @@ data "aws_ssm_parameter" "repo_ods_code" {
 data "aws_ssm_parameter" "safe_listed_patients_nhs_numbers" {
   name = "/repo/${var.environment}/user-input/external/safe-listed-patients-nhs-numbers"
 }
+
+data "aws_ssm_parameter" "transfer_complete_queue_name" {
+  name = "/repo/${var.environment}/output/prm-repo-ehr-transfer-service/transfer-complete-queue-name"
+}

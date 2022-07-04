@@ -11,7 +11,7 @@ resource "aws_kms_key" "not_suspended" {
 }
 
 resource "aws_kms_alias" "not_suspended_encryption" {
-  name          = "alias/not-suspended-encryption-kms-key"
+  name          = "alias/${var.component_name}-not-suspended-encryption-kms-key"
   target_key_id = aws_kms_key.not_suspended.id
 }
 
@@ -73,7 +73,7 @@ resource "aws_kms_key" "mof_updated" {
 }
 
 resource "aws_kms_alias" "mof_updated_encryption" {
-  name          = "alias/mof-updated-encryption-kms-key"
+  name          = "alias/${var.component_name}-mof-updated-encryption-kms-key"
   target_key_id = aws_kms_key.mof_updated.id
 }
 
@@ -90,7 +90,7 @@ resource "aws_kms_key" "mof_not_updated" {
 }
 
 resource "aws_kms_alias" "mof_not_updated_encryption" {
-  name          = "alias/mof-not-updated-encryption-kms-key"
+  name          = "alias/${var.component_name}-mof-not-updated-encryption-kms-key"
   target_key_id = aws_kms_key.mof_not_updated.id
 }
 
@@ -107,7 +107,7 @@ resource "aws_kms_key" "invalid_suspension" {
 }
 
 resource "aws_kms_alias" "invalid_suspension_encryption" {
-  name          = "alias/invalid-suspension-encryption-kms-key"
+  name          = "alias/${var.component_name}-invalid-suspension-encryption-kms-key"
   target_key_id = aws_kms_key.invalid_suspension.id
 }
 
@@ -124,7 +124,7 @@ resource "aws_kms_key" "invalid_suspension_audit" {
 }
 
 resource "aws_kms_alias" "invalid_suspension_audit_encryption" {
-  name          = "alias/non-sensitive-invalid-suspension-encryption-kms-key"
+  name          = "alias/${var.component_name}-non-sensitive-invalid-suspension-encryption-kms-key"
   target_key_id = aws_kms_key.invalid_suspension_audit.id
 }
 
@@ -141,7 +141,7 @@ resource "aws_kms_key" "event_out_of_order" {
 }
 
 resource "aws_kms_alias" "event_out_of_order_encryption" {
-  name          = "alias/event-out-of-order-encryption-kms-key"
+  name          = "alias/${var.component_name}-event-out-of-order-encryption-kms-key"
   target_key_id = aws_kms_key.event_out_of_order.id
 }
 
@@ -158,7 +158,7 @@ resource "aws_kms_key" "suspension_dynamodb_kms_key" {
 }
 
 resource "aws_kms_alias" "suspension_dynamodb_encryption" {
-  name          = "alias/suspension-dynamodb-encryption-kms-key"
+  name          = "alias/${var.component_name}-suspension-dynamodb-encryption-kms-key"
   target_key_id = aws_kms_key.suspension_dynamodb_kms_key.id
 }
 
@@ -175,7 +175,7 @@ resource "aws_kms_key" "deceased_patient" {
 }
 
 resource "aws_kms_alias" "deceased_patient_encryption" {
-  name          = "alias/deceased-patient-encryption-kms-key"
+  name          = "alias/${var.component_name}-deceased-patient-encryption-kms-key"
   target_key_id = aws_kms_key.deceased_patient.id
 }
 
@@ -192,7 +192,7 @@ resource "aws_kms_key" "repo_incoming" {
 }
 
 resource "aws_kms_alias" "repo_incoming_encryption" {
-  name          = "alias/repo-incoming-encryption-kms-key"
+  name          = "alias/${var.component_name}-repo-incoming-encryption-kms-key"
   target_key_id = aws_kms_key.repo_incoming.id
 }
 
@@ -209,7 +209,7 @@ resource "aws_kms_key" "repo_incoming_observability" {
 }
 
 resource "aws_kms_alias" "repo_incoming_observability_encryption" {
-  name          = "alias/repo-incoming-observability-encryption-kms-key"
+  name          = "alias/${var.component_name}-repo-incoming-observability-encryption-kms-key"
   target_key_id = aws_kms_key.repo_incoming_observability.id
 }
 
@@ -226,6 +226,6 @@ resource "aws_kms_key" "repo_incoming_audit" {
 }
 
 resource "aws_kms_alias" "repo_incoming_audit_encryption" {
-  name          = "alias/repo-incoming-audit-encryption-kms-key"
+  name          = "alias/${var.component_name}-repo-incoming-audit-encryption-kms-key"
   target_key_id = aws_kms_key.repo_incoming_audit.id
 }
