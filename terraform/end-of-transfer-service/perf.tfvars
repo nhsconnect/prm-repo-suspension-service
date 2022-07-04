@@ -9,5 +9,3 @@ process_only_synthetic_or_safe_listed_patients = false
 log_level = "info"
 
 can_update_managing_organisation_to_repo = false
-
-is_end_of_transfer_service = true
