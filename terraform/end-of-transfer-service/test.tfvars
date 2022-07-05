@@ -1,5 +1,5 @@
-component_name = "suspension-service"
-repo_name = "suspension-service"
+component_name = "end-of-transfer-service"
+repo_name = "end-of-transfer-service"
 environment          = "test"
 environment_dns_zone = "test.non-prod"
 
