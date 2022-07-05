@@ -73,3 +73,8 @@ variable "is_end_of_transfer_service" {
   type = bool
   default = false
 }
+
+variable "image_name" {
+  type = string
+  default = "suspension-service"
+}

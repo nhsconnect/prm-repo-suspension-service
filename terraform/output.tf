@@ -16,7 +16,7 @@ resource "aws_ssm_parameter" "mof_updated_queue" {
   value = aws_sqs_queue.mof_updated.name
 }
 
-resource "aws_ssm_parameter" "ecs_tasks_sq" {
+resource "aws_ssm_parameter" "ecs_tasks_sg" {
   name  = "/repo/${var.environment}/output/${var.component_name}/ecs-sg-id"
   type  = "String"
   value = aws_security_group.ecs-tasks-sg.id

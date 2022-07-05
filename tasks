@@ -51,9 +51,9 @@ function check_env {
   fi
 
   if [[ -z "${NHS_SERVICE}" ]]; then
-      echo "Must set NHS_SERVICE"
-      exit 1
-    fi
+    echo "Must set NHS_SERVICE"
+    exit 1
+  fi
 }
 
 function set_image_tag() {
