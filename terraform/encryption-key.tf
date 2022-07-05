@@ -212,20 +212,3 @@ resource "aws_kms_alias" "repo_incoming_observability_encryption" {
   name          = "alias/${var.component_name}-repo-incoming-observability-encryption-kms-key"
   target_key_id = aws_kms_key.repo_incoming_observability.id
 }
-
-resource "aws_kms_key" "repo_incoming_audit" {
-  description = "Custom KMS Key to enable server side encryption for repo incoming audit topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
-  enable_key_rotation = true
-
-  tags = {
-    Name        = "${var.environment}-repo-incoming-audit-kms-key"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
-resource "aws_kms_alias" "repo_incoming_audit_encryption" {
-  name          = "alias/${var.component_name}-repo-incoming-audit-encryption-kms-key"
-  target_key_id = aws_kms_key.repo_incoming_audit.id
-}

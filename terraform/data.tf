@@ -39,3 +39,7 @@ data "aws_ssm_parameter" "safe_listed_patients_nhs_numbers" {
 data "aws_ssm_parameter" "transfer_complete_queue_name" {
   name = "/repo/${var.environment}/output/prm-repo-ehr-transfer-service/transfer-complete-queue-name"
 }
+
+data "aws_ssm_parameter" "splunk_audit_uploader_kms_key_id" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/splunk-audit-uploader-kms-key"
+}
