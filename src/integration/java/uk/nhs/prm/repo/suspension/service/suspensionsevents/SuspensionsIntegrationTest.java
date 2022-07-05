@@ -36,7 +36,7 @@ public class SuspensionsIntegrationTest {
     @Autowired
     private AmazonSQSAsync sqs;
 
-    @Value("${aws.suspensionsQueueName}")
+    @Value("${aws.incomingQueueName}")
     private String suspensionsQueueName;
 
     @Value("${aws.notSuspendedQueueName}")

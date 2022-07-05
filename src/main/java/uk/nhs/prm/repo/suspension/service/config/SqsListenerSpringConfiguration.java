@@ -18,14 +18,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionMessageProcessor;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionsEventListener;
 
-import javax.jms.Session;
-
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class SqsListenerSpringConfiguration {
 
-    @Value("${aws.suspensionsQueueName}")
+    @Value("${aws.incomingQueueName}")
     private String suspensionsQueueName;
 
     @Value("${suspension.concurrency.min.max}")

@@ -41,7 +41,7 @@ public class LocalStackAwsConfig {
     @Autowired
     private DynamoDbClient dynamoDbClient;
 
-    @Value("${aws.suspensionsQueueName}")
+    @Value("${aws.incomingQueueName}")
     private String suspensionsQueueName;
 
     @Value("${aws.notSuspendedQueueName}")

@@ -29,7 +29,7 @@ import static org.mockito.Mockito.doAnswer;
         LocalStackAwsConfig.class
 })
 @TestPropertySource(properties = {
-        "aws.suspensionsQueueName=test_ack_queue",
+        "aws.incomingQueueName=test_ack_queue",
 })
 @DirtiesContext
 public class MessageAcknowledgementTest {
@@ -42,7 +42,7 @@ public class MessageAcknowledgementTest {
 
     private StubbedSuspensionProcessor stubbedSuspensionProcessor;
 
-    @Value("${aws.suspensionsQueueName}")
+    @Value("${aws.incomingQueueName}")
     private String suspensionsQueueName;
 
     private String queueUrl;

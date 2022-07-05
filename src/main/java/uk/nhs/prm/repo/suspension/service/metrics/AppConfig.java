@@ -15,7 +15,7 @@ public class AppConfig {
     private final String suspensionDynamoDbTableName;
 
     public AppConfig(@Value("${environment}") String environment,
-                     @Value("${aws.suspensionsQueueName}") String suspensionsQueueName,
+                     @Value("${aws.incomingQueueName}") String suspensionsQueueName,
                      @Value("${aws.notSuspendedSnsTopicArn}") String notSuspendedSnsTopicArn,
                      @Value("${aws.notSuspendedQueueName}") String notSuspendedQueueName,
                      @Value("${aws.suspensionDynamoDbTableName}") String suspensionDynamoDbTableName) {
