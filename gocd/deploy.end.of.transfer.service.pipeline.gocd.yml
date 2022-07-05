@@ -1,0 +1,182 @@
+format_version: 4
+common:
+  plan_job: &plan_job
+    resources:
+      - docker
+    artifacts:
+      - build:
+          source: terraform/end-of-transfer-service.tfplan
+          destination: terraform/
+    tasks:
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks tf_plan create
+  deploy_job: &deploy_job
+    resources:
+      - docker
+    tasks:
+      - fetch:
+          stage: plan
+          job: plan
+          source: terraform/end-of-transfer-service.tfplan
+          destination: terraform/
+          is_file: yes
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks tf_apply
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks wait_ecs
+  common_stages: &common_stages
+    - promote_docker_image:
+        resources:
+          - docker
+        clean_workspace: true
+        tasks:
+          - exec:
+              command: /bin/bash
+              arguments:
+                - -c
+                - ./tasks promote_docker_image
+    - plan:
+        clean_workspace: true
+        jobs:
+          plan: *plan_job
+    - deploy:
+        clean_workspace: true
+        jobs:
+          deploy: *deploy_job
+  prod_stages: &prod_stages
+    - promote_docker_image:
+        resources:
+          - docker
+        clean_workspace: true
+        tasks:
+          - exec:
+              command: /bin/bash
+              arguments:
+                - -c
+                - ./tasks promote_docker_image
+    - plan:
+        clean_workspace: true
+        jobs:
+          plan: *plan_job
+    - deploy:
+        approval:
+          type: manual
+          allow_only_on_success: true
+        clean_workspace: true
+        jobs:
+          deploy: *deploy_job
+pipelines:
+  end-of-transfer-service.dev:
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-repo-suspension-service
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_dev
+    environment_variables:
+      NHS_ENVIRONMENT: dev
+      NHS_SERVICE: end-of-transfer-service
+    stages: *common_stages
+
+  end-of-transfer-service.test:
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-repo-suspension-service
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_test
+      dev_env:
+        pipeline: end-of-transfer-service.dev
+        stage: deploy
+      e2e:
+        pipeline: continuity-e2e-tests.dev
+        stage: test
+    environment_variables:
+      NHS_ENVIRONMENT: test
+      NHS_SERVICE: end-of-transfer-service
+    stages: *common_stages
+
+  end-of-transfer-service.pre-prod:
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-repo-suspension-service
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_pre_prod
+      test_env:
+        pipeline: end-of-transfer-service.test
+        stage: deploy
+      e2e:
+        pipeline: continuity-e2e-tests.test
+        stage: test
+    environment_variables:
+      NHS_ENVIRONMENT: pre-prod
+      NHS_SERVICE: end-of-transfer-service
+    stages: *common_stages
+
+  end-of-transfer-service.perf:
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-repo-suspension-service
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_perf
+      test_env:
+        pipeline: end-of-transfer-service.test
+        stage: deploy
+      e2e:
+        pipeline: continuity-e2e-tests.test
+        stage: test
+    environment_variables:
+      NHS_ENVIRONMENT: perf
+      NHS_SERVICE: end-of-transfer-service
+    stages: *common_stages
+
+  end-of-transfer-service.prod:
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-repo-suspension-service
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_prod
+      pre-prod_env:
+        pipeline: end-of-transfer-service.pre-prod
+        stage: deploy
+    environment_variables:
+      NHS_ENVIRONMENT: prod
+      NHS_SERVICE: end-of-transfer-service
+    stages: *prod_stages
