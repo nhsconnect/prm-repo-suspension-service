@@ -401,7 +401,7 @@ resource "aws_sns_topic_subscription" "repo_incoming_observability_queue" {
 }
 
 data "aws_sqs_queue" "splunk_audit_uploader" {
-  name = "${var.environment}-splunk-audit-uploader"
+  name = data.aws_ssm_parameter.splunk_audit_uploader_queue_name.value
 }
 
 resource "aws_sns_topic_subscription" "repo_incoming_audit_splunk" {
