@@ -586,7 +586,7 @@ data "aws_iam_policy_document" "repo_incoming_observability_topic_access_to_queu
 }
 
 resource "aws_sqs_queue_policy" "splunk_audit_uploader_access_policy" {
-  queue_url = data.aws_sqs_queue.splunk_audit_uploader.id
+  queue_url = data.aws_sqs_queue.splunk_audit_uploader.url
   policy    = data.aws_iam_policy_document.splunk_audit_uploader_access_policy_doc.json
 }
 
