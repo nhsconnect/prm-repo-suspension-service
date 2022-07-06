@@ -18,7 +18,6 @@ locals {
   deceased_patient_queue_name = "${var.environment}-${var.component_name}-deceased-patient-queue"
   deceased_patient_audit_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit"
   deceased_patient_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-deceased-patient-audit-splunk-dlq"
-  repo_incoming_queue_name = "${var.environment}-${var.component_name}-repo-incoming-queue"
   repo_incoming_observability_queue_name = "${var.environment}-${var.component_name}-repo-incoming-observability-queue"
 }
 
