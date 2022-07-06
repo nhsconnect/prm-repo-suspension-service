@@ -321,6 +321,42 @@ resource "aws_sqs_queue_policy" "event_out_of_order_observability_queue_subscrip
   policy    = data.aws_iam_policy_document.event_out_of_order_policy_doc.json
 }
 
+resource "aws_sqs_queue_policy" "transfer_complete" {
+  queue_url = aws_sqs_queue.transfer_complete[0].id
+  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
+}
+
+data "aws_iam_policy_document" "transfer_complete_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.transfer_complete[0].arn,
+      aws_sqs_queue.transfer_complete_observability[0].arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [data.aws_ssm_parameter.transfer_complete_topic_arn.value]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+resource "aws_sqs_queue_policy" "transfer_complete_observability" {
+  queue_url = aws_sqs_queue.transfer_complete_observability[0].id
+  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
+}
+
 data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
   statement {
     effect = "Allow"
