@@ -1,5 +1,17 @@
 locals {
   account_id = data.aws_caller_identity.current.account_id
+  sns_base_arns = [
+    aws_sns_topic.not_suspended.arn,
+    aws_sns_topic.mof_updated.arn,
+    aws_sns_topic.mof_not_updated.arn,
+    aws_sns_topic.invalid_suspension.arn,
+    aws_sns_topic.invalid_suspension_audit_topic.arn,
+    aws_sns_topic.deceased_patient.arn,
+    aws_sns_topic.event_out_of_order.arn,
+    aws_sns_topic.repo_incoming_audit.arn
+  ]
+  sns_for_suspension_service = var.is_end_of_transfer_service ? [] : [aws_sns_topic.repo_incoming[0].arn]
+  sns_arns = concat(local.sns_base_arns, local.sns_for_suspension_service)
 }
 
 data "aws_iam_policy_document" "ecs-assume-role-policy" {
@@ -143,17 +155,7 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       "sns:Publish",
       "sns:GetTopicAttributes"
     ]
-    resources = [
-      aws_sns_topic.not_suspended.arn,
-      aws_sns_topic.mof_updated.arn,
-      aws_sns_topic.mof_not_updated.arn,
-      aws_sns_topic.invalid_suspension.arn,
-      aws_sns_topic.invalid_suspension_audit_topic.arn,
-      aws_sns_topic.deceased_patient.arn,
-      aws_sns_topic.event_out_of_order.arn,
-      aws_sns_topic.repo_incoming.arn,
-      aws_sns_topic.repo_incoming_audit.arn
-    ]
+    resources = local.sns_arns
   }
 }
 
@@ -618,7 +620,7 @@ data "aws_iam_policy_document" "repo_incoming_observability_topic_access_to_queu
 
     condition {
       test     = "ArnEquals"
-      values   = [aws_sns_topic.repo_incoming.arn]
+      values   = var.is_end_of_transfer_service ? [] : [aws_sns_topic.repo_incoming[0].arn]
       variable = "aws:SourceArn"
     }
   }
