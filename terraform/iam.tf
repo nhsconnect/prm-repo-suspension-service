@@ -7,7 +7,7 @@ data "aws_iam_policy_document" "ecs-assume-role-policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = [
         "ecs-tasks.amazonaws.com"
       ]
@@ -106,13 +106,13 @@ resource "aws_iam_policy" "suspensions_processor_sqs" {
 
 data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
   statement {
-    actions = [
+    actions   = [
       "sqs:GetQueue*",
       "sqs:ChangeMessageVisibility",
       "sqs:DeleteMessage",
       "sqs:ReceiveMessage"
     ]
-#    TODO: double check what queues should be here
+    #    TODO: double check what queues should be here
     resources = [
       aws_sqs_queue.suspensions.arn,
       aws_sqs_queue.not_suspended_observability.arn,
@@ -139,7 +139,7 @@ resource "aws_iam_role_policy_attachment" "suspension_service_sns" {
 
 data "aws_iam_policy_document" "sns_policy_doc" {
   statement {
-    actions = [
+    actions   = [
       "sns:Publish",
       "sns:GetTopicAttributes"
     ]
@@ -169,7 +169,7 @@ resource "aws_iam_policy" "suspensions_kms" {
 
 data "aws_iam_policy_document" "kms_policy_doc" {
   statement {
-    actions = [
+    actions   = [
       "kms:*"
     ]
     resources = [
@@ -220,7 +220,7 @@ resource "aws_iam_role" "sns_failure_feedback_role" {
 
 data "aws_iam_policy_document" "sns_failure_feedback_policy" {
   statement {
-    actions = [
+    actions   = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
@@ -248,7 +248,7 @@ data "aws_iam_policy_document" "sns_service_assume_role_policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = [
         "sns.amazonaws.com"
       ]
@@ -322,11 +322,13 @@ resource "aws_sqs_queue_policy" "event_out_of_order_observability_queue_subscrip
 }
 
 resource "aws_sqs_queue_policy" "transfer_complete" {
+  count     = var.is_end_of_transfer_service ? 1 : 0
   queue_url = aws_sqs_queue.transfer_complete[0].id
-  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
+  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc[0].json
 }
 
 data "aws_iam_policy_document" "transfer_complete_policy_doc" {
+  count = var.is_end_of_transfer_service ? 1 : 0
   statement {
     effect = "Allow"
 
@@ -353,8 +355,9 @@ data "aws_iam_policy_document" "transfer_complete_policy_doc" {
 }
 
 resource "aws_sqs_queue_policy" "transfer_complete_observability" {
+  count     = var.is_end_of_transfer_service ? 1 : 0
   queue_url = aws_sqs_queue.transfer_complete_observability[0].id
-  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
+  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc[0].json
 }
 
 data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
@@ -571,7 +574,7 @@ data "aws_iam_policy_document" "event_out_of_order_policy_doc" {
 
 data "aws_iam_policy_document" "dynamodb-table-access" {
   statement {
-    actions = [
+    actions   = [
       "dynamodb:GetItem",
       "dynamodb:PutItem"
     ]
