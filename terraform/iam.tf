@@ -1,6 +1,6 @@
 locals {
-  account_id = data.aws_caller_identity.current.account_id
-  sns_base_arns = [
+  account_id                 = data.aws_caller_identity.current.account_id
+  sns_base_arns              = [
     aws_sns_topic.not_suspended.arn,
     aws_sns_topic.mof_updated.arn,
     aws_sns_topic.mof_not_updated.arn,
@@ -11,7 +11,7 @@ locals {
     aws_sns_topic.repo_incoming_audit.arn
   ]
   sns_for_suspension_service = var.is_end_of_transfer_service ? [] : [aws_sns_topic.repo_incoming[0].arn]
-  sns_arns = concat(local.sns_base_arns, local.sns_for_suspension_service)
+  sns_arns                   = concat(local.sns_base_arns, local.sns_for_suspension_service)
 }
 
 data "aws_iam_policy_document" "ecs-assume-role-policy" {
