@@ -38,6 +38,7 @@ resource "aws_sqs_queue" "suspensions" {
 }
 
 resource "aws_sns_topic_subscription" "suspensions_topic" {
+  count = var.is_end_of_transfer_service ? 0 : 1
   protocol             = "sqs"
   raw_message_delivery = true
   topic_arn            = data.aws_ssm_parameter.suspensions_sns_topic_arn.value
