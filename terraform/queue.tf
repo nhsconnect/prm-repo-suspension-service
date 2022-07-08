@@ -396,9 +396,10 @@ resource "aws_sqs_queue" "repo_incoming_observability_queue" {
 }
 
 resource "aws_sns_topic_subscription" "repo_incoming_observability_queue" {
+  count = var.is_end_of_transfer_service ? 0 : 1
   protocol             = "sqs"
   raw_message_delivery = true
-  topic_arn            = var.is_end_of_transfer_service ? "" : aws_sns_topic.repo_incoming[0].arn
+  topic_arn            = aws_sns_topic.repo_incoming[0].arn
   endpoint             = aws_sqs_queue.repo_incoming_observability_queue.arn
 }
 

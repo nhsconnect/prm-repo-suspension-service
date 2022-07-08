@@ -29,15 +29,17 @@ resource "aws_ssm_parameter" "ecs-cluster-name" {
 }
 
 resource "aws_ssm_parameter" "repo_incoming_topic_arn" {
+  count = var.is_end_of_transfer_service ? 0 : 1
   name  = "/repo/${var.environment}/output/${var.component_name}/repo-incoming-topic-arn"
   type  = "String"
-  value = var.is_end_of_transfer_service ? "" : aws_sns_topic.repo_incoming[0].arn
+  value = aws_sns_topic.repo_incoming[0].arn
 }
 
 resource "aws_ssm_parameter" "repo_incoming_kms_key" {
+  count = var.is_end_of_transfer_service ? 0 : 1
   name  = "/repo/${var.environment}/output/${var.component_name}/repo-incoming-kms-key"
   type  = "String"
-  value   = var.is_end_of_transfer_service ? "" : aws_kms_key.repo_incoming[0].id
+  value   = aws_kms_key.repo_incoming[0].id
 }
 
 resource "aws_ssm_parameter" "repo_incoming_observability_kms_key" {
