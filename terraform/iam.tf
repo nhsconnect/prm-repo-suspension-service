@@ -628,12 +628,13 @@ data "aws_iam_policy_document" "repo_incoming_observability_topic_access_to_queu
 
 
 resource "aws_sqs_queue_policy" "splunk_audit_uploader_access_policy" {
+  count     = var.is_end_of_transfer_service ? 0 : 1
   queue_url = data.aws_sqs_queue.splunk_audit_uploader.url
-  policy    = data.aws_iam_policy_document.splunk_audit_uploader_access_policy_doc.json
+  policy    = data.aws_iam_policy_document.splunk_audit_uploader_access_policy_doc[0].json
 }
 
-# TODO: tune setup for outbound audit which differs between suspennsion-service and end-of-transfer-service
 data "aws_iam_policy_document" "splunk_audit_uploader_access_policy_doc" {
+  count = var.is_end_of_transfer_service ? 0 : 1
   statement {
     effect = "Allow"
 
