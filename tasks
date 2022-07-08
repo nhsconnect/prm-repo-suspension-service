@@ -76,7 +76,7 @@ function configure_envs {
 
 function tf_init {
   check_env
-  cd terraform
+  cd "terraform/${NHS_SERVICE}"
 
   terraform init -reconfigure \
     -backend-config key="${NHS_SERVICE}-${NHS_ENVIRONMENT}/terraform.tfstate" \
@@ -100,9 +100,9 @@ function tf_plan {
 
   terraform get # modules
   if [[ "${operation}" == "create" ]]; then
-    terraform plan -var task_image_tag=$IMAGE_TAG -var-file="${NHS_SERVICE}/$NHS_ENVIRONMENT.tfvars" -out="${NHS_SERVICE}.tfplan"
+    terraform plan -var task_image_tag=$IMAGE_TAG -var-file="$NHS_ENVIRONMENT.tfvars" -out="${NHS_SERVICE}.tfplan"
   elif [[ "${operation}" == "destroy" ]]; then
-    terraform plan -var task_image_tag=$IMAGE_TAG -var-file="${NHS_SERVICE}/$NHS_ENVIRONMENT.tfvars" -out="${NHS_SERVICE}.tfplan" -destroy
+    terraform plan -var task_image_tag=$IMAGE_TAG -var-file="$NHS_ENVIRONMENT.tfvars" -out="${NHS_SERVICE}.tfplan" -destroy
   else
     echo "Unknown operation (should be create or destroy), got: ${operation}"
     exit 1
@@ -266,6 +266,26 @@ case "${command}" in
   tf_apply)
       check_env
       dojo -c Dojofile-infra "./tasks _tf_apply"
+      ;;
+  _tf_plan_suspension)
+      export NHS_SERVICE=suspension-service
+      _assume_environment_role $NHS_ENVIRONMENT
+      tf_plan "$2"
+      ;;
+  tf_plan_suspension)
+      export NHS_SERVICE=suspension-service
+      check_env
+      dojo -c Dojofile-infra "./tasks _tf_plan $2"
+      ;;
+  _tf_plan_transfer)
+      export NHS_SERVICE=end-of-transfer-service
+      _assume_environment_role $NHS_ENVIRONMENT
+      tf_plan "$2"
+      ;;
+  tf_plan_transfer)
+      export NHS_SERVICE=end-of-transfer-service
+      check_env
+      dojo -c Dojofile-infra "./tasks _tf_plan $2"
       ;;
   promote_docker_image)
       check_env
