@@ -19,8 +19,6 @@ locals {
   deceased_patient_audit_queue_name              = "${var.environment}-${var.component_name}-deceased-patient-audit"
   deceased_patient_audit_splunk_dlq_queue_name   = "${var.environment}-${var.component_name}-deceased-patient-audit-splunk-dlq"
   repo_incoming_observability_queue_name         = "${var.environment}-${var.component_name}-repo-incoming-observability-queue"
-  transfer_complete_queue_name                   = "${var.environment}-${var.component_name}-transfer-complete-queue"
-  transfer_complete_observability_queue_name     = "${var.environment}-${var.component_name}-transfer-complete-observability"
 }
 
 resource "aws_sqs_queue" "suspensions" {
@@ -413,50 +411,4 @@ resource "aws_sns_topic_subscription" "repo_incoming_audit_splunk" {
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.repo_incoming_audit.arn
   endpoint             = data.aws_sqs_queue.splunk_audit_uploader.arn
-}
-
-resource "aws_sqs_queue" "transfer_complete" {
-  count                      = var.is_end_of_transfer_service ? 1 : 0
-  name                       = local.transfer_complete_queue_name
-  message_retention_seconds  = 1209600
-  kms_master_key_id          = data.aws_ssm_parameter.transfer_complete_kms_key.value
-  receive_wait_time_seconds  = 20
-  visibility_timeout_seconds = 240
-
-  tags = {
-    Name        = local.transfer_complete_queue_name
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
-resource "aws_sns_topic_subscription" "transfer_complete_topic" {
-  count                = var.is_end_of_transfer_service ? 1 : 0
-  protocol             = "sqs"
-  raw_message_delivery = true
-  topic_arn            = data.aws_ssm_parameter.transfer_complete_topic_arn.value
-  endpoint             = aws_sqs_queue.transfer_complete[0].arn
-}
-
-resource "aws_sqs_queue" "transfer_complete_observability" {
-  count                      = var.is_end_of_transfer_service ? 1 : 0
-  name                       = local.transfer_complete_observability_queue_name
-  message_retention_seconds  = 1209600
-  kms_master_key_id          = data.aws_ssm_parameter.transfer_complete_kms_key.value
-  receive_wait_time_seconds  = 20
-  visibility_timeout_seconds = 240
-
-  tags = {
-    Name        = local.transfer_complete_observability_queue_name
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
-resource "aws_sns_topic_subscription" "transfer_complete_observability_topic" {
-  count                = var.is_end_of_transfer_service ? 1 : 0
-  protocol             = "sqs"
-  raw_message_delivery = true
-  topic_arn            = data.aws_ssm_parameter.transfer_complete_topic_arn.value
-  endpoint             = aws_sqs_queue.transfer_complete_observability[0].arn
 }

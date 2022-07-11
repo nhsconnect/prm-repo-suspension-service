@@ -10,7 +10,7 @@ locals {
     aws_sns_topic.event_out_of_order.arn,
     aws_sns_topic.repo_incoming_audit.arn
   ]
-  sns_for_suspension_service = var.is_end_of_transfer_service ? [] : [aws_sns_topic.repo_incoming[0].arn]
+  sns_for_suspension_service = var.is_end_of_transfer_service ? [module.end-of-transfer-service[0].end_of_transfer_sns_topic] : [aws_sns_topic.repo_incoming[0].arn]
   sns_arns                   = concat(local.sns_base_arns, local.sns_for_suspension_service)
 }
 
@@ -323,45 +323,6 @@ resource "aws_sqs_queue_policy" "event_out_of_order_observability_queue_subscrip
   policy    = data.aws_iam_policy_document.event_out_of_order_policy_doc.json
 }
 
-resource "aws_sqs_queue_policy" "transfer_complete" {
-  count     = var.is_end_of_transfer_service ? 1 : 0
-  queue_url = aws_sqs_queue.transfer_complete[0].id
-  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc[0].json
-}
-
-data "aws_iam_policy_document" "transfer_complete_policy_doc" {
-  count = var.is_end_of_transfer_service ? 1 : 0
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "sqs:SendMessage"
-    ]
-
-    principals {
-      identifiers = ["sns.amazonaws.com"]
-      type        = "Service"
-    }
-
-    resources = [
-      aws_sqs_queue.transfer_complete[0].arn,
-      aws_sqs_queue.transfer_complete_observability[0].arn
-    ]
-
-    condition {
-      test     = "ArnEquals"
-      values   = [data.aws_ssm_parameter.transfer_complete_topic_arn.value]
-      variable = "aws:SourceArn"
-    }
-  }
-}
-
-resource "aws_sqs_queue_policy" "transfer_complete_observability" {
-  count     = var.is_end_of_transfer_service ? 1 : 0
-  queue_url = aws_sqs_queue.transfer_complete_observability[0].id
-  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc[0].json
-}
-
 data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
   statement {
     effect = "Allow"
@@ -628,13 +589,11 @@ data "aws_iam_policy_document" "repo_incoming_observability_topic_access_to_queu
 
 
 resource "aws_sqs_queue_policy" "splunk_audit_uploader_access_policy" {
-  count     = var.is_end_of_transfer_service ? 0 : 1
   queue_url = data.aws_sqs_queue.splunk_audit_uploader.url
-  policy    = data.aws_iam_policy_document.splunk_audit_uploader_access_policy_doc[0].json
+  policy    = data.aws_iam_policy_document.splunk_audit_uploader_access_policy_doc.json
 }
 
 data "aws_iam_policy_document" "splunk_audit_uploader_access_policy_doc" {
-  count = var.is_end_of_transfer_service ? 0 : 1
   statement {
     effect = "Allow"
 

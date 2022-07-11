@@ -11,3 +11,12 @@ terraform {
     }
   }
 }
+
+module "end-of-transfer-service" {
+  count = var.is_end_of_transfer_service ? 1 : 0
+  source    = "./end-of-transfer-service/"
+  environment    = var.environment
+
+  component_name = var.component_name
+  repo_name      = var.repo_name
+}

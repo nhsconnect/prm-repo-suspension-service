@@ -12,7 +12,7 @@ common:
           command: /bin/bash
           arguments:
             - -c
-            - ./tasks tf_plan destroy
+            - ./tasks tf_plan create
   deploy_job: &deploy_job
     resources:
       - docker
