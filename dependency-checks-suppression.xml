@@ -27,4 +27,20 @@
       <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
       <cpe>cpe:/a:vmware:spring_framework</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      This dependency resides in Wiremock, which we use in integration tests.
+      The individual library has been already patched, but the patch is not in Wiremock yet.
+   ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty\.http2/http2\-server@.*$</packageUrl>
+      <vulnerabilityName>CVE-2022-2048</vulnerabilityName>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      This dependency resides in Wiremock, which we use in integration tests.
+      The individual library has been already patched, but the patch is not in Wiremock yet.
+   ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/jetty\-io@.*$</packageUrl>
+      <vulnerabilityName>CVE-2022-2191</vulnerabilityName>
+   </suppress>
 </suppressions>
