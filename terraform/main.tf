@@ -28,4 +28,5 @@ module "suspension-service" {
 
   component_name = var.component_name
   repo_name      = var.repo_name
+  sns_sqs_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 }

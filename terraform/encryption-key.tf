@@ -178,39 +178,3 @@ resource "aws_kms_alias" "deceased_patient_encryption" {
   name          = "alias/${var.component_name}-deceased-patient-encryption-kms-key"
   target_key_id = aws_kms_key.deceased_patient.id
 }
-
-resource "aws_kms_key" "repo_incoming" {
-  count = var.is_end_of_transfer_service ? 0 : 1
-  description = "Custom KMS Key to enable server side encryption for repo incoming topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
-  enable_key_rotation = true
-
-  tags = {
-    Name        = "${var.environment}-repo-incoming-kms-key"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
-resource "aws_kms_alias" "repo_incoming_encryption" {
-  count = var.is_end_of_transfer_service ? 0 : 1
-  name          = "alias/${var.component_name}-repo-incoming-encryption-kms-key"
-  target_key_id = aws_kms_key.repo_incoming[0].id
-}
-
-resource "aws_kms_key" "repo_incoming_observability" {
-  description = "Custom KMS Key to enable server side encryption for repo incoming observability topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
-  enable_key_rotation = true
-
-  tags = {
-    Name        = "${var.environment}-repo-incoming-observability-kms-key"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
-resource "aws_kms_alias" "repo_incoming_observability_encryption" {
-  name          = "alias/${var.component_name}-repo-incoming-observability-encryption-kms-key"
-  target_key_id = aws_kms_key.repo_incoming_observability.id
-}

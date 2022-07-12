@@ -10,3 +10,5 @@ variable "repo_name" {
 variable "environment" {}
 
 variable "component_name" {}
+
+variable "sns_sqs_role_arn" {}
