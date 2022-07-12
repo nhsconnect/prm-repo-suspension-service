@@ -95,19 +95,6 @@ resource "aws_sns_topic" "repo_incoming" {
   }
 }
 
-resource "aws_sns_topic" "repo_incoming_audit" {
-  name = "${var.environment}-${var.component_name}-repo-incoming-audit"
-  kms_master_key_id = data.aws_ssm_parameter.splunk_audit_uploader_kms_key_id.value
-  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
-
-  tags = {
-    Name = "${var.environment}-${var.component_name}-repo-incoming-audit-sns-topic"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
-
 data "aws_sns_topic" "alarm_notifications" {
   name = "${var.environment}-alarm-notifications-sns-topic"
 }
