@@ -5,3 +5,7 @@ output "end_of_transfer_sns_topic" {
 output "transfer_complete_queue_name" {
   value = aws_sqs_queue.transfer_complete.name
 }
+
+output "transfer_complete_queue_arn" {
+  value = aws_sqs_queue.transfer_complete.arn
+}

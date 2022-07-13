@@ -125,7 +125,7 @@ data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
     ]
     #    TODO: double check what queues should be here
     resources = [
-      var.is_end_of_transfer_service ? "" : module.suspension-service[0].suspension_queue_arn,
+      var.is_end_of_transfer_service ? module.end-of-transfer-service[0].transfer_complete_queue_arn : module.suspension-service[0].suspension_queue_arn,
       aws_sqs_queue.not_suspended_observability.arn,
       aws_sqs_queue.mof_updated.arn,
       aws_sqs_queue.mof_not_updated.arn,
@@ -287,11 +287,6 @@ resource "aws_sqs_queue_policy" "not_suspended_events_audit_subscription" {
   policy    = data.aws_iam_policy_document.not_suspended_events_policy_doc.json
 }
 
-#resource "aws_sqs_queue_policy" "suspensions_subscription" {
-#  queue_url = aws_sqs_queue.suspensions.id
-#  policy    = data.aws_iam_policy_document.suspensions_sns_topic_access_to_queue.json
-#}
-
 resource "aws_sqs_queue_policy" "invalid_suspension_subscription" {
   queue_url = aws_sqs_queue.invalid_suspension.id
   policy    = data.aws_iam_policy_document.invalid_suspension_policy_doc.json
@@ -321,31 +316,6 @@ resource "aws_sqs_queue_policy" "event_out_of_order_observability_queue_subscrip
   queue_url = aws_sqs_queue.event_out_of_order_observability_queue.id
   policy    = data.aws_iam_policy_document.event_out_of_order_policy_doc.json
 }
-
-#data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
-#  statement {
-#    effect = "Allow"
-#
-#    actions = [
-#      "sqs:SendMessage"
-#    ]
-#
-#    principals {
-#      identifiers = ["sns.amazonaws.com"]
-#      type        = "Service"
-#    }
-#
-#    resources = [
-#      aws_sqs_queue.suspensions.arn
-#    ]
-#
-#    condition {
-#      test     = "ArnEquals"
-#      values   = [data.aws_ssm_parameter.suspensions_sns_topic_arn.value]
-#      variable = "aws:SourceArn"
-#    }
-#  }
-#}
 
 data "aws_iam_policy_document" "not_suspended_events_policy_doc" {
   statement {

@@ -29,15 +29,6 @@ variable "log_level" {
   default = "debug"
 }
 
-#variable "threshold_for_suspensions_queue_age_of_message" {
-#  description = "An alarm will be raised if any message gets to this many seconds old"
-#  default = "86400"
-#}
-
-#variable "period_of_age_of_message_metric" {
-#  default = "1800"
-#}
-
 variable "process_only_synthetic_or_safe_listed_patients" {
   default = true
 }
@@ -53,16 +44,6 @@ variable "enable_scale_action" {
   type    = bool
   default = true
 }
-
-#variable "scale_down_number_of_empty_receives_count" {
-#  type    = string
-#  default = 14
-#}
-
-#variable "core_task_number" {
-#  description = "Something to do with number of threads used in metric alarm for scale down"
-#  default = 5
-#}
 
 variable "can_update_managing_organisation_to_repo" {
   description = "Toggle to allow updating managing organisation to repo ODS code"
