@@ -1,5 +1,5 @@
 locals {
-  suspensions_queue_name                         = "${var.environment}-${var.component_name}-suspensions-queue"
+#  suspensions_queue_name                         = "${var.environment}-${var.component_name}-suspensions-queue"
   not_suspended_observability_queue_name         = "${var.environment}-${var.component_name}-not-suspended-observability-queue"
   not_suspended_audit_queue_name                 = "${var.environment}-${var.component_name}-not-suspended-audit"
   not_suspended_audit_splunk_dlq_queue_name      = "${var.environment}-${var.component_name}-not-suspended-audit-splunk-dlq"
@@ -21,27 +21,27 @@ locals {
   repo_incoming_observability_queue_name         = "${var.environment}-${var.component_name}-repo-incoming-observability-queue"
 }
 
-resource "aws_sqs_queue" "suspensions" {
-  name                       = local.suspensions_queue_name
-  message_retention_seconds  = 1209600
-  kms_master_key_id          = data.aws_ssm_parameter.suspensions_kms_key_id.value
-  receive_wait_time_seconds  = 20
-  visibility_timeout_seconds = 240
+#resource "aws_sqs_queue" "suspensions" {
+#  name                       = local.suspensions_queue_name
+#  message_retention_seconds  = 1209600
+#  kms_master_key_id          = data.aws_ssm_parameter.suspensions_kms_key_id.value
+#  receive_wait_time_seconds  = 20
+#  visibility_timeout_seconds = 240
+#
+#  tags = {
+#    Name        = local.suspensions_queue_name
+#    CreatedBy   = var.repo_name
+#    Environment = var.environment
+#  }
+#}
 
-  tags = {
-    Name        = local.suspensions_queue_name
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
-resource "aws_sns_topic_subscription" "suspensions_topic" {
-  count                = var.is_end_of_transfer_service ? 0 : 1
-  protocol             = "sqs"
-  raw_message_delivery = true
-  topic_arn            = data.aws_ssm_parameter.suspensions_sns_topic_arn.value
-  endpoint             = aws_sqs_queue.suspensions.arn
-}
+#resource "aws_sns_topic_subscription" "suspensions_topic" {
+#  count                = var.is_end_of_transfer_service ? 0 : 1
+#  protocol             = "sqs"
+#  raw_message_delivery = true
+#  topic_arn            = data.aws_ssm_parameter.suspensions_sns_topic_arn.value
+#  endpoint             = aws_sqs_queue.suspensions.arn
+#}
 
 resource "aws_sqs_queue" "not_suspended_observability" {
   name                      = local.not_suspended_observability_queue_name
