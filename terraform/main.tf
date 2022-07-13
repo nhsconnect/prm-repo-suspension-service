@@ -25,8 +25,9 @@ module "suspension-service" {
   count = var.is_end_of_transfer_service ? 0 : 1
   source    = "./suspension-service/"
   environment    = var.environment
-
   component_name = var.component_name
   repo_name      = var.repo_name
   sns_sqs_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+  ecs_cluster_name    = aws_ecs_cluster.ecs-cluster.name
+  ecs_service_name    = aws_ecs_service.ecs-service.name
 }

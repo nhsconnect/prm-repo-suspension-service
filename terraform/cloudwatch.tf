@@ -158,71 +158,71 @@ resource "aws_cloudwatch_metric_alarm" "suspension_invalid_suspension_dlq_audit"
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
-resource "aws_cloudwatch_metric_alarm" "suspensions_queue_age_of_message" {
-  alarm_name          = "${var.environment}-${var.component_name}-queue-age-of-message"
-  comparison_operator = "GreaterThanThreshold"
-  threshold           = var.threshold_for_suspensions_queue_age_of_message
-  evaluation_periods  = "1"
-  metric_name         = "ApproximateAgeOfOldestMessage"
-  namespace           = local.sqs_namespace
-  alarm_description   = "Alarm to alert approximate time for message in the queue"
-  statistic           = "Maximum"
-  period              = var.period_of_age_of_message_metric
-  dimensions          = {
-    QueueName = aws_sqs_queue.suspensions.name
-  }
-  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
-}
+#resource "aws_cloudwatch_metric_alarm" "suspensions_queue_age_of_message" {
+#  alarm_name          = "${var.environment}-${var.component_name}-queue-age-of-message"
+#  comparison_operator = "GreaterThanThreshold"
+#  threshold           = var.threshold_for_suspensions_queue_age_of_message
+#  evaluation_periods  = "1"
+#  metric_name         = "ApproximateAgeOfOldestMessage"
+#  namespace           = local.sqs_namespace
+#  alarm_description   = "Alarm to alert approximate time for message in the queue"
+#  statistic           = "Maximum"
+#  period              = var.period_of_age_of_message_metric
+#  dimensions          = {
+#    QueueName = aws_sqs_queue.suspensions.name
+#  }
+#  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+#}
 
-resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
-  count               = var.is_end_of_transfer_service ? 0 : 1
-  alarm_name          = "${var.environment}-${var.component_name}-scale-up"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "1"
-  threshold           = "10"
-  alarm_description   = "Scale up alarm for suspension-service"
-  actions_enabled     = true
-  alarm_actions       = [aws_appautoscaling_policy.scale_up.arn]
-
-  metric_query {
-    id          = "e1"
-    expression  = "IF (${var.scale_up_expression})"
-    label       = "Expression"
-    return_data = "true"
-  }
-
-  metric_query {
-    id = "m1"
-
-    metric {
-      metric_name = "NumberOfMessagesReceived"
-      namespace   = local.sqs_namespace
-      period      = "180"
-      stat        = "Sum"
-      unit        = "Count"
-
-      dimensions = {
-        QueueName = aws_sqs_queue.suspensions.name
-      }
-    }
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_down_alarm" {
-  count               = var.is_end_of_transfer_service ? 0 : 1
-  alarm_name          = "${var.environment}-${var.component_name}-scale-down"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  threshold           = var.scale_down_number_of_empty_receives_count * var.core_task_number
-  evaluation_periods  = "1"
-  metric_name         = "NumberOfEmptyReceives"
-  namespace           = local.sqs_namespace
-  alarm_description   = "Alarm to alert when all events are processed in the queue"
-  statistic           = "Sum"
-  period              = 300
-  dimensions          = {
-    QueueName = aws_sqs_queue.suspensions.name
-  }
-  treat_missing_data  = "notBreaching"
-  actions_enabled     = var.enable_scale_action
-  alarm_actions       = [aws_appautoscaling_policy.scale_down.arn]
-}
+#resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_up_alarm" {
+#  count               = var.is_end_of_transfer_service ? 0 : 1
+#  alarm_name          = "${var.environment}-${var.component_name}-scale-up"
+#  comparison_operator = "GreaterThanOrEqualToThreshold"
+#  evaluation_periods  = "1"
+#  threshold           = "10"
+#  alarm_description   = "Scale up alarm for suspension-service"
+#  actions_enabled     = true
+#  alarm_actions       = [aws_appautoscaling_policy.scale_up.arn]
+#
+#  metric_query {
+#    id          = "e1"
+#    expression  = "IF (${var.scale_up_expression})"
+#    label       = "Expression"
+#    return_data = "true"
+#  }
+#
+#  metric_query {
+#    id = "m1"
+#
+#    metric {
+#      metric_name = "NumberOfMessagesReceived"
+#      namespace   = local.sqs_namespace
+#      period      = "180"
+#      stat        = "Sum"
+#      unit        = "Count"
+#
+#      dimensions = {
+#        QueueName = aws_sqs_queue.suspensions.name
+#      }
+#    }
+#  }
+#}
+#
+#resource "aws_cloudwatch_metric_alarm" "suspension_service_scale_down_alarm" {
+#  count               = var.is_end_of_transfer_service ? 0 : 1
+#  alarm_name          = "${var.environment}-${var.component_name}-scale-down"
+#  comparison_operator = "GreaterThanOrEqualToThreshold"
+#  threshold           = var.scale_down_number_of_empty_receives_count * var.core_task_number
+#  evaluation_periods  = "1"
+#  metric_name         = "NumberOfEmptyReceives"
+#  namespace           = local.sqs_namespace
+#  alarm_description   = "Alarm to alert when all events are processed in the queue"
+#  statistic           = "Sum"
+#  period              = 300
+#  dimensions          = {
+#    QueueName = aws_sqs_queue.suspensions.name
+#  }
+#  treat_missing_data  = "notBreaching"
+#  actions_enabled     = var.enable_scale_action
+#  alarm_actions       = [aws_appautoscaling_policy.scale_down.arn]
+#}

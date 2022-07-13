@@ -7,7 +7,7 @@ locals {
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "AWS_REGION", value = var.region },
     { name = "LOG_LEVEL", value = var.log_level },
-    { name = "INCOMING_QUEUE_NAME", value = var.is_end_of_transfer_service ? module.end-of-transfer-service[0].transfer_complete_queue_name : aws_sqs_queue.suspensions.name },
+    { name = "INCOMING_QUEUE_NAME", value = var.is_end_of_transfer_service ? module.end-of-transfer-service[0].transfer_complete_queue_name : module.suspension-service[0].suspension_queue_name },
     { name = "NOT_SUSPENDED_SNS_TOPIC_ARN", value = aws_sns_topic.not_suspended.arn },
     { name = "NOT_SUSPENDED_QUEUE_NAME", value = aws_sqs_queue.not_suspended_observability.name },
     { name = "MOF_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_updated.arn },
