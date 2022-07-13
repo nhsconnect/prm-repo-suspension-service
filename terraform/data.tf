@@ -36,10 +36,10 @@ data "aws_ssm_parameter" "safe_listed_patients_nhs_numbers" {
   name = "/repo/${var.environment}/user-input/external/safe-listed-patients-nhs-numbers"
 }
 
-data "aws_ssm_parameter" "splunk_audit_uploader_kms_key_id" {
-  name = "/repo/${var.environment}/output/prm-deductions-infra/splunk-audit-uploader-kms-key"
-}
-
-data "aws_ssm_parameter" "splunk_audit_uploader_queue_name" {
-  name = "/repo/${var.environment}/output/prm-deductions-infra/splunk-audit-uploader-queue-name"
-}
+#data "aws_ssm_parameter" "splunk_audit_uploader_kms_key_id" {
+#  name = "/repo/${var.environment}/output/prm-deductions-infra/splunk-audit-uploader-kms-key"
+#}
+#
+#data "aws_ssm_parameter" "splunk_audit_uploader_queue_name" {
+#  name = "/repo/${var.environment}/output/prm-deductions-infra/splunk-audit-uploader-queue-name"
+#}

@@ -44,15 +44,15 @@ variable "process_only_synthetic_or_safe_listed_patients" {
 
 variable "synthetic_patient_prefix" {}
 
-#variable "scale_up_expression" {
-#  type    = string
-#  default = "((HOUR(m1)==21 && MINUTE(m1)==58 )),10,0"
-#}
+variable "scale_up_expression" {
+  type    = string
+  default = "((HOUR(m1)==21 && MINUTE(m1)==58 )),10,0"
+}
 
-#variable "enable_scale_action" {
-#  type    = bool
-#  default = true
-#}
+variable "enable_scale_action" {
+  type    = bool
+  default = true
+}
 
 #variable "scale_down_number_of_empty_receives_count" {
 #  type    = string
