@@ -42,6 +42,7 @@ resource "aws_cloudwatch_metric_alarm" "error_log_alarm" {
   treat_missing_data  = "notBreaching"
   actions_enabled     = "true"
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "not_suspended_sns_topic_error_log_alarm" {
@@ -60,6 +61,7 @@ resource "aws_cloudwatch_metric_alarm" "not_suspended_sns_topic_error_log_alarm"
   treat_missing_data  = "notBreaching"
   actions_enabled     = "true"
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
@@ -76,6 +78,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
     QueueName = aws_sqs_queue.event_out_of_order_audit.name
   }
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
@@ -92,6 +95,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
     QueueName = aws_sqs_queue.not_suspended_audit.name
   }
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_mof_not_updated_audit" {
@@ -108,6 +112,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_mof_not_updated_audit" {
     QueueName = aws_sqs_queue.mof_not_updated_audit.name
   }
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_mof_updated_audit" {
@@ -124,6 +129,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_mof_updated_audit" {
     QueueName = aws_sqs_queue.mof_updated_audit.name
   }
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit" {
@@ -140,6 +146,7 @@ resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit" {
     QueueName = aws_sqs_queue.deceased_patient_audit.name
   }
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_invalid_suspension_dlq_audit" {
@@ -156,4 +163,5 @@ resource "aws_cloudwatch_metric_alarm" "suspension_invalid_suspension_dlq_audit"
     QueueName = aws_sqs_queue.invalid_suspension_audit.name
   }
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }

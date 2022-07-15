@@ -115,6 +115,7 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_queue_age_of_message" {
     QueueName = aws_sqs_queue.suspensions.name
   }
   alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 data "aws_sns_topic" "alarm_notifications" {
