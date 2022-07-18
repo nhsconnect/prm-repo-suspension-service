@@ -251,6 +251,26 @@ case "${command}" in
       check_env
       dojo -c Dojofile-infra "./tasks _tf"
       ;;
+  _tf_plan_suspension)
+      export NHS_SERVICE=suspension-service
+      _assume_environment_role $NHS_ENVIRONMENT
+      tf_plan "$2"
+      ;;
+  tf_plan_suspension)
+      export NHS_SERVICE=suspension-service
+      check_env
+      dojo -c Dojofile-infra "./tasks _tf_plan $2"
+      ;;
+  _tf_plan_transfer)
+      export NHS_SERVICE=end-of-transfer-service
+      _assume_environment_role $NHS_ENVIRONMENT
+      tf_plan "$2"
+      ;;
+  tf_plan_transfer)
+      export NHS_SERVICE=end-of-transfer-service
+      check_env
+      dojo -c Dojofile-infra "./tasks _tf_plan $2"
+      ;;
   _tf_plan)
       _assume_environment_role $NHS_ENVIRONMENT
       tf_plan "$2"
