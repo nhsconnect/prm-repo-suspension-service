@@ -11,9 +11,9 @@ resource "aws_ecs_service" "ecs-service" {
   desired_count   = var.ecs_desired_count
   launch_type     = "FARGATE"
 
-#  lifecycle {
-#    ignore_changes = [desired_count]
-#  }
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
 
   network_configuration {
     security_groups = [local.ecs_task_sg_id]
