@@ -59,3 +59,7 @@ variable "image_name" {
   type = string
   default = "suspension-service"
 }
+
+variable "ecs_desired_count" {
+  default = 0
+}

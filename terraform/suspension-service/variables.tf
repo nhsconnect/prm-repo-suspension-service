@@ -33,3 +33,6 @@ variable "period_of_age_of_message_metric" {
 }
 variable "ecs_cluster_name" {}
 variable "ecs_service_name" {}
+variable "ecs_desired_count" {
+  default = 0
+}

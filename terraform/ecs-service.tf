@@ -8,12 +8,12 @@ resource "aws_ecs_service" "ecs-service" {
   name            = "${var.environment}-${var.component_name}"
   cluster         = local.ecs_cluster_id
   task_definition = aws_ecs_task_definition.task.arn
-  desired_count   = 0
+  desired_count   = var.ecs_desired_count
   launch_type     = "FARGATE"
 
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
+#  lifecycle {
+#    ignore_changes = [desired_count]
+#  }
 
   network_configuration {
     security_groups = [local.ecs_task_sg_id]

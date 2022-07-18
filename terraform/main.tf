@@ -19,6 +19,7 @@ module "end-of-transfer-service" {
 
   component_name = var.component_name
   repo_name      = var.repo_name
+  ecs_desired_count = var.ecs_desired_count
 }
 
 module "suspension-service" {
