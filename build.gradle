@@ -4,7 +4,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'com.github.spotbugs' version '4.6.0'
-    id 'org.owasp.dependencycheck' version '6.5.0.1'
+    id 'org.owasp.dependencycheck' version '7.1.0.1'
 }
 
 group = 'uk.nhs.prm.repo'
@@ -56,7 +56,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-aop'
     testImplementation "org.mockito:mockito-core:3.+"
-    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.31.0'
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.33.2'
 
     // CVE-2020-36518...
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.1'
@@ -159,7 +159,7 @@ spotbugsIntegration {
 }
 
 dependencyCheck {
-    failBuildOnCVSS = 7
+    failBuildOnCVSS = 6
     suppressionFile = './dependency-checks-suppression.xml'
     analyzers {
           assemblyEnabled = false
