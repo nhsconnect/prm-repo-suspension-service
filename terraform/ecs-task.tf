@@ -4,6 +4,7 @@ locals {
   task_ecr_url          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
   task_log_group        = "/nhs/deductions/${var.environment}-${data.aws_caller_identity.current.account_id}/${var.component_name}"
   environment_variables = [
+    { name = "COMPONENT_NAME", value = var.component_name },
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "AWS_REGION", value = var.region },
     { name = "LOG_LEVEL", value = var.log_level },

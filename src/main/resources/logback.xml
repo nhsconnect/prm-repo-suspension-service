@@ -16,7 +16,7 @@
 					<pattern>
 						{
 						"level": "%level",
-						"service": "suspension-service",
+						"service": "${COMPONENT_NAME:-suspension-service}",
 						"class": "%C{0}",
 						"line": "%L",
 						"message": "%message",
