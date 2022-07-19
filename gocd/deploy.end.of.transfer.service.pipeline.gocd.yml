@@ -108,7 +108,7 @@ pipelines:
         pipeline: end-of-transfer-service.dev
         stage: deploy
       e2e:
-        pipeline: continuity-e2e-tests.dev
+        pipeline: repo-e2e-tests.dev
         stage: test
     environment_variables:
       NHS_ENVIRONMENT: test
@@ -131,7 +131,7 @@ pipelines:
         pipeline: end-of-transfer-service.test
         stage: deploy
       e2e:
-        pipeline: continuity-e2e-tests.test
+        pipeline: repo-e2e-tests.test
         stage: test
     environment_variables:
       NHS_ENVIRONMENT: pre-prod
@@ -154,7 +154,7 @@ pipelines:
         pipeline: end-of-transfer-service.test
         stage: deploy
       e2e:
-        pipeline: continuity-e2e-tests.test
+        pipeline: repo-e2e-tests.test
         stage: test
     environment_variables:
       NHS_ENVIRONMENT: perf
