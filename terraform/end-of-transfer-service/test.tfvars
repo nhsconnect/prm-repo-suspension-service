@@ -1,5 +1,6 @@
 component_name = "end-of-transfer-service"
 repo_name = "end-of-transfer-service"
+metric_namespace = "EndOfTransferService"
 environment          = "test"
 environment_dns_zone = "test.non-prod"
 

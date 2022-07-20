@@ -18,6 +18,7 @@ module "end-of-transfer-service" {
   environment    = var.environment
 
   component_name = var.component_name
+  metric_namespace = var.metric_namespace
   repo_name      = var.repo_name
   ecs_desired_count = var.ecs_desired_count
 }
@@ -27,6 +28,7 @@ module "suspension-service" {
   source    = "./suspension-service/"
   environment    = var.environment
   component_name = var.component_name
+  metric_namespace = var.metric_namespace
   repo_name      = var.repo_name
   sns_sqs_role_arn = aws_iam_role.sns_failure_feedback_role.arn
   ecs_cluster_name    = aws_ecs_cluster.ecs-cluster.name

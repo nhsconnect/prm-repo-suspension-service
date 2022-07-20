@@ -1,5 +1,6 @@
 component_name = "suspension-service"
 repo_name = "suspension-service"
+metric_namespace = "SuspensionService"
 environment          = "perf"
 environment_dns_zone = "perf.non-prod"
 

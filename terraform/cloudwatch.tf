@@ -1,6 +1,6 @@
 locals {
   error_logs_metric_name              = "ErrorCountInLogs"
-  suspension_service_metric_namespace = "SuspensionService"
+  suspension_service_metric_namespace = var.metric_namespace
   not_suspended_sns_topic_name        = "${var.environment}-suspension-service-not-suspended-sns-topic"
   sns_topic_namespace                 = "AWS/SNS"
   sqs_namespace                       = "AWS/SQS"

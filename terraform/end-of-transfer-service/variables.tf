@@ -11,6 +11,8 @@ variable "environment" {}
 
 variable "component_name" {}
 
+variable "metric_namespace" {}
+
 variable "ecs_desired_count" {
   default = 1
 }

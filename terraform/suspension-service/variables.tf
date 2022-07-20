@@ -7,6 +7,7 @@ variable "repo_name" {
 }
 variable "environment" {}
 variable "component_name" {}
+variable "metric_namespace" {}
 variable "sns_sqs_role_arn" {}
 variable "scale_up_expression" {
   type    = string

@@ -11,6 +11,8 @@ variable "environment" {}
 
 variable "component_name" {}
 
+variable "metric_namespace" {}
+
 variable "environment_dns_zone" {
   description = "The environment-specific labels of the dns zone name, e.g. 'prod' or 'dev.non-prod'"
 }

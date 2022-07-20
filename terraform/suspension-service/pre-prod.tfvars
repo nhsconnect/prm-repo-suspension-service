@@ -1,5 +1,6 @@
 component_name = "suspension-service"
 repo_name = "suspension-service"
+metric_namespace = "SuspensionService"
 environment          = "pre-prod"
 environment_dns_zone = "pre-prod.non-prod"
 
