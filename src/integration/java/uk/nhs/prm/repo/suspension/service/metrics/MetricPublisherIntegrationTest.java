@@ -28,7 +28,7 @@ import static org.awaitility.Awaitility.await;
 @SpringBootTest()
 @ActiveProfiles("test")
 @SpringJUnitConfig(TestSpringConfiguration.class)
-@TestPropertySource(properties = {"environment = integration_test"})
+@TestPropertySource(properties = {"environment = integration_test", "metricNamespace = SuspensionService"})
 @ExtendWith(MockitoExtension.class)
 @ContextConfiguration(classes = {SnsClientSpringConfiguration.class, SqsClientSpringConfiguration.class, MetricPublisher.class, AppConfig.class})
 @DirtiesContext
