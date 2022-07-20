@@ -43,7 +43,7 @@ public class MetricPublisher {
         PutMetricDataRequest request =
                 PutMetricDataRequest
                         .builder()
-                        .namespace("SuspensionService")
+                        .namespace(config.metricNamespace())
                         .metricData(datum)
                         .build();
 

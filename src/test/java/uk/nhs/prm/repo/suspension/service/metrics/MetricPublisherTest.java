@@ -8,8 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.cloudwatch.model.Dimension;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDatum;
 import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,18 +29,18 @@ class MetricPublisherTest {
     @Captor
     private ArgumentCaptor<PutMetricDataRequest> putRequestCaptor;
 
-
     @Test
     public void shouldSetHealthMetricDimensionToAppropriateEnvironment() {
         when(config.environment()).thenReturn("local");
+        when(config.metricNamespace()).thenReturn("a-metric-namespace");
 
         metricPublisher.publishMetric("Health", 1.0);
 
         verify(cloudWatchClient).putMetricData(putRequestCaptor.capture());
-        PutMetricDataRequest putMetricDataRequest = putRequestCaptor.getValue();
-        Dimension environmentDimension = putMetricDataRequest.metricData().get(0).dimensions().get(0);
+        var putMetricDataRequest = putRequestCaptor.getValue();
+        var environmentDimension = putMetricDataRequest.metricData().get(0).dimensions().get(0);
 
-        assertThat(putMetricDataRequest.namespace()).isEqualTo("SuspensionService");
+        assertThat(putMetricDataRequest.namespace()).isEqualTo("a-metric-namespace");
         assertThat(environmentDimension.name()).isEqualTo("Environment");
         assertThat(environmentDimension.value()).isEqualTo("local");
     }
@@ -54,10 +52,9 @@ class MetricPublisherTest {
         metricPublisher.publishMetric("Health", 1.0);
 
         verify(cloudWatchClient).putMetricData(putRequestCaptor.capture());
-        MetricDatum metricData = putRequestCaptor.getValue().metricData().get(0);
+        var metricData = putRequestCaptor.getValue().metricData().get(0);
 
         assertThat(metricData.value()).isEqualTo(1.0);
         assertThat(metricData.metricName()).isEqualTo("Health");
     }
-
 }
