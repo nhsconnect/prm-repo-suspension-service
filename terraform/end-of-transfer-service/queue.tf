@@ -1,5 +1,5 @@
 locals {
-  transfer_complete_queue_name                   = "${var.environment}-${var.component_name}-transfer-complete-queue"
+  transfer_complete_queue_name                   = "${var.environment}-${var.component_name}-transfer-complete"
   transfer_complete_observability_queue_name     = "${var.environment}-${var.component_name}-transfer-complete-observability"
 }
 

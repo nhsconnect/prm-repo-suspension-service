@@ -1,5 +1,5 @@
 locals {
-  suspensions_queue_name                 = "${var.environment}-${var.component_name}-suspensions-queue"
+  suspensions_queue_name                 = "${var.environment}-${var.component_name}-suspensions"
   repo_incoming_observability_queue_name = "${var.environment}-${var.component_name}-repo-incoming-observability"
 }
 resource "aws_sqs_queue" "repo_incoming_observability_queue" {

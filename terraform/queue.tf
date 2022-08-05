@@ -1,6 +1,5 @@
 locals {
-#  suspensions_queue_name                         = "${var.environment}-${var.component_name}-suspensions-queue"
-  not_suspended_observability_queue_name         = "${var.environment}-${var.component_name}-not-suspended-observability-queue"
+  not_suspended_observability_queue_name         = "${var.environment}-${var.component_name}-not-suspended-observability"
   not_suspended_audit_queue_name                 = "${var.environment}-${var.component_name}-not-suspended-audit"
   not_suspended_audit_splunk_dlq_queue_name      = "${var.environment}-${var.component_name}-not-suspended-audit-splunk-dlq"
   mof_updated_queue_name                         = "${var.environment}-${var.component_name}-mof-updated-queue"
@@ -14,11 +13,11 @@ locals {
   invalid_suspension_splunk_dlq_queue_name       = "${var.environment}-${var.component_name}-invalid-suspension-dlq-splunk-dlq"
   event_out_of_order_audit_queue_name            = "${var.environment}-${var.component_name}-event-out-of-order-audit"
   event_out_of_order_audit_splunk_dlq_queue_name = "${var.environment}-${var.component_name}-event-out-of-order-audit-splunk-dlq"
-  event_out_of_order_observability_queue_name    = "${var.environment}-${var.component_name}-event-out-of-order-observability-queue"
+  event_out_of_order_observability_queue_name    = "${var.environment}-${var.component_name}-event-out-of-order-observability"
   deceased_patient_queue_name                    = "${var.environment}-${var.component_name}-deceased-patient-queue"
   deceased_patient_audit_queue_name              = "${var.environment}-${var.component_name}-deceased-patient-audit"
   deceased_patient_audit_splunk_dlq_queue_name   = "${var.environment}-${var.component_name}-deceased-patient-audit-splunk-dlq"
-  repo_incoming_observability_queue_name         = "${var.environment}-${var.component_name}-repo-incoming-observability-queue"
+  repo_incoming_observability_queue_name         = "${var.environment}-${var.component_name}-repo-incoming-observability"
 }
 
 resource "aws_sqs_queue" "not_suspended_observability" {
