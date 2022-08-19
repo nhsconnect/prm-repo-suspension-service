@@ -18,4 +18,7 @@ public class MessageProcessProperties {
 
     @Value("${safe_listed_patients_nhs_numbers}")
     private String allowedPatientsNhsNumbers;
+
+    @Value("${safe_listed_ods_codes}")
+    private String allowedOdsCodes;
 }

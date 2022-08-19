@@ -29,6 +29,15 @@ public class MessageProcessPropertiesValidatorTest {
         config.setAllowedPatientsNhsNumbers("bogus");
 
         assertThrows(RuntimeException.class, () ->
-            new MessageProcessPropertiesValidator(config));
+                new MessageProcessPropertiesValidator(config));
+    }
+
+    @Test
+    public void shouldNotFailValidationWhenOdsCodesAreValid() {
+        var config = new MessageProcessProperties();
+        config.setAllowedOdsCodes("odS123,456ODS");
+
+        var messageProcessPropertiesValidator = new MessageProcessPropertiesValidator(config);
+        messageProcessPropertiesValidator.validateOdsCodes(config);
     }
 }
