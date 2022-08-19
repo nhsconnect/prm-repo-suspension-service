@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.suspension.service.suspensionsevents;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -76,6 +77,29 @@ public class MessageProcessExecutionTest {
 
         verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
         verifyNoInteractions(messagePublisherBroker);
+
+        verifyLock(NHS_NUMBER);
+    }
+
+    @Disabled("PRMT-2020 WIP")
+    @Test
+    void shouldNotUpdateMofWhenTheOdsCodeIsInNotInTheSafeList(){
+        var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
+                "\"environment\":\"local\"}";
+
+        setPropertiesWhenProcessOnlySyntheticIsTrue();
+        var pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
+
+        when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
+        messageProcessExecution.run(suspendedMessage);
+
+        verifyNoInteractions(managingOrganisationService);
 
         verifyLock(NHS_NUMBER);
     }

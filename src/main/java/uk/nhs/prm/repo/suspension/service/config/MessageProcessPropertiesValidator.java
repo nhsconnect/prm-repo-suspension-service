@@ -1,10 +1,7 @@
 package uk.nhs.prm.repo.suspension.service.config;
 
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -25,31 +22,34 @@ public class MessageProcessPropertiesValidator {
 
     public void validateOdsCodes(MessageProcessProperties messageProperties) {
         var odsCodes = messageProperties.getAllowedOdsCodes();
-        if ("-".equals(odsCodes) || odsCodes == null) {
-            return;
-        }
-        var odsCodesArray = odsCodes.split(",");
-        for (var odsCode : odsCodesArray) {
-            var match = odsCodePattern.matcher(odsCode);
-            if (!match.matches()) {
-                throw new RuntimeException("The provided ODS code in a safe list is invalid");
-            }
-        }
+        String[] odsCodesArray = getSplitValuesByComma(odsCodes);
+        if (odsCodesArray == null) return;
+        matchPatternForSafeList(odsCodesArray, odsCodePattern, "The provided ODS code in a safe list is invalid");
     }
 
     public void validate(MessageProcessProperties messageProperties) {
         var nhsNumbers = messageProperties.getAllowedPatientsNhsNumbers();
-        if ("-".equals(nhsNumbers) || nhsNumbers == null) {
-            return;
-        }
-        var nhsNumbersArray = nhsNumbers.split(",");
+        String[] nhsNumbersArray = getSplitValuesByComma(nhsNumbers);
+        if (nhsNumbersArray == null) return;
 
-        for (var number : nhsNumbersArray) {
-            var match = nhsPattern.matcher(number);
+        matchPatternForSafeList(nhsNumbersArray, nhsPattern, "The provided NHS number in a safe list is invalid");
+
+    }
+
+    private void matchPatternForSafeList(String[] safeListVariablesArray, Pattern pattern, String message) {
+        for (var safeListVariable : safeListVariablesArray) {
+            var match = pattern.matcher(safeListVariable);
             if (!match.matches()) {
-                throw new RuntimeException("The provided NHS number in a safe list is invalid");
+                throw new RuntimeException(message);
             }
         }
+    }
 
+    private String[] getSplitValuesByComma(String safeListVariable) {
+        if ("-".equals(safeListVariable) || safeListVariable == null) {
+            return null;
+        }
+        var safeListVariablesArray = safeListVariable.split(",");
+        return safeListVariablesArray;
     }
 }
