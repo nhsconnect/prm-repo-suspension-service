@@ -15,3 +15,7 @@ resource "aws_ssm_parameter" "ecs-cluster-name" {
   type  = "String"
   value = aws_ecs_cluster.ecs-cluster.name
 }
+
+output "process_only_synthetic_or_safe_listed_patients_value" {
+  value = "process_only_synthetic_or_safe_listed_patients in set to: ${var.process_only_synthetic_or_safe_listed_patients}"
+}
