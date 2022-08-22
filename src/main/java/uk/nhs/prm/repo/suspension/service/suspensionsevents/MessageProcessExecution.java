@@ -46,8 +46,7 @@ public class MessageProcessExecution {
             // synthetic patient block
             if (isPatientSynthetic(suspensionEvent)) return;
 
-            //TODO: ODS Code safe list check
-            //if (isOdsCodeSafeListed(suspensionEvent)) return;
+            if (odsCodeIsNotSafeListed(suspensionEvent)) return;
 
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
                 log.info("Patient is Suspended");
@@ -61,6 +60,18 @@ public class MessageProcessExecution {
         }
     }
 
+    private boolean odsCodeIsNotSafeListed(SuspensionEvent suspensionEvent) {
+        if (processingOnlySafeListedOdsCodes()) {
+            if (!odsCodeIsSafeListed(suspensionEvent)) {
+                log.info("ODS code is not safe listed.");
+                messagePublisherBroker.odsCodeNotSafeListedMessage(suspensionEvent.nemsMessageId());
+                return true;
+            }
+            log.info("ODS code is safe listed.");
+        }
+        return false;
+    }
+
 
     private boolean isPatientStatusDeceased(SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse) {
         if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsDeceased())) {
@@ -72,8 +83,6 @@ public class MessageProcessExecution {
     }
 
     private boolean isPatientSynthetic(SuspensionEvent suspensionEvent) {
-        //TODO: Explicitly call nhsNumber validation
-        //messagePropertiesValidator.validate(config);
         if (processingOnlySyntheticOrSafeListedPatients() && patientIsNonSynthetic(suspensionEvent)) {
             if (!patientIsSafeListed(suspensionEvent)) {
                 messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
@@ -122,9 +131,13 @@ public class MessageProcessExecution {
         return this.config.getAllowedPatientsNhsNumbers() != null && this.config.getAllowedPatientsNhsNumbers().contains(suspensionEvent.nhsNumber());
     }
 
-    //TODO: ODS Code safe list check
-    private boolean odsCodeIsSafeListed(String odsCode) {
-        return this.config.getAllowedOdsCodes() != null && this.config.getAllowedOdsCodes().contains(odsCode);
+    private boolean processingOnlySafeListedOdsCodes() {
+        log.info("Process only safe listed ODS codes: " + this.config.getProcessOnlySafeListedOdsCodes());
+        return Boolean.parseBoolean(this.config.getProcessOnlySafeListedOdsCodes());
+    }
+
+    private boolean odsCodeIsSafeListed(SuspensionEvent suspensionEvent) {
+        return this.config.getAllowedOdsCodes() != null && this.config.getAllowedOdsCodes().contains(suspensionEvent.getPreviousOdsCode());
     }
 
     private boolean processingOnlySyntheticOrSafeListedPatients() {

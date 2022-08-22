@@ -110,6 +110,13 @@ class MessagePublisherBrokerTest {
     }
 
     @Test
+    void odsCodeNotSafeListedMessage() {
+        messagePublisherBroker.odsCodeNotSafeListedMessage(NEMS_MESSAGE_ID);
+        var nonSensitiveDataMessage = new NonSensitiveDataMessage(NEMS_MESSAGE_ID, "NO_ACTION:ODS_CODE_NOT_SAFE_LISTED");
+        verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage);
+    }
+
+    @Test
     void sendExpectedRepoIncomingMessage() {
         var suspensionEvent = new SuspensionEvent("NHS_NUMBER", "PREVIOUS_ODS_CODE", NEMS_MESSAGE_ID, "LAST_UPDATED_DATE");
         var afterUpdateResponse = new PdsAdaptorSuspensionStatusResponse("NHS_NUMBER", true, null,

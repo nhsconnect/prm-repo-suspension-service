@@ -43,6 +43,8 @@ public class MessageProcessExecutionTest {
 
     private static final String PREVIOUS_ODS_CODE = "PREVIOUS_ODS_CODE";
 
+    private static final String SAFE_LISTED_ODS_CODE = "ODS123";
+
     @Mock
     private PdsService pdsService;
 
@@ -81,11 +83,10 @@ public class MessageProcessExecutionTest {
         verifyLock(NHS_NUMBER);
     }
 
-    @Disabled("PRMT-2020 WIP")
     @Test
     void shouldUpdateMofWhenTheOdsCodeIsInTheSafeList(){
         var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
-                "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
+                "\"previousOdsCode\":\"ODS123\"," +
                 "\"eventType\":\"SUSPENSION\"," +
                 "\"nhsNumber\":\"9692294951\"," +
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
@@ -100,12 +101,35 @@ public class MessageProcessExecutionTest {
         when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         messageProcessExecution.run(suspendedMessage);
-        var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
+        var suspensionEvent = new SuspensionEvent(NHS_NUMBER, SAFE_LISTED_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
 
-        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
+        verify(managingOrganisationService, times(1)).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
         verifyNoInteractions(messagePublisherBroker);
 
-       // verifyNoInteractions(managingOrganisationService);
+        verifyLock(NHS_NUMBER);
+    }
+
+    @Test
+    void shouldNotUpdateMofWhenTheOdsCodeIsNotInTheSafeListAndToggleIsOn(){
+        var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
+                "\"previousOdsCode\":\"bogus\"," +
+                "\"eventType\":\"SUSPENSION\"," +
+                "\"nhsNumber\":\"9692294951\"," +
+                "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
+                "\"environment\":\"local\"}";
+
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("false");
+        setPropertiesWhenProcessOnlyOdsCodeIsInSafeList();
+
+        var pdsAdaptorSuspensionStatusResponse
+                = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
+
+        when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
+
+        messageProcessExecution.run(suspendedMessage);
+
+        verify(messagePublisherBroker, times(1)).odsCodeNotSafeListedMessage(nemsMessageId);
+        verifyNoInteractions(managingOrganisationService);
 
         verifyLock(NHS_NUMBER);
     }
@@ -421,6 +445,7 @@ public class MessageProcessExecutionTest {
 
 
     private void setPropertiesWhenProcessOnlyOdsCodeIsInSafeList() {
+        when(config.getProcessOnlySafeListedOdsCodes()).thenReturn("true");
         when(config.getAllowedOdsCodes()).thenReturn("ODS123,ods321");
     }
 

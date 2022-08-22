@@ -31,6 +31,11 @@ public class MessagePublisherBroker {
         mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
     }
 
+    public void odsCodeNotSafeListedMessage(String nemsMessageId) {
+        var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:ODS_CODE_NOT_SAFE_LISTED");
+        mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
+    }
+
     public void deceasedPatientMessage(String nemsMessageId) {
         var deceasedPatientMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:DECEASED_PATIENT");
         deceasedPatientEventPublisher.sendMessage(deceasedPatientMessage);
