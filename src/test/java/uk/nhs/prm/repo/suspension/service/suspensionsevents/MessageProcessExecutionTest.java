@@ -83,7 +83,7 @@ public class MessageProcessExecutionTest {
 
     @Disabled("PRMT-2020 WIP")
     @Test
-    void shouldNotUpdateMofWhenTheOdsCodeIsInNotInTheSafeList(){
+    void shouldUpdateMofWhenTheOdsCodeIsInTheSafeList(){
         var suspendedMessage = "{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"," +
                 "\"previousOdsCode\":\"PREVIOUS_ODS_CODE\"," +
                 "\"eventType\":\"SUSPENSION\"," +
@@ -91,15 +91,21 @@ public class MessageProcessExecutionTest {
                 "\"nemsMessageId\":\"" + nemsMessageId + "\"," +
                 "\"environment\":\"local\"}";
 
-        setPropertiesWhenProcessOnlySyntheticIsTrue();
+        when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("false");
+        setPropertiesWhenProcessOnlyOdsCodeIsInSafeList();
+
         var pdsAdaptorSuspensionStatusResponse
                 = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null, null, "", false);
 
         when(pdsService.isSuspended(NHS_NUMBER)).thenReturn(pdsAdaptorSuspensionStatusResponse);
 
         messageProcessExecution.run(suspendedMessage);
+        var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, nemsMessageId, LAST_UPDATED_DATE);
 
-        verifyNoInteractions(managingOrganisationService);
+        verify(managingOrganisationService).processMofUpdate(suspendedMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
+        verifyNoInteractions(messagePublisherBroker);
+
+       // verifyNoInteractions(managingOrganisationService);
 
         verifyLock(NHS_NUMBER);
     }
@@ -411,6 +417,11 @@ public class MessageProcessExecutionTest {
     private void setPropertiesWhenProcessOnlySyntheticIsTrue() {
         when(config.getProcessOnlySyntheticOrSafeListedPatients()).thenReturn("true");
         when(config.getSyntheticPatientPrefix()).thenReturn("969");
+    }
+
+
+    private void setPropertiesWhenProcessOnlyOdsCodeIsInSafeList() {
+        when(config.getAllowedOdsCodes()).thenReturn("ODS123,ods321");
     }
 
     private void verifyLock(String nhsNumber) {

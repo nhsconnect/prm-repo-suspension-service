@@ -42,6 +42,7 @@ public class MessageProcessExecution {
             // patient is deceased block
             if (isPatientStatusDeceased(suspensionEvent, pdsAdaptorSuspensionStatusResponse)) return;
 
+
             // synthetic patient block
             if (isPatientSynthetic(suspensionEvent)) return;
 
@@ -59,11 +60,7 @@ public class MessageProcessExecution {
             threadLock.unlock(suspensionEvent.nhsNumber());
         }
     }
-    //TODO: ODS Code safe list check
-    /*private boolean isOdsCodeSafeListed(SuspensionEvent suspensionEvent) {
-        messagePropertiesValidator.validateOdsCodes(config);
-        return true;
-    }*/
+
 
     private boolean isPatientStatusDeceased(SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse) {
         if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsDeceased())) {

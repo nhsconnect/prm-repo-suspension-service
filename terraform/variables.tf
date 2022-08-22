@@ -35,6 +35,10 @@ variable "process_only_synthetic_or_safe_listed_patients" {
   default = true
 }
 
+variable "process_only_safe_listed_ods_codes" {
+  default = false
+}
+
 variable "synthetic_patient_prefix" {}
 
 variable "scale_up_expression" {
