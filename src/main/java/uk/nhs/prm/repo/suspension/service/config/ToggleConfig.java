@@ -11,4 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class ToggleConfig {
     @Value("${toggle.canUpdateManagingOrganisationToRepo}")
     private boolean canUpdateManagingOrganisationToRepo;
+
+    @Value("${toggle.processOnlySafeListedOdsCodes}")
+    private boolean processOnlySafeListedOdsCodes;
 }

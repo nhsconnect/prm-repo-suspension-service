@@ -17,17 +17,20 @@ public class ManagingOrganisationService {
     private final MessagePublisherBroker messagePublisherBroker;
     private final String repoOdsCode;
     private final ToggleConfig toggleConfig;
+    private String allowedOdsCodes;
 
-    public ManagingOrganisationService(PdsService pdsService, MessagePublisherBroker messagePublisherBroker, @Value("${repo.ods.code}") String repoOdsCode, ToggleConfig toggleConfig) {
+
+    public ManagingOrganisationService(PdsService pdsService, MessagePublisherBroker messagePublisherBroker, @Value("${repo.ods.code}") String repoOdsCode, ToggleConfig toggleConfig, @Value("${safe_listed_ods_codes}") String allowedOdsCodes) {
         this.pdsService = pdsService;
         this.messagePublisherBroker = messagePublisherBroker;
         this.repoOdsCode = repoOdsCode;
         this.toggleConfig = toggleConfig;
+        this.allowedOdsCodes = allowedOdsCodes;
     }
 
     void processMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
         try {
-            if (toggleConfig.isCanUpdateManagingOrganisationToRepo()) {
+            if (toggleConfig.isCanUpdateManagingOrganisationToRepo() && odsCodeSafeListCheck(suspensionEvent)) {
                 updateMofToRepo(response, suspensionEvent);
             } else {
                 updateMofToPreviousGp(response, suspensionEvent);
@@ -37,6 +40,15 @@ public class ManagingOrganisationService {
             throw invalidPdsRequestException;
         }
     }
+
+    private boolean odsCodeSafeListCheck(SuspensionEvent suspensionEvent) {
+        if (toggleConfig.isProcessOnlySafeListedOdsCodes()){
+            log.info("Allowed ODS codes are: " + allowedOdsCodes);
+            return allowedOdsCodes != null && allowedOdsCodes.contains(suspensionEvent.getPreviousOdsCode());
+        }
+        return true;
+    }
+
 
     private void updateMofToPreviousGp(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
         if (canUpdateManagingOrganisation(pdsResponse.getManagingOrganisation(), suspensionEvent.previousOdsCode())) {

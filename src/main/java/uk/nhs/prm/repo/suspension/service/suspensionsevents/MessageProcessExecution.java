@@ -40,13 +40,21 @@ public class MessageProcessExecution {
             var pdsAdaptorSuspensionStatusResponse = getPdsAdaptorSuspensionStatusResponse(suspensionMessage, suspensionEvent);
 
             // patient is deceased block
-            if (isPatientStatusDeceased(suspensionEvent, pdsAdaptorSuspensionStatusResponse)) return;
+            if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsDeceased())) {
+                log.info("Patient is deceased");
+                messagePublisherBroker.deceasedPatientMessage(suspensionEvent.nemsMessageId());
+                return;
+            }
 
 
             // synthetic patient block
-            if (isPatientSynthetic(suspensionEvent)) return;
-
-            if (odsCodeIsNotSafeListed(suspensionEvent)) return;
+            if (processingOnlySyntheticOrSafeListedPatients() && patientIsNonSynthetic(suspensionEvent)) {
+                if (!patientIsSafeListed(suspensionEvent)) {
+                    messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
+                    return;
+                }
+                log.info("Patient is safe-listed for testing");
+            }
 
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
                 log.info("Patient is Suspended");
@@ -58,39 +66,6 @@ public class MessageProcessExecution {
         } finally {
             threadLock.unlock(suspensionEvent.nhsNumber());
         }
-    }
-
-    private boolean odsCodeIsNotSafeListed(SuspensionEvent suspensionEvent) {
-        if (processingOnlySafeListedOdsCodes()) {
-            if (!odsCodeIsSafeListed(suspensionEvent)) {
-                log.info("ODS code is not safe listed.");
-                messagePublisherBroker.odsCodeNotSafeListedMessage(suspensionEvent.nemsMessageId());
-                return true;
-            }
-            log.info("ODS code is safe listed.");
-        }
-        return false;
-    }
-
-
-    private boolean isPatientStatusDeceased(SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse) {
-        if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsDeceased())) {
-            log.info("Patient is deceased");
-            messagePublisherBroker.deceasedPatientMessage(suspensionEvent.nemsMessageId());
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isPatientSynthetic(SuspensionEvent suspensionEvent) {
-        if (processingOnlySyntheticOrSafeListedPatients() && patientIsNonSynthetic(suspensionEvent)) {
-            if (!patientIsSafeListed(suspensionEvent)) {
-                messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
-                return true;
-            }
-            log.info("Patient is safe-listed for testing");
-        }
-        return false;
     }
 
 
@@ -131,10 +106,6 @@ public class MessageProcessExecution {
         return this.config.getAllowedPatientsNhsNumbers() != null && this.config.getAllowedPatientsNhsNumbers().contains(suspensionEvent.nhsNumber());
     }
 
-    private boolean processingOnlySafeListedOdsCodes() {
-        log.info("Process only safe listed ODS codes: " + this.config.getProcessOnlySafeListedOdsCodes());
-        return Boolean.parseBoolean(this.config.getProcessOnlySafeListedOdsCodes());
-    }
 
     private boolean odsCodeIsSafeListed(SuspensionEvent suspensionEvent) {
         return this.config.getAllowedOdsCodes() != null && this.config.getAllowedOdsCodes().contains(suspensionEvent.getPreviousOdsCode());

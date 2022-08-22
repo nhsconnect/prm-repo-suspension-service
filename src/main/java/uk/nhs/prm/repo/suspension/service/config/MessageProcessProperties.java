@@ -21,7 +21,4 @@ public class MessageProcessProperties {
 
     @Value("${safe_listed_ods_codes}")
     private String allowedOdsCodes;
-
-    @Value("${toggle.processOnlySafeListedOdsCodes}")
-    private String processOnlySafeListedOdsCodes;
 }
