@@ -29,7 +29,7 @@ locals {
     { name = "DYNAMODB_TABLE_NAME", value = aws_dynamodb_table.suspensions.name },
     { name = "PDS_ADAPTOR_URL", value = "https://pds-adaptor.${var.environment_dns_zone}.patient-deductions.nhs.uk" },
     { name = "REPO_ODS_CODE", value = data.aws_ssm_parameter.repo_ods_code.value },
-    { name = "SAFE_LISTED_ODS_CODES", valueFrom = data.aws_ssm_parameter.safe_listed_ods_codes.value},
+    { name = "SAFE_LISTED_ODS_CODES", value = data.aws_ssm_parameter.safe_listed_ods_codes.value},
     { name = "PROCESS_ONLY_SAFE_LISTED_ODS_CODES", value = tostring(var.process_only_safe_listed_ods_codes) }
   ]
   secrets = [
