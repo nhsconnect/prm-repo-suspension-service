@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(properties = { "toggle.canUpdateManagingOrganisationToRepo=true", "toggle.processOnlySafeListedOdsCodes=true" })
+@SpringBootTest(properties = { "toggle.canUpdateManagingOrganisationToRepo=true", "toggle.repoProcessOnlySafeListedOdsCodes=true" })
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)

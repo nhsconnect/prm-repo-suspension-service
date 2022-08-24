@@ -11,3 +11,4 @@ enable_scale_action = false
 can_update_managing_organisation_to_repo = false
 is_end_of_transfer_service = true
 ecs_desired_count = 1
+repo_process_only_safe_listed_ods_codes = true
