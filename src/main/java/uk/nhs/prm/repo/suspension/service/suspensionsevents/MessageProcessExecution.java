@@ -29,8 +29,6 @@ public class MessageProcessExecution {
         try {
             threadLock.lock(suspensionEvent.nhsNumber());
 
-            log.info("Allowed ODS codes configured are : " + config.getAllowedOdsCodes());
-
             // event out of order block
             if (lastUpdatedEventService.isOutOfOrder(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated())) {
                 log.info("Event is out of order");

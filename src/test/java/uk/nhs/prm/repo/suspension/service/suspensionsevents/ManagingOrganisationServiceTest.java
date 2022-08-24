@@ -134,7 +134,7 @@ class ManagingOrganisationServiceTest {
 
 
         when(toggleConfig.isCanUpdateManagingOrganisationToRepo()).thenReturn(true);
-        when(toggleConfig.isProcessOnlySafeListedOdsCodes()).thenReturn(false);
+        when(toggleConfig.isRepoProcessOnlySafeListedOdsCodes()).thenReturn(false);
         when(pdsService.updateMof(NHS_NUMBER, REPO_ODS_CODE, RECORD_E_TAG)).thenReturn(afterUpdateResponse);
 
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
@@ -154,7 +154,7 @@ class ManagingOrganisationServiceTest {
 
 
         when(toggleConfig.isCanUpdateManagingOrganisationToRepo()).thenReturn(true);
-        when(toggleConfig.isProcessOnlySafeListedOdsCodes()).thenReturn(true);
+        when(toggleConfig.isRepoProcessOnlySafeListedOdsCodes()).thenReturn(true);
         when(pdsService.updateMof(NHS_NUMBER, REPO_ODS_CODE, RECORD_E_TAG)).thenReturn(afterUpdateResponse);
 
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
@@ -174,7 +174,7 @@ class ManagingOrganisationServiceTest {
 
 
         when(toggleConfig.isCanUpdateManagingOrganisationToRepo()).thenReturn(true);
-        when(toggleConfig.isProcessOnlySafeListedOdsCodes()).thenReturn(true);
+        when(toggleConfig.isRepoProcessOnlySafeListedOdsCodes()).thenReturn(true);
         when(pdsService.updateMof(NHS_NUMBER, PREVIOUS_ODS_CODE, RECORD_E_TAG)).thenReturn(afterUpdateResponse);
 
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
