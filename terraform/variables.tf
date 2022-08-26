@@ -32,7 +32,7 @@ variable "log_level" {
 }
 
 variable "process_only_synthetic_or_safe_listed_patients" {
-  default = true
+  default = false
 }
 
 variable "repo_process_only_safe_listed_ods_codes" {
