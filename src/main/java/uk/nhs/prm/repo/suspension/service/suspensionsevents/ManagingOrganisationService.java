@@ -44,7 +44,7 @@ public class ManagingOrganisationService {
     private boolean odsCodeSafeListCheck(SuspensionEvent suspensionEvent) {
         log.info("Repo process only safe listed ODS code toggle is : " + toggleConfig.isRepoProcessOnlySafeListedOdsCodes());
         if (toggleConfig.isRepoProcessOnlySafeListedOdsCodes()){
-            log.info("Allowed ODS codes are: " + allowedOdsCodes);
+            log.info("Allowed ODS codes are: " + allowedOdsCodes + " and the ODS code for the patient is: " + suspensionEvent.getPreviousOdsCode());
             return allowedOdsCodes != null && allowedOdsCodes.contains(suspensionEvent.getPreviousOdsCode());
         }
         return true;
