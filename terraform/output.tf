@@ -19,3 +19,9 @@ resource "aws_ssm_parameter" "ecs-cluster-name" {
 output "process_only_synthetic_or_safe_listed_patients_value" {
   value = "process_only_synthetic_or_safe_listed_patients in set to: ${var.process_only_synthetic_or_safe_listed_patients}"
 }
+
+resource "aws_ssm_parameter" "active_suspensions_topic" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/active-suspensions-topic-arn"
+  type  = "String"
+  value = aws_sns_topic.active_suspensions.arn
+}

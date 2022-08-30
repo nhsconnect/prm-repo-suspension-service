@@ -82,6 +82,18 @@ resource "aws_sns_topic" "deceased_patient" {
   }
 }
 
+resource "aws_sns_topic" "active_suspensions" {
+  name = "${var.environment}-${var.component_name}-active-suspensions-sns-topic"
+  kms_master_key_id = aws_kms_key.active_suspensions.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-active-suspensions-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 data "aws_sns_topic" "alarm_notifications" {
   name = "${var.environment}-alarm-notifications-sns-topic"
 }
