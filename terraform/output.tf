@@ -25,3 +25,14 @@ resource "aws_ssm_parameter" "active_suspensions_topic" {
   type  = "String"
   value = aws_sns_topic.active_suspensions.arn
 }
+
+resource "aws_ssm_parameter" "active_suspensions_kms_key_id" {
+  name  = "/repo/${var.environment}/output/${var.repo_name}/active-suspensions-kms-key-id"
+  type  = "String"
+  value = aws_kms_key.active_suspensions.id
+
+  tags = {
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
