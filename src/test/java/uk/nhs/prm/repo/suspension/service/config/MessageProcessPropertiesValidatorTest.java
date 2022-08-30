@@ -31,22 +31,4 @@ public class MessageProcessPropertiesValidatorTest {
         assertThrows(RuntimeException.class, () ->
                 new MessageProcessPropertiesValidator(config));
     }
-
-    @Test
-    public void shouldNotFailValidationWhenOdsCodesAreValid() {
-        var config = new MessageProcessProperties();
-        config.setAllowedOdsCodes("odS123,456ODS");
-
-        var messageProcessPropertiesValidator = new MessageProcessPropertiesValidator(config);
-        messageProcessPropertiesValidator.validateOdsCodes(config);
-    }
-
-    @Test
-    public void shouldFailValidationWhenOdsCodesAreValidButThereAreWhiteSpacesInTheList() {
-        var config = new MessageProcessProperties();
-        config.setAllowedOdsCodes("odS123, 456ODS");
-
-        assertThrows(RuntimeException.class, () ->
-                new MessageProcessPropertiesValidator(config));
-    }
 }

@@ -106,11 +106,6 @@ public class MessageProcessExecution {
         return this.config.getAllowedPatientsNhsNumbers() != null && this.config.getAllowedPatientsNhsNumbers().contains(suspensionEvent.nhsNumber());
     }
 
-
-    private boolean odsCodeIsSafeListed(SuspensionEvent suspensionEvent) {
-        return this.config.getAllowedOdsCodes() != null && this.config.getAllowedOdsCodes().contains(suspensionEvent.getPreviousOdsCode());
-    }
-
     private boolean processingOnlySyntheticOrSafeListedPatients() {
         log.info("Process only synthetic or safe listed patients: " + this.config.getProcessOnlySyntheticOrSafeListedPatients());
         return Boolean.parseBoolean(this.config.getProcessOnlySyntheticOrSafeListedPatients());

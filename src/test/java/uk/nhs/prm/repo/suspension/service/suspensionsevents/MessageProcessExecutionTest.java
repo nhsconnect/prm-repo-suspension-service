@@ -43,8 +43,6 @@ public class MessageProcessExecutionTest {
 
     private static final String PREVIOUS_ODS_CODE = "PREVIOUS_ODS_CODE";
 
-    private static final String SAFE_LISTED_ODS_CODE = "ODS123";
-
     @Mock
     private PdsService pdsService;
 

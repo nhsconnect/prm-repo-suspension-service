@@ -11,20 +11,10 @@ import java.util.regex.Pattern;
 public class MessageProcessPropertiesValidator {
 
     private final Pattern nhsPattern;
-    private final Pattern odsCodePattern;
 
     public MessageProcessPropertiesValidator(MessageProcessProperties config) {
-        this.odsCodePattern = Pattern.compile("\\w{6}");
         this.nhsPattern = Pattern.compile("\\d{10}");
         validate(config);
-        validateOdsCodes(config);
-    }
-
-    public void validateOdsCodes(MessageProcessProperties messageProperties) {
-        var odsCodes = messageProperties.getAllowedOdsCodes();
-        String[] odsCodesArray = getSplitValuesByComma(odsCodes);
-        if (odsCodesArray == null) return;
-        matchPatternForSafeList(odsCodesArray, odsCodePattern, "The provided ODS code in a safe list is invalid");
     }
 
     public void validate(MessageProcessProperties messageProperties) {
