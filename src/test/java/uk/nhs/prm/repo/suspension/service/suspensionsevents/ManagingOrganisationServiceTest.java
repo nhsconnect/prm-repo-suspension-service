@@ -45,7 +45,7 @@ class ManagingOrganisationServiceTest {
     }
 
     @Test
-    void shouldSendMofUpdateForSuspendedPatient() {
+    void shouldSendMofUpdateAndActiveSuspensionMessageForSuspendedPatient() {
         var suspensionEvent = new SuspensionEvent(NHS_NUMBER, PREVIOUS_ODS_CODE, NEMS_MESSAGE_ID, LAST_UPDATED_DATE);
         var beforeUpdateResponse = new PdsAdaptorSuspensionStatusResponse(NHS_NUMBER, true, null,
                 null, RECORD_E_TAG, false);
@@ -59,6 +59,7 @@ class ManagingOrganisationServiceTest {
 
         verify(pdsService).updateMof(NHS_NUMBER, PREVIOUS_ODS_CODE, RECORD_E_TAG);
         verify(messagePublisherBroker).mofUpdatedMessage(NEMS_MESSAGE_ID, PREVIOUS_ODS_CODE, false);
+        verify(messagePublisherBroker).activeSuspensionMessage(NHS_NUMBER, PREVIOUS_ODS_CODE, LAST_UPDATED_DATE);
     }
 
     @Test
@@ -195,7 +196,5 @@ class ManagingOrganisationServiceTest {
         verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID, true);
         verifyNoInteractions(pdsService);
     }
-
-
 
 }

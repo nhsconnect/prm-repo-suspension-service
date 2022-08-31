@@ -3,10 +3,7 @@ package uk.nhs.prm.repo.suspension.service.publishers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.suspension.service.config.Tracer;
-import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
-import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
-import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
-import uk.nhs.prm.repo.suspension.service.model.RepoIncomingEvent;
+import uk.nhs.prm.repo.suspension.service.model.*;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEvent;
 
 @Component
@@ -19,6 +16,7 @@ public class MessagePublisherBroker {
     public final EventOutOfOrderPublisher eventOutOfOrderPublisher;
     public final DeceasedPatientEventPublisher deceasedPatientEventPublisher;
     public final RepoIncomingEventPublisher repoIncomingEventPublisher;
+    public final ActiveSuspensionsEventPublisher activeSuspensionsEventPublisher;
     public final Tracer tracer;
 
     public void notSuspendedMessage(String nemsMessageId) {
@@ -60,6 +58,11 @@ public class MessagePublisherBroker {
         var status = isSuperseded ? "ACTION:UPDATED_MANAGING_ORGANISATION_FOR_SUPERSEDED_PATIENT" : "ACTION:UPDATED_MANAGING_ORGANISATION";
         var mofUpdatedMessage = new ManagingOrganisationUpdatedMessage(nemsMessageId, previousOdsCode, status);
         mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
+    }
+
+    public void activeSuspensionMessage(String nhsNumber, String previousOdsCode, String originalLastUpdatedTimeStamp) {
+        var activeSuspensionsMessage = new ActiveSuspensionsMessage(nhsNumber, previousOdsCode, originalLastUpdatedTimeStamp);
+        activeSuspensionsEventPublisher.sendMessage(activeSuspensionsMessage);
     }
 
     public void repoIncomingMessage(PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse, SuspensionEvent suspensionEvent) {

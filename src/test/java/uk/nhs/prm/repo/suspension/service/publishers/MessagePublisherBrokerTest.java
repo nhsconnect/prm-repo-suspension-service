@@ -8,13 +8,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.config.Tracer;
-import uk.nhs.prm.repo.suspension.service.model.ManagingOrganisationUpdatedMessage;
-import uk.nhs.prm.repo.suspension.service.model.NonSensitiveDataMessage;
-import uk.nhs.prm.repo.suspension.service.model.PdsAdaptorSuspensionStatusResponse;
-import uk.nhs.prm.repo.suspension.service.model.RepoIncomingEvent;
+import uk.nhs.prm.repo.suspension.service.model.*;
 import uk.nhs.prm.repo.suspension.service.suspensionsevents.SuspensionEvent;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +32,9 @@ class MessagePublisherBrokerTest {
     private DeceasedPatientEventPublisher deceasedPatientEventPublisher;
     @Mock
     private RepoIncomingEventPublisher repoIncomingEventPublisher;
+    @Mock
+    private ActiveSuspensionsEventPublisher activeSuspensionsEventPublisher;
+
     @Mock
     private Tracer tracer;
 
@@ -114,6 +115,13 @@ class MessagePublisherBrokerTest {
         messagePublisherBroker.odsCodeNotSafeListedMessage(NEMS_MESSAGE_ID);
         var nonSensitiveDataMessage = new NonSensitiveDataMessage(NEMS_MESSAGE_ID, "NO_ACTION:ODS_CODE_NOT_SAFE_LISTED");
         verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage);
+    }
+
+    @Test
+    void activeSuspensionMessage(){
+        messagePublisherBroker.activeSuspensionMessage("NHS_NUMBER", "PREVIOUS_ODS_CODE", "LAST_UPDATED_DATE");
+        var activeSuspensionMessage = new ActiveSuspensionsMessage("NHS_NUMBER", "PREVIOUS_ODS_CODE", "LAST_UPDATED_DATE");
+        verify(activeSuspensionsEventPublisher, times(1)).sendMessage(activeSuspensionMessage);
     }
 
     @Test
