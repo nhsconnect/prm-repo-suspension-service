@@ -57,7 +57,7 @@ public class ManagingOrganisationService {
             log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
             var isSuperseded = nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), pdsResponse.getNhsNumber());
             messagePublisherBroker.mofUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), isSuperseded);
-            messagePublisherBroker.activeSuspensionMessage(suspensionEvent.nhsNumber(), suspensionEvent.previousOdsCode(), suspensionEvent.lastUpdated());
+            //messagePublisherBroker.activeSuspensionMessage(suspensionEvent.nhsNumber(), suspensionEvent.previousOdsCode(), suspensionEvent.lastUpdated());
         } else {
             log.info("Managing Organisation field is already set to previous GP");
             messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId(), false);

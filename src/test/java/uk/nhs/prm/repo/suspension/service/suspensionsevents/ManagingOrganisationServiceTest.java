@@ -59,7 +59,7 @@ class ManagingOrganisationServiceTest {
 
         verify(pdsService).updateMof(NHS_NUMBER, PREVIOUS_ODS_CODE, RECORD_E_TAG);
         verify(messagePublisherBroker).mofUpdatedMessage(NEMS_MESSAGE_ID, PREVIOUS_ODS_CODE, false);
-        verify(messagePublisherBroker).activeSuspensionMessage(NHS_NUMBER, PREVIOUS_ODS_CODE, LAST_UPDATED_DATE);
+        //verify(messagePublisherBroker).activeSuspensionMessage(NHS_NUMBER, PREVIOUS_ODS_CODE, LAST_UPDATED_DATE);
     }
 
     @Test
