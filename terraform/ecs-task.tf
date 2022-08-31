@@ -13,6 +13,7 @@ locals {
     { name = "NOT_SUSPENDED_SNS_TOPIC_ARN", value = aws_sns_topic.not_suspended.arn },
     { name = "NOT_SUSPENDED_QUEUE_NAME", value = aws_sqs_queue.not_suspended_observability.name },
     { name = "MOF_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_updated.arn },
+    { name = "ACTIVE_SUSPENSIONS_SNS_TOPIC_ARN", value = aws_sns_topic.active_suspensions.arn },
     { name = "MOF_NOT_UPDATED_SNS_TOPIC_ARN", value = aws_sns_topic.mof_not_updated.arn },
     { name = "EVENT_OUT_OF_ORDER_SNS_TOPIC_ARN", value = aws_sns_topic.event_out_of_order.arn },
     { name = "INVALID_SUSPENSION_SNS_TOPIC_ARN", value = aws_sns_topic.invalid_suspension.arn },
