@@ -68,6 +68,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
 
+    @Value("${aws.activeSuspensionsQueueName}")
+    private String activeSuspensionsQueueName;
+
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
         return AmazonSQSAsyncClientBuilder.standard()
@@ -125,6 +128,8 @@ public class LocalStackAwsConfig {
         var invalidSuspensionQueue = amazonSQSAsync.createQueue(invalidSuspensionQueueName);
         var invalidSuspensionAuditQueue = amazonSQSAsync.createQueue(invalidSuspensionAuditQueueName);
         var incomingQueue = amazonSQSAsync.createQueue(repoIncomingQueueName);
+        //Queue created in re-registration service, only used here for checking that message is received on active-suspensions topic
+        var activeSuspensionsQueue = amazonSQSAsync.createQueue(activeSuspensionsQueueName);
 
         var topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_not_suspended_topic").build());
         var mofUpdatedTopic = snsClient.createTopic(CreateTopicRequest.builder().name("mof_updated_sns_topic").build());
@@ -140,6 +145,7 @@ public class LocalStackAwsConfig {
         createSnsTestReceiverSubscription(invalidSuspensionTopic, getQueueArn(invalidSuspensionQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(nonSensitiveInvalidSuspensionTopic, getQueueArn(invalidSuspensionAuditQueue.getQueueUrl()));
         createSnsTestReceiverSubscription(repoIncomingTopic, getQueueArn(incomingQueue.getQueueUrl()));
+        createSnsTestReceiverSubscription(activeSuspensionsTopic, getQueueArn(activeSuspensionsQueue.getQueueUrl()));
 
         setupDbAndTable();
     }
@@ -154,7 +160,7 @@ public class LocalStackAwsConfig {
         if (dynamoDbClient.listTables().tableNames().contains(suspensionDynamoDbTableName)) {
             resetTableForLocalEnvironment(waiter, tableRequest);
         }
-        ;
+
 
         List<KeySchemaElement> keySchema = new ArrayList<>();
         keySchema.add(KeySchemaElement.builder()

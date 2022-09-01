@@ -54,6 +54,9 @@ public class SuspensionsIntegrationTest {
     @Value("${aws.invalidSuspensionQueueName}")
     private String invalidSuspensionQueueName;
 
+    @Value("${aws.activeSuspensionsQueueName}")
+    private String activeSuspensionsQueueName;
+
     private WireMockServer stubPdsAdaptor;
 
     private String suspensionQueueUrl;
@@ -117,6 +120,7 @@ public class SuspensionsIntegrationTest {
 
         var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
         var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
+        var activeSuspensionsQueueUrl = sqs.getQueueUrl(activeSuspensionsQueueName).getQueueUrl();
         sqs.sendMessage(queueUrl, getSuspensionEventWith(nhsNumber));
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -127,7 +131,18 @@ public class SuspensionsIntegrationTest {
             assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
         });
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            List<Message> receivedMessageHolder = checkMessageInRelatedQueue(activeSuspensionsQueueUrl);
+
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("nhsNumber"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
+            assertTrue(receivedMessageHolder.get(0).getBody().contains("2017-11-01T15:00:33+00:00"));
+            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+        });
+
         purgeQueue(mofUpdatedQueueUrl);
+        purgeQueue(activeSuspensionsQueueUrl);
     }
 
     @Test
