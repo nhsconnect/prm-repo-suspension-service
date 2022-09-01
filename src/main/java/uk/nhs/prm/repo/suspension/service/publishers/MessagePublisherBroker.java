@@ -60,8 +60,8 @@ public class MessagePublisherBroker {
         mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
     }
 
-    public void activeSuspensionMessage(String nhsNumber, String previousOdsCode, String originalLastUpdatedTimeStamp) {
-        var activeSuspensionsMessage = new ActiveSuspensionsMessage(nhsNumber, previousOdsCode, originalLastUpdatedTimeStamp);
+    public void activeSuspensionMessage(String nhsNumber, String previousOdsCode, String nemsLastUpdatedDate) {
+        var activeSuspensionsMessage = new ActiveSuspensionsMessage(nhsNumber, previousOdsCode, nemsLastUpdatedDate);
         activeSuspensionsEventPublisher.sendMessage(activeSuspensionsMessage);
     }
 

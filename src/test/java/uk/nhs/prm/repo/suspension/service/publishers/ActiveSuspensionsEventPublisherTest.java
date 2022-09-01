@@ -28,7 +28,7 @@ class ActiveSuspensionsEventPublisherTest {
     @Test
     void shouldPublishMessageToTheUnhandledTopic() {
         var mofUpdatedMessage = new ActiveSuspensionsMessage("1234567890","anything", "timestamp");
-        String activeSuspensionMessage = "{\"nhsNumber\":\"1234567890\",\"previousOdsCode\":\"anything\",\"originalLastUpdatedTimeStamp\":\"timestamp\"}";
+        String activeSuspensionMessage = "{\"nhsNumber\":\"1234567890\",\"previousOdsCode\":\"anything\",\"nemsLastUpdatedDate\":\"timestamp\"}";
         activeSuspensionsEventPublisher.sendMessage(mofUpdatedMessage);
         verify(messagePublisher).sendMessage(activeSuspensionsTopicArn, activeSuspensionMessage);
     }
