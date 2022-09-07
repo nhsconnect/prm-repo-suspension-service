@@ -24,10 +24,6 @@ data "aws_ssm_parameter" "repo_ods_code" {
   name = "/repo/${var.environment}/user-input/external/repository-ods-code"
 }
 
-data "aws_ssm_parameter" "safe_listed_patients_nhs_numbers" {
-  name = "/repo/${var.environment}/user-input/external/safe-listed-patients-nhs-numbers"
-}
-
 data "aws_ssm_parameter" "safe_listed_ods_codes" {
   name = "/repo/${var.environment}/user-input/external/safe-listed-ods-codes"
 }

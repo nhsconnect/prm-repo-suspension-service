@@ -56,7 +56,7 @@ class MessagePublisherBrokerTest {
     @Test
     void notSyntheticMessage() {
         messagePublisherBroker.notSyntheticMessage(NEMS_MESSAGE_ID);
-        var nonSensitiveDataMessage = new NonSensitiveDataMessage(NEMS_MESSAGE_ID, "NO_ACTION:NOT_SYNTHETIC_OR_SAFE_LISTED");
+        var nonSensitiveDataMessage = new NonSensitiveDataMessage(NEMS_MESSAGE_ID, "NO_ACTION:NOT_SYNTHETIC");
         verify(mofNotUpdatedEventPublisher).sendMessage(nonSensitiveDataMessage);
     }
 

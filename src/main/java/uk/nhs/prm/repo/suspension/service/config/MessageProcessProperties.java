@@ -10,14 +10,11 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class MessageProcessProperties {
-    @Value("${process_only_synthetic_or_safe_listed_patients}")
-    private String processOnlySyntheticOrSafeListedPatients;
+    @Value("${process_only_synthetic_patients}")
+    private String processOnlySyntheticPatients;
 
     @Value("${synthetic_patient_prefix}")
     private String syntheticPatientPrefix;
-
-    @Value("${safe_listed_patients_nhs_numbers}")
-    private String allowedPatientsNhsNumbers;
 
     @Value("${safe_listed_ods_codes}")
     private String allowedOdsCodes;

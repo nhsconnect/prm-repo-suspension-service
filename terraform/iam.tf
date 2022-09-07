@@ -86,25 +86,6 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
   }
 }
 
-data "aws_iam_policy_document" "safe_list_nhs_numbers_doc" {
-  statement {
-    actions = [
-      "ssm:GetParameters"
-    ]
-
-    resources = [data.aws_ssm_parameter.safe_listed_patients_nhs_numbers.arn]
-  }
-}
-
-resource "aws_iam_policy" "safe_list_nhs_numbers" {
-  name   = "${var.environment}-${var.component_name}-safe-list-nhs-numbers"
-  policy = data.aws_iam_policy_document.safe_list_nhs_numbers_doc.json
-}
-
-resource "aws_iam_role_policy_attachment" "safe_list_nhs_numbers" {
-  role       = aws_iam_role.component-ecs-role.name
-  policy_arn = aws_iam_policy.safe_list_nhs_numbers.arn
-}
 
 resource "aws_iam_role_policy_attachment" "suspensions_processor_sqs" {
   role       = aws_iam_role.component-ecs-role.name

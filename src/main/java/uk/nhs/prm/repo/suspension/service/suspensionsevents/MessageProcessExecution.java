@@ -48,12 +48,9 @@ public class MessageProcessExecution {
 
 
             // synthetic patient block
-            if (processingOnlySyntheticOrSafeListedPatients() && patientIsNonSynthetic(suspensionEvent)) {
-                if (!patientIsSafeListed(suspensionEvent)) {
+            if (processingOnlySyntheticPatients() && patientIsNonSynthetic(suspensionEvent)) {
                     messagePublisherBroker.notSyntheticMessage(suspensionEvent.nemsMessageId());
                     return;
-                }
-                log.info("Patient is safe-listed for testing");
             }
 
             if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
@@ -102,13 +99,13 @@ public class MessageProcessExecution {
     }
 
 
-    private boolean patientIsSafeListed(SuspensionEvent suspensionEvent) {
-        return this.config.getAllowedPatientsNhsNumbers() != null && this.config.getAllowedPatientsNhsNumbers().contains(suspensionEvent.nhsNumber());
-    }
+//    private boolean patientIsSafeListed(SuspensionEvent suspensionEvent) {
+//        return this.config.getAllowedPatientsNhsNumbers() != null && this.config.getAllowedPatientsNhsNumbers().contains(suspensionEvent.nhsNumber());
+//    }
 
-    private boolean processingOnlySyntheticOrSafeListedPatients() {
-        log.info("Process only synthetic or safe listed patients: " + this.config.getProcessOnlySyntheticOrSafeListedPatients());
-        return Boolean.parseBoolean(this.config.getProcessOnlySyntheticOrSafeListedPatients());
+    private boolean processingOnlySyntheticPatients() {
+        log.info("Process only synthetic patients: " + this.config.getProcessOnlySyntheticPatients());
+        return Boolean.parseBoolean(this.config.getProcessOnlySyntheticPatients());
     }
 
     private boolean nhsNumberIsSuperseded(String nemsEventNhsNumber, String pdsNhsNumber) {

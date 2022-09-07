@@ -16,8 +16,8 @@ resource "aws_ssm_parameter" "ecs-cluster-name" {
   value = aws_ecs_cluster.ecs-cluster.name
 }
 
-output "process_only_synthetic_or_safe_listed_patients_value" {
-  value = "process_only_synthetic_or_safe_listed_patients in set to: ${var.process_only_synthetic_or_safe_listed_patients}"
+output "process_only_synthetic_patients_value" {
+  value = "process_only_synthetic_patients in set to: ${var.process_only_synthetic_patients}"
 }
 
 resource "aws_ssm_parameter" "active_suspensions_topic" {

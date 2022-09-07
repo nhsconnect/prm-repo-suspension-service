@@ -25,7 +25,7 @@ public class MessagePublisherBroker {
     }
 
     public void notSyntheticMessage(String nemsMessageId) {
-        var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NOT_SYNTHETIC_OR_SAFE_LISTED");
+        var notSyntheticMessage = new NonSensitiveDataMessage(nemsMessageId, "NO_ACTION:NOT_SYNTHETIC");
         mofNotUpdatedEventPublisher.sendMessage(notSyntheticMessage);
     }
 

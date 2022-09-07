@@ -31,7 +31,7 @@ variable "log_level" {
   default = "debug"
 }
 
-variable "process_only_synthetic_or_safe_listed_patients" {
+variable "process_only_synthetic_patients" {
   default = false
 }
 
