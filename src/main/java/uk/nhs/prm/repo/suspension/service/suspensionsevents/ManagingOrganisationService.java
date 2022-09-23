@@ -61,6 +61,7 @@ public class ManagingOrganisationService {
         } else {
             log.info("Managing Organisation field is already set to previous GP");
             messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId(), false);
+            messagePublisherBroker.activeSuspensionMessage(suspensionEvent.nhsNumber(), suspensionEvent.previousOdsCode(), suspensionEvent.lastUpdated());
         }
     }
 
@@ -72,6 +73,7 @@ public class ManagingOrganisationService {
         } else {
             log.error("Managing Organisation field is already set to Repo ODS code");
             messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId(), true);
+            messagePublisherBroker.activeSuspensionMessage(suspensionEvent.nhsNumber(), suspensionEvent.previousOdsCode(), suspensionEvent.lastUpdated());
         }
 
     }
