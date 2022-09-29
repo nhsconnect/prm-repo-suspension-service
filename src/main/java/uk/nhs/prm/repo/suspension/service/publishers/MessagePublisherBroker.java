@@ -60,9 +60,9 @@ public class MessagePublisherBroker {
         mofUpdatedEventPublisher.sendMessage(mofUpdatedMessage);
     }
 
-    public void activeSuspensionMessage(String nhsNumber, String previousOdsCode, String nemsLastUpdatedDate) {
-        var activeSuspensionsMessage = new ActiveSuspensionsMessage(nhsNumber, previousOdsCode, nemsLastUpdatedDate);
-        activeSuspensionsEventPublisher.sendMessage(activeSuspensionsMessage);
+    public void activeSuspensionMessage(SuspensionEvent suspensionEvent) {
+        var activeSuspensionsMessage = new ActiveSuspensionsMessage(suspensionEvent);
+        activeSuspensionsEventPublisher.sendMessage(activeSuspensionsMessage, suspensionEvent.getNemsMessageId());
     }
 
     public void repoIncomingMessage(PdsAdaptorSuspensionStatusResponse pdsAdaptorSuspensionStatusResponse, SuspensionEvent suspensionEvent) {

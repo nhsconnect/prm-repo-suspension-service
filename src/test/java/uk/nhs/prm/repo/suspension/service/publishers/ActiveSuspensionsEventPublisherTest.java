@@ -3,7 +3,6 @@ package uk.nhs.prm.repo.suspension.service.publishers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.suspension.service.model.ActiveSuspensionsMessage;
@@ -27,10 +26,11 @@ class ActiveSuspensionsEventPublisherTest {
 
     @Test
     void shouldPublishMessageToTheUnhandledTopic() {
-        var mofUpdatedMessage = new ActiveSuspensionsMessage("1234567890","anything", "timestamp");
+        var nemsId = "nemsId";
+        var activeSuspensionsMessage = new ActiveSuspensionsMessage("1234567890","anything", "timestamp");
         String activeSuspensionMessage = "{\"nhsNumber\":\"1234567890\",\"previousOdsCode\":\"anything\",\"nemsLastUpdatedDate\":\"timestamp\"}";
-        activeSuspensionsEventPublisher.sendMessage(mofUpdatedMessage);
-        verify(messagePublisher).sendMessage(activeSuspensionsTopicArn, activeSuspensionMessage);
+        activeSuspensionsEventPublisher.sendMessage(activeSuspensionsMessage, "nemsId");
+        verify(messagePublisher).sendMessage(activeSuspensionsTopicArn, activeSuspensionMessage, "nemsMessageId", nemsId);
     }
 
 }

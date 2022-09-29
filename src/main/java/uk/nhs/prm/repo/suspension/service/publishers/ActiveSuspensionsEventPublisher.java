@@ -14,7 +14,7 @@ public class ActiveSuspensionsEventPublisher {
         this.activeSuspensionsSnsTopicArn = activeSuspensionsSnsTopicArn;
     }
 
-    public void sendMessage(ActiveSuspensionsMessage message) {
-        messagePublisher.sendMessage(this.activeSuspensionsSnsTopicArn, message.toJsonString());
+    public void sendMessage(ActiveSuspensionsMessage message, String nemsMessageId) {
+        messagePublisher.sendMessage(this.activeSuspensionsSnsTopicArn, message.toJsonString(), "nemsMessageId", nemsMessageId);
     }
 }

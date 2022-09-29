@@ -119,9 +119,10 @@ class MessagePublisherBrokerTest {
 
     @Test
     void activeSuspensionMessage(){
-        messagePublisherBroker.activeSuspensionMessage("NHS_NUMBER", "PREVIOUS_ODS_CODE", "LAST_UPDATED_DATE");
+        var suspensionEvent = new SuspensionEvent("NHS_NUMBER", "PREVIOUS_ODS_CODE", "NEMS_MESSAGE_ID", "LAST_UPDATED_DATE");
+        messagePublisherBroker.activeSuspensionMessage(suspensionEvent);
         var activeSuspensionMessage = new ActiveSuspensionsMessage("NHS_NUMBER", "PREVIOUS_ODS_CODE", "LAST_UPDATED_DATE");
-        verify(activeSuspensionsEventPublisher, times(1)).sendMessage(activeSuspensionMessage);
+        verify(activeSuspensionsEventPublisher, times(1)).sendMessage(activeSuspensionMessage, "NEMS_MESSAGE_ID");
     }
 
     @Test

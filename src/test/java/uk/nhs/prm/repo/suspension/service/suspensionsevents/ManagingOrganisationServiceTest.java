@@ -194,7 +194,7 @@ class ManagingOrganisationServiceTest {
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
 
         verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID, true);
-        verify(messagePublisherBroker).activeSuspensionMessage(NHS_NUMBER, REPO_ODS_CODE, LAST_UPDATED_DATE);
+        verify(messagePublisherBroker).activeSuspensionMessage(suspensionEvent);
         verifyNoInteractions(pdsService);
     }
 
@@ -208,7 +208,7 @@ class ManagingOrganisationServiceTest {
         mofService.processMofUpdate(STRING_SUSPENSION_MESSAGE, suspensionEvent, beforeUpdateResponse);
 
         verify(messagePublisherBroker).mofNotUpdatedMessage(NEMS_MESSAGE_ID, false);
-        verify(messagePublisherBroker).activeSuspensionMessage(NHS_NUMBER, REPO_ODS_CODE, LAST_UPDATED_DATE);
+        verify(messagePublisherBroker).activeSuspensionMessage(suspensionEvent);
         verifyNoInteractions(pdsService);
     }
 
