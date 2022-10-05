@@ -64,9 +64,6 @@ dependencies {
 
     // CVE-2022-38752 fix
     implementation 'org.yaml:snakeyaml:1.33'
-
-    // CVE-2022-42003
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.0-rc1'
 }
 
 test {
