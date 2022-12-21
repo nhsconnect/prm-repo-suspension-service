@@ -4,7 +4,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'com.github.spotbugs' version '5.0.13'
-    id 'org.owasp.dependencycheck' version '7.1.0.1'
+    id 'org.owasp.dependencycheck' version '7.1.1'
 }
 
 group = 'uk.nhs.prm.repo'
@@ -43,6 +43,7 @@ dependencies {
     implementation('io.netty:netty-resolver') { version { strictly '4.1.86.Final' } }
     implementation('io.netty:netty-transport') { version { strictly '4.1.86.Final' } }
     implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.86.Final' } }
+    implementation('io.netty:netty-transport-native-epoll') { version { strictly '4.1.86.Final' } }
     implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.86.Final' } }
 
     implementation platform('software.amazon.awssdk:bom:2.17.288')
@@ -51,11 +52,10 @@ dependencies {
     implementation 'software.amazon.awssdk:sqs'
     implementation 'software.amazon.awssdk:dynamodb'
 
-    // aws-java-sdk-core and sqs refs are to mitigate CVE-2022-31159.
     // Once we upgrade amazon-sqs-java-messaging-lib to v2 we can remove aws-java-sdk-core and sqs.
-    implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.0'
-    implementation 'com.amazonaws:aws-java-sdk-core:1.12.285'
-    implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.285'
+    implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.2'
+    implementation 'com.amazonaws:aws-java-sdk-core:1.12.368'
+    implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.368'
 
     implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.google.guava:guava:31.0.1-jre'

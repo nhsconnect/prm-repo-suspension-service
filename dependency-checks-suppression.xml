@@ -41,14 +41,6 @@
    </suppress>
    <suppress>
       <notes><![CDATA[
-      false positive for commons_net
-      file name: commons-logging-*.jar
-   ]]></notes>
-      <packageUrl regex="true">^pkg:maven/commons\-logging/commons\-logging@.*$</packageUrl>
-      <cve>CVE-2021-37533</cve>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
       false positive as spring boot uses safe constructor in snakeyaml, see:
 
       https://github.com/spring-projects/spring-boot/issues/33457
