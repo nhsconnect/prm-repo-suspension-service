@@ -168,7 +168,7 @@ public class LocalStackAwsConfig {
                 .attributeName("nhs_number")
                 .build());
 
-        List<AttributeDefinition> attributeDefinitions = new ArrayList<AttributeDefinition>();
+        var attributeDefinitions = new ArrayList<AttributeDefinition>();
         attributeDefinitions.add(AttributeDefinition.builder()
                 .attributeType(ScalarAttributeType.S)
                 .attributeName("nhs_number")
