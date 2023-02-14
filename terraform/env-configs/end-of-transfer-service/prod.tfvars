@@ -5,6 +5,7 @@ environment              = "prod"
 environment_dns_zone     = "prod"
 
 synthetic_patient_prefix = "999"
+process_only_synthetic_patients = true
 
 can_update_managing_organisation_to_repo = false
 is_end_of_transfer_service = true
