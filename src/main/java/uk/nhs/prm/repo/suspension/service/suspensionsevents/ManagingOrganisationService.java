@@ -30,8 +30,8 @@ public class ManagingOrganisationService {
 
     void processMofUpdate(String suspensionMessage, SuspensionEvent suspensionEvent, PdsAdaptorSuspensionStatusResponse response) {
         try {
-            if (toggleConfig.isCanUpdateManagingOrganisationToRepo() && odsCodeSafeListCheck(suspensionEvent)) {
-                updateMofToRepo(response, suspensionEvent);
+            if (toggleConfig.isCanUpdateManagingOrganisationToRepo() && isSafeToProcess(suspensionEvent)) {
+                transferToRepository(response, suspensionEvent);
             } else {
                 updateMofToPreviousGp(response, suspensionEvent);
             }
@@ -41,7 +41,7 @@ public class ManagingOrganisationService {
         }
     }
 
-    private boolean odsCodeSafeListCheck(SuspensionEvent suspensionEvent) {
+    private boolean isSafeToProcess(SuspensionEvent suspensionEvent) {
         log.info("Repo process only safe listed ODS code toggle is : " + toggleConfig.isRepoProcessOnlySafeListedOdsCodes());
         if (toggleConfig.isRepoProcessOnlySafeListedOdsCodes()){
             log.info("Allowed ODS codes are: " + allowedOdsCodes + " and the ODS code for the patient is: " + suspensionEvent.getPreviousOdsCode());
@@ -65,7 +65,7 @@ public class ManagingOrganisationService {
         }
     }
 
-    private void updateMofToRepo(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
+    private void transferToRepository(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
         if (canUpdateManagingOrganisation(pdsResponse.getManagingOrganisation(), repoOdsCode)) {
             var updateResponse = pdsService.updateMof(pdsResponse.getNhsNumber(), repoOdsCode, pdsResponse.getRecordETag());
             log.info("Managing Organisation field Updated to REPO ODS Code " + repoOdsCode);
