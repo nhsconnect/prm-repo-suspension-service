@@ -37,10 +37,10 @@ public class MessageProcessExecution {
             }
 
             // pds adaptor block
-            var pdsAdaptorSuspensionStatusResponse = getPdsAdaptorSuspensionStatusResponse(suspensionMessage, suspensionEvent);
+            var patientStatus = getPdsAdaptorSuspensionStatusResponse(suspensionMessage, suspensionEvent);
 
             // patient is deceased block
-            if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsDeceased())) {
+            if (Boolean.TRUE.equals(patientStatus.getIsDeceased())) {
                 log.info("Patient is deceased");
                 messagePublisherBroker.deceasedPatientMessage(suspensionEvent.nemsMessageId());
                 return;
@@ -53,9 +53,9 @@ public class MessageProcessExecution {
                     return;
             }
 
-            if (Boolean.TRUE.equals(pdsAdaptorSuspensionStatusResponse.getIsSuspended())) {
+            if (Boolean.TRUE.equals(patientStatus.getIsSuspended())) {
                 log.info("Patient is Suspended");
-                managingOrganisationService.processMofUpdate(suspensionMessage, suspensionEvent, pdsAdaptorSuspensionStatusResponse);
+                managingOrganisationService.processMofUpdate(suspensionMessage, suspensionEvent, patientStatus);
                 lastUpdatedEventService.save(suspensionEvent.nhsNumber(), suspensionEvent.lastUpdated());
             } else {
                 messagePublisherBroker.notSuspendedMessage(suspensionEvent.nemsMessageId());
