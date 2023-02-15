@@ -1,6 +1,3 @@
-component_name = "suspension-service"
-repo_name = "suspension-service"
-metric_namespace = "SuspensionService"
 environment          = "dev"
 environment_dns_zone = "dev.non-prod"
 

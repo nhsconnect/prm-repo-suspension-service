@@ -1,6 +1,3 @@
-component_name = "suspension-service"
-repo_name = "suspension-service"
-metric_namespace = "SuspensionService"
 environment          = "perf"
 environment_dns_zone = "perf.non-prod"
 
@@ -9,4 +6,4 @@ process_only_synthetic_patients = false
 
 log_level = "info"
 
-can_update_managing_organisation_to_repo = false
+ecs_desired_count = 1

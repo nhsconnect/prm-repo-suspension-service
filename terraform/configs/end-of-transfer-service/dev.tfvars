@@ -1,6 +1,3 @@
-component_name = "end-of-transfer-service"
-repo_name = "end-of-transfer-service"
-metric_namespace = "EndOfTransferService"
 environment          = "dev"
 environment_dns_zone = "dev.non-prod"
 
@@ -9,7 +6,6 @@ process_only_synthetic_patients = false
 
 scale_up_expression = "( (MINUTE(m1)>=0 )),10, 0"
 enable_scale_action = false
-can_update_managing_organisation_to_repo = false
-is_end_of_transfer_service = true
+
 ecs_desired_count = 1
 repo_process_only_safe_listed_ods_codes = true

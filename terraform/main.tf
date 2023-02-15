@@ -14,7 +14,7 @@ terraform {
 
 module "end-of-transfer-service" {
   count = var.is_end_of_transfer_service ? 1 : 0
-  source    = "./end-of-transfer-service/"
+  source    = "./modules/end-of-transfer-service/"
   environment    = var.environment
 
   component_name = var.component_name
@@ -25,7 +25,7 @@ module "end-of-transfer-service" {
 
 module "suspension-service" {
   count = var.is_end_of_transfer_service ? 0 : 1
-  source    = "./suspension-service/"
+  source    = "./modules/suspension-service/"
   environment    = var.environment
   component_name = var.component_name
   metric_namespace = var.metric_namespace
