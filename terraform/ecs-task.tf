@@ -28,7 +28,10 @@ locals {
     { name = "SYNTHETIC_PATIENT_PREFIX", value = var.synthetic_patient_prefix },
     { name = "CAN_UPDATE_MANAGING_ORGANISATION_TO_REPO", value = tostring(var.can_update_managing_organisation_to_repo) },
     { name = "DYNAMODB_TABLE_NAME", value = aws_dynamodb_table.suspensions.name },
-    { name = "PDS_ADAPTOR_URL", value = "https://pds-adaptor.${var.environment_dns_zone}.patient-deductions.nhs.uk" },
+    {
+      name = "PDS_ADAPTOR_URL",
+      value = "https://pds-adaptor.${data.aws_ssm_parameter.environment_domain_name.value}"
+    },
     { name = "REPO_ODS_CODE", value = data.aws_ssm_parameter.repo_ods_code.value },
     { name = "SAFE_LISTED_ODS_CODES", value = data.aws_ssm_parameter.safe_listed_ods_codes.value},
     { name = "REPO_PROCESS_ONLY_SAFE_LISTED_ODS_CODES", value = tostring(var.repo_process_only_safe_listed_ods_codes) }

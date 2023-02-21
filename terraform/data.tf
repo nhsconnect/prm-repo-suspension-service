@@ -1,7 +1,7 @@
 data "aws_caller_identity" "current" {}
 
-data "aws_ssm_parameter" "private_zone_id" {
-  name = "/repo/${var.environment}/output/prm-deductions-infra/private-root-zone-id"
+data "aws_ssm_parameter" "environment_domain_name" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/environment-domain-name"
 }
 
 data "aws_ssm_parameter" "deductions_private_private_subnets" {

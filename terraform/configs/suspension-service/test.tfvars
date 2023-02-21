@@ -1,5 +1,4 @@
 environment          = "test"
-environment_dns_zone = "test.non-prod"
 
 synthetic_patient_prefix = "96941"
 process_only_synthetic_patients = true
