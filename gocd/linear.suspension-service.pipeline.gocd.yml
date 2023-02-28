@@ -123,6 +123,8 @@ pipelines:
     materials:
       git:
         type: configrepo
+    environment_variables:
+      NHS_SERVICE: suspension-service
     stages:
       - build: *build
       - docker: *docker
