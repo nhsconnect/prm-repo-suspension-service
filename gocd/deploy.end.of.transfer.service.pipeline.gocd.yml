@@ -76,7 +76,7 @@ common:
           deploy: *deploy_job
 pipelines:
   end-of-transfer-service.dev:
-    group: continuity-service
+    group: repository
     label_template: '${git[:8]}'
     materials:
       git:
@@ -93,7 +93,7 @@ pipelines:
     stages: *common_stages
 
   end-of-transfer-service.test:
-    group: continuity-service
+    group: repository
     label_template: '${git[:8]}'
     materials:
       git:
@@ -116,7 +116,7 @@ pipelines:
     stages: *common_stages
 
   end-of-transfer-service.pre-prod:
-    group: continuity-service
+    group: repository
     label_template: '${git[:8]}'
     materials:
       git:
@@ -139,7 +139,7 @@ pipelines:
     stages: *common_stages
 
   end-of-transfer-service.perf:
-    group: continuity-service
+    group: repository
     label_template: '${git[:8]}'
     materials:
       git:
@@ -162,7 +162,7 @@ pipelines:
     stages: *common_stages
 
   end-of-transfer-service.prod:
-    group: continuity-service
+    group: repository
     label_template: '${git[:8]}'
     materials:
       git:
