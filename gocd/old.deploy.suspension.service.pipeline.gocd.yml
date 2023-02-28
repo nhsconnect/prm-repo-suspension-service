@@ -76,7 +76,7 @@ common:
           deploy: *deploy_job
 pipelines:
   suspension-service.dev:
-    group: continuity-service
+    group: repo-history
     label_template: '${git[:8]}'
     materials:
       git:
@@ -93,7 +93,7 @@ pipelines:
     stages: *common_stages
 
   suspension-service.test:
-    group: continuity-service
+    group: repo-history
     label_template: '${git[:8]}'
     materials:
       git:
@@ -116,7 +116,7 @@ pipelines:
     stages: *common_stages
 
   suspension-service.pre-prod:
-    group: continuity-service
+    group: repo-history
     label_template: '${git[:8]}'
     materials:
       git:
@@ -138,31 +138,8 @@ pipelines:
       NHS_SERVICE: suspension-service
     stages: *common_stages
 
-  suspension-service.perf:
-    group: continuity-service
-    label_template: '${git[:8]}'
-    materials:
-      git:
-        type: configrepo
-      app:
-        pipeline: prm-repo-suspension-service
-        stage: docker
-      base_infra:
-        pipeline: prm-deductions-infra
-        stage: deploy_perf
-      test_env:
-        pipeline: suspension-service.test
-        stage: deploy
-      e2e:
-        pipeline: continuity-e2e-tests.test
-        stage: test
-    environment_variables:
-      NHS_ENVIRONMENT: perf
-      NHS_SERVICE: suspension-service
-    stages: *common_stages
-
   suspension-service.prod:
-    group: continuity-service
+    group: repo-history
     label_template: '${git[:8]}'
     materials:
       git:

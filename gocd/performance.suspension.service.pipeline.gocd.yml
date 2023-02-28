@@ -1,0 +1,68 @@
+format_version: 4
+common:
+  plan_job: &plan_job
+    resources:
+      - docker
+    artifacts:
+      - build:
+          source: terraform/suspension-service.tfplan
+          destination: terraform/
+    tasks:
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks tf_plan create
+  deploy_job: &deploy_job
+    resources:
+      - docker
+    tasks:
+      - fetch:
+          stage: plan
+          job: plan
+          source: terraform/suspension-service.tfplan
+          destination: terraform/
+          is_file: yes
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks tf_apply
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks wait_ecs
+  common_stages: &common_stages
+    - promote_docker_image:
+        resources:
+          - docker
+        clean_workspace: true
+        tasks:
+          - exec:
+              command: /bin/bash
+              arguments:
+                - -c
+                - ./tasks promote_docker_image
+    - plan:
+        clean_workspace: true
+        jobs:
+          plan: *plan_job
+    - deploy:
+        clean_workspace: true
+        jobs:
+          deploy: *deploy_job
+pipelines:
+  suspension-service.perf:
+    group: performance
+    label_template: '${COUNT}-${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: suspension-service
+        stage: promote.test
+    environment_variables:
+      NHS_ENVIRONMENT: perf
+      NHS_SERVICE: suspension-service
+    stages: *common_stages
