@@ -82,7 +82,7 @@ pipelines:
       git:
         type: configrepo
       app:
-        pipeline: prm-repo-suspension-service
+        pipeline: suspension-service
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
@@ -99,7 +99,7 @@ pipelines:
       git:
         type: configrepo
       app:
-        pipeline: prm-repo-suspension-service
+        pipeline: suspension-service
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
@@ -122,7 +122,7 @@ pipelines:
       git:
         type: configrepo
       app:
-        pipeline: prm-repo-suspension-service
+        pipeline: suspension-service
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
@@ -145,7 +145,7 @@ pipelines:
       git:
         type: configrepo
       app:
-        pipeline: prm-repo-suspension-service
+        pipeline: suspension-service
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
