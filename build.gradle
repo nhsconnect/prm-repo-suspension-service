@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.6'
+    id 'org.springframework.boot' version '2.+'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'jacoco'
@@ -30,9 +30,8 @@ jar {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-json'
 
-    // CVE-2022-1471 false positive as spring boot uses safe constructor in snakeyaml
-    // https://github.com/spring-projects/spring-boot/issues/33457
-    implementation 'org.yaml:snakeyaml:1.33'
+    // Temp override, once CVE-2022-1471 is patched remove or sub-dependencies use latest version
+    implementation 'org.yaml:snakeyaml:2.0'
 
     implementation('io.netty:netty-buffer') { version { strictly '4.1.86.Final' } }
     implementation('io.netty:netty-codec') { version { strictly '4.1.86.Final' } }
@@ -58,13 +57,21 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.368'
 
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.google.guava:guava:31.0.1-jre'
+
+    // Patch once newer version releases, -
+    implementation 'com.google.guava:guava:31.1-jre'
+
+    // Explicit inclusion to override vulnerable version, remove once fix is released.
+    implementation 'org.springframework:spring-expression:5.3.27'
 
     implementation 'io.github.resilience4j:resilience4j-retry:1.7.1'
     implementation 'org.springframework:spring-jms:5.3.19'
 
     implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
     implementation 'org.apache.bcel:bcel:6.6.1'
+
+    // Can remove explicit definition when CVE-2023-24998 is fixed
+    implementation 'commons-fileupload:commons-fileupload:1.5'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
@@ -171,7 +178,6 @@ dependencyCheck {
     analyzers {
           assemblyEnabled = false
     }
-
 }
 
 check.dependsOn integration
