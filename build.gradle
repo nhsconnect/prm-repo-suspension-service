@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.+'
+    id 'org.springframework.boot' version '2.7.11'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'jacoco'
@@ -30,7 +30,6 @@ jar {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-json'
 
-    // Temp override, once CVE-2022-1471 is patched remove or sub-dependencies use latest version
     implementation 'org.yaml:snakeyaml:2.0'
 
     implementation('io.netty:netty-buffer') { version { strictly '4.1.86.Final' } }
@@ -51,18 +50,15 @@ dependencies {
     implementation 'software.amazon.awssdk:sqs'
     implementation 'software.amazon.awssdk:dynamodb'
 
-    // Once we upgrade amazon-sqs-java-messaging-lib to v2 we can remove aws-java-sdk-core and sqs.
+    // TODO: Once we upgrade amazon-sqs-java-messaging-lib to v2 we can remove aws-java-sdk-core and sqs.
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.2'
     implementation 'com.amazonaws:aws-java-sdk-core:1.12.368'
     implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.368'
 
     implementation 'com.google.code.gson:gson:2.10.1'
 
-    // Patch once newer version releases, -
+    // TODO: Best upgrade once fix is released.
     implementation 'com.google.guava:guava:31.1-jre'
-
-    // Explicit inclusion to override vulnerable version, remove once fix is released.
-    implementation 'org.springframework:spring-expression:5.3.27'
 
     implementation 'io.github.resilience4j:resilience4j-retry:1.7.1'
     implementation 'org.springframework:spring-jms:5.3.19'
@@ -70,7 +66,7 @@ dependencies {
     implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
     implementation 'org.apache.bcel:bcel:6.6.1'
 
-    // Can remove explicit definition when CVE-2023-24998 is fixed
+    // TODO: Can remove explicit definition when CVE-2023-24998 is fixed
     implementation 'commons-fileupload:commons-fileupload:1.5'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
