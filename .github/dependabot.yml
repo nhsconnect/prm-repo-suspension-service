@@ -9,6 +9,9 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+      timezone: "Europe/London"
+      time: "16:17"
+    open-pull-requests-limit: 0
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
