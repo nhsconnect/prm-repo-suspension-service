@@ -10,8 +10,8 @@ updates:
     schedule:
       interval: "weekly"
       timezone: "Europe/London"
-      time: "9:00"
-    open-pull-requests-limit: 0
+      time: "09:00"
+    open-pull-requests-limit: 100
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
