@@ -78,7 +78,7 @@ function configure_envs {
 }
 
 function configure_sonar_environment_variable {
-  export SONAR_TOKEN=$(_get_aws_ssm_secret "/repo/dev/output/ehr-transfer-service/sonar_token")
+  export SONAR_TOKEN=$(_get_aws_ssm_secret "/repo/dev/output/suspensions-service/sonar_token")
 }
 
 #######################
