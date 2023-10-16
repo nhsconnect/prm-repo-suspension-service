@@ -166,6 +166,29 @@ function die_localstack_die {
   fi
 }
 
+function ensure_prev_build_images_are_stopped {
+  echo "docker processes running: $(docker ps)"
+
+  MQ_CONTAINER_1=$(docker ps --filter publish=61616 -q)
+  MQ_CONTAINER_2=$(docker ps --filter publish=61617 -q)
+  LOCAL_STACK_CONTAINER=$(docker ps --filter publish=4566 -q)
+
+  if [ -n "$MQ_CONTAINER_1" ]; then
+    echo "stopping mq container 1"
+    docker stop $MQ_CONTAINER_1
+  fi
+
+  if [ -n "$MQ_CONTAINER_2" ]; then
+    echo "stopping mq container 2"
+    docker stop $MQ_CONTAINER_2
+  fi
+
+  if [ -n "$LOCAL_STACK_CONTAINER" ]; then
+    echo "stopping local stack container"
+    docker stop $LOCAL_STACK_CONTAINER
+  fi
+}
+
 ###########
 ## TASKS ##
 ###########
