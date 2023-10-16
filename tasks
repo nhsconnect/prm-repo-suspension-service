@@ -313,9 +313,9 @@ case "${command}" in
       ./gradlew build sonar --info
       ;;
   run_sonar)
-      ensure_prev_build_images_are_stopped
+      die_localstack_die
       _assume_environment_role $NHS_ENVIRONMENT
-      configure_local_envs
+      configure_envs
       configure_sonar_environment_variable
       dojo -c Dojofile-itest "./tasks _run_sonar"
       ;;
