@@ -10,13 +10,13 @@ resource "aws_s3_bucket" "ingestion_bucket" {
       apply_server_side_encryption_by_default {
         sse_algorithm = "AES256"
       }
+      }
     }
     tags = {
       Name        = local.ingestion_bucket_name
       Environment = var.environment
     }
   }
-}
 
   resource "aws_s3_bucket_policy" "ingestion_bucket_policy" {
     bucket = aws_s3_bucket.ingestion_bucket.id
