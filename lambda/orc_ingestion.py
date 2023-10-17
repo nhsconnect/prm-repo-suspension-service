@@ -14,18 +14,18 @@ s3_client = boto3.client("s3")
 
 
 def lambda_handler(event, context):
-    previous_ods_code = "B85002"
+    previous_ods_code = "M85019"
     file_to_ingest = os.environ["INGEST_FILE_NAME"]  # this env var is set as "Patient-List-Test" in terraform
 
     ingestion_bucket_name = os.environ["S3_BUCKET_NAME"]
     suspension_queue_url = os.environ["SUSPENSION_QUEUE_URL"]
 
     nhs_number_list: list[str] = get_nhs_number_list_from_s3(filename=file_to_ingest, bucket_name=ingestion_bucket_name)
+    all_trace_ids = []
 
     for nhs_number in nhs_number_list:
-        logger.info(f"Processing nhs number: {nhs_number}")
-
         trace_id = new_uuid()
+        all_trace_ids.append(trace_id)
         logger.info(f"Assigned a new traceId: {trace_id}")
 
         suspension_message_json = build_suspension_message(
@@ -39,10 +39,13 @@ def lambda_handler(event, context):
             trace_id=trace_id,
         )
         logger.info(
-            f"sent message for patient no: {nhs_number} to queue with traceId: {trace_id}"
+            f"sent message for a patient to queue with traceId: {trace_id}"
         )
 
-    return {"statusCode": 200, "body": str(nhs_number_list)}
+    logger.info("Here are all the trace ids that related to this ingest:")
+    logger.info(str(all_trace_ids))
+
+    return {"statusCode": 200, "body": str(all_trace_ids)}
 
 
 def get_nhs_number_list_from_s3(filename: str, bucket_name: str) -> list:
