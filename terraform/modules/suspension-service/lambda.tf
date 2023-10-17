@@ -3,8 +3,7 @@ locals {
   iam_role_policies = [
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
     "arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy",
-    aws_iam_policy.suspensions_queue_sqs_queue_policy.arn,
-    aws_iam_policy.suspensions_queue_sqs_queue_kms_policy.arn,
+    aws_iam_policy.suspensions_queue_send_message_policy.arn,
     aws_iam_policy.ingestion_bucket_get_object_policy.arn
   ]
 }
@@ -13,7 +12,7 @@ resource "aws_lambda_function" "lambda" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
   filename         = data.archive_file.lambda.output_path
-  function_name    = local.ingestion_lambda_name
+  function_name    = "${var.environment}_${local.ingestion_lambda_name}"
   role             = aws_iam_role.lambda_execution_role.arn
   handler          = "${local.ingestion_lambda_name}.lambda_handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
@@ -56,6 +55,6 @@ resource "aws_iam_role_policy_attachment" "lambda_execution_policy" {
 
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "placeholder_lambda.py"
-  output_path = "placeholder_lambda_payload.zip"
+  source_file = "${path.cwd}/../lambda/${local.ingestion_lambda_name}.py"
+  output_path = "${path.cwd}/../lambda/${local.ingestion_lambda_name}_payload.zip"
 }
