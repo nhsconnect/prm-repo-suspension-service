@@ -56,3 +56,7 @@ resource "aws_iam_policy" "suspensions_queue_sqs_queue_policy" {
       ]
   }] })
 }
+
+resource "aws_iam_policy" "suspensions_queue_sqs_queue_kms_policy" {
+  policy = data.aws_iam_policy_document.kms_key_policy_doc.json
+}

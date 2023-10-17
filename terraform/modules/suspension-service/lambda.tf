@@ -4,6 +4,7 @@ locals {
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
     "arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy",
     aws_iam_policy.suspensions_queue_sqs_queue_policy.arn,
+    aws_iam_policy.suspensions_queue_sqs_queue_kms_policy.arn,
     aws_iam_policy.ingestion_bucket_get_object_policy.arn
   ]
 }
@@ -17,9 +18,9 @@ resource "aws_lambda_function" "lambda" {
   handler          = "${local.ingestion_lambda_name}.lambda_handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
   # Remark: better to use python3.11 . For now we only have 3.8 as we are use a very old (3.44) terraform provider version
-  runtime          = "python3.8"
-  timeout          = 30
-  memory_size      = 128
+  runtime     = "python3.8"
+  timeout     = 30
+  memory_size = 128
 
   environment {
     variables = {
