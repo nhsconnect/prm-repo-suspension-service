@@ -14,7 +14,16 @@ s3_client = boto3.client("s3")
 
 
 def lambda_handler(event, context):
-    previous_ods_code = "M85019"
+    """
+    When using this lambda, please include previous_ods_code in the event json.
+    Example:
+    {"previous_ods_code": "ods_code"}
+    """
+    try:
+        previous_ods_code = event["previous_ods_code"]
+    except KeyError as e:
+        return {"statusCode": 400, "error": "missing param 'previous_ods_code'"}
+        
     file_to_ingest = os.environ["INGEST_FILE_NAME"]  # this env var is set as "Patient-List-Test" in terraform
 
     ingestion_bucket_name = os.environ["S3_BUCKET_NAME"]
