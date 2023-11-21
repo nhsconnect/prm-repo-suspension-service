@@ -47,3 +47,6 @@ out/
 
 # misc
 docker-compose.yaml.dojo
+
+# packaged lambda
+lambda/*.zip
