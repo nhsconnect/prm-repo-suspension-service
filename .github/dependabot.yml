@@ -8,7 +8,10 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      timezone: "Europe/London"
+      time: "09:00"
+    open-pull-requests-limit: 100
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
