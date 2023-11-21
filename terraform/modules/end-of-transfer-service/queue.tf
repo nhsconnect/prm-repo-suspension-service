@@ -5,7 +5,7 @@ locals {
 
 resource "aws_sqs_queue" "transfer_complete" {
   name                       = local.transfer_complete_queue_name
-  message_retention_seconds  = 1209600
+  message_retention_seconds  = 259200
   kms_master_key_id          = data.aws_ssm_parameter.transfer_complete_kms_key.value
   receive_wait_time_seconds  = 20
   visibility_timeout_seconds = 240
@@ -19,7 +19,7 @@ resource "aws_sqs_queue" "transfer_complete" {
 
 resource "aws_sqs_queue" "transfer_complete_observability" {
   name                       = local.transfer_complete_observability_queue_name
-  message_retention_seconds  = 1209600
+  message_retention_seconds  = 259200
   kms_master_key_id          = data.aws_ssm_parameter.transfer_complete_kms_key.value
   receive_wait_time_seconds  = 20
   visibility_timeout_seconds = 240

@@ -41,3 +41,28 @@ resource "aws_sns_topic_subscription" "suspensions_topic" {
   topic_arn            = data.aws_ssm_parameter.suspensions_sns_topic_arn.value
   endpoint             = aws_sqs_queue.suspensions.arn
 }
+
+resource "aws_iam_policy" "suspensions_queue_send_message_policy" {
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      "Sid"    = "shsqsstatement",
+      "Effect" = "Allow",
+      "Action" = [
+        "sqs:SendMessage",
+      ],
+      "Resource" = [
+        aws_sqs_queue.suspensions.arn
+      ]
+      },
+      {
+        "Effect" = "Allow",
+        "Action" = [
+          "kms:GenerateDataKey",
+          "kms:Decrypt"
+        ],
+        "Resource" = [
+          "*"
+        ]
+  }] })
+}

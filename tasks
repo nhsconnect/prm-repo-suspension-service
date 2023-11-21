@@ -11,7 +11,6 @@ IMAGE_REPO_NAME=repo/suspension-service
 AWS_HELPERS_VERSION=0.2.27
 echo "AWS helper scripts version: $AWS_HELPERS_VERSION"
 
-
 ###########################
 # Shared utils            #
 ###########################
@@ -36,9 +35,14 @@ function fetch_redaction_utils() {
   download_util $AWS_HELPERS_VERSION redactor
 }
 
-AWS_HELPERS_FILE=$(download_util $AWS_HELPERS_VERSION aws-helpers)
-source $AWS_HELPERS_FILE
+AWS_HELPERS_FILE="utils/$AWS_HELPERS_VERSION/aws-helpers"
 
+mkdir -p "utils/$AWS_HELPERS_VERSION"
+if [[ ! -f $AWS_HELPERS_FILE ]];then
+  wget --quiet -O $AWS_HELPERS_FILE https://github.com/nhsconnect/prm-deductions-support-infra/releases/download/${AWS_HELPERS_VERSION}/aws-helpers
+fi
+chmod +x $AWS_HELPERS_FILE
+source $AWS_HELPERS_FILE
 
 ####################################
 # Instance (Environment) Variables #
@@ -73,6 +77,9 @@ function configure_envs {
   export LOCALSTACK_URL="http://localstack:4566"
 }
 
+function configure_sonar_environment_variable {
+  export SONAR_TOKEN=$(_get_aws_ssm_secret "/repo/dev/output/suspensions-service/sonar_token")
+}
 
 #######################
 # Terraform Functions #
@@ -115,7 +122,6 @@ function tf_apply {
   terraform apply ${NHS_SERVICE}.tfplan
   terraform output -json > tf-out.json
 }
-
 
 ############################
 # Docker Related Functions #
@@ -302,6 +308,16 @@ case "${command}" in
   wait_ecs)
       check_env
       dojo -c Dojofile-infra "./tasks _wait_ecs"
+      ;;
+  _run_sonar)
+      ./gradlew build sonar --info
+      ;;
+  run_sonar)
+      die_localstack_die
+      _assume_environment_role $NHS_ENVIRONMENT
+      configure_envs
+      configure_sonar_environment_variable
+      dojo -c Dojofile-itest "./tasks _run_sonar"
       ;;
   *)
       echo "Invalid command: '${command}'"
