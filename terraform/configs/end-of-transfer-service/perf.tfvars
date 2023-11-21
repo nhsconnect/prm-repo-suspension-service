@@ -5,4 +5,4 @@ process_only_synthetic_patients = false
 
 log_level = "info"
 
-ecs_desired_count = 1
+ecs_desired_count = 0
