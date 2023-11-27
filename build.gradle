@@ -64,7 +64,7 @@ dependencies {
     implementation 'io.github.resilience4j:resilience4j-retry:1.7.1'
     implementation 'org.springframework:spring-jms:5.3.19'
 
-    implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
+    implementation 'com.github.spotbugs:spotbugs-annotations:4.8.1'
     implementation 'org.apache.bcel:bcel:6.6.1'
 
     // TODO: Can remove explicit definition when CVE-2023-24998 is fixed
