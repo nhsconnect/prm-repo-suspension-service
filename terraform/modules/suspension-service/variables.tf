@@ -11,7 +11,7 @@ variable "metric_namespace" {}
 variable "sns_sqs_role_arn" {}
 variable "scale_up_expression" {
   type    = string
-  default = "((HOUR(m1)==21 && MINUTE(m1)==58 )),10,0"
+  default = "((HOUR(m1)==17 && MINUTE(m1)==58 )),10,0"
 }
 variable "scale_down_number_of_empty_receives_count" {
   type    = string
