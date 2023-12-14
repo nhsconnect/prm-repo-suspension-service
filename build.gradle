@@ -59,7 +59,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
 
     // TODO: Best upgrade once fix is released.
-    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.google.guava:guava:32.0.0-jre'
 
     implementation 'io.github.resilience4j:resilience4j-retry:1.7.1'
     implementation 'org.springframework:spring-jms:5.3.19'
