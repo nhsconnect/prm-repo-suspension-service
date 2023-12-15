@@ -71,7 +71,7 @@ dependencies {
     implementation 'commons-fileupload:commons-fileupload:1.5'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
-    implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
+    implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.awaitility:awaitility:4.2.0'
