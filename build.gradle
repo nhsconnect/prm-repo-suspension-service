@@ -30,26 +30,28 @@ jar {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-json'
+
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation('io.netty:netty-buffer') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec-http') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec-http2') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-common') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-handler') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-resolver') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport-native-epoll') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.86.Final' } }
+
+    implementation('io.netty:netty-buffer') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec-http') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec-http2') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-common') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-handler') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-resolver') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport-native-epoll') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.104.Final' } }
+
+    implementation platform('software.amazon.awssdk:bom:2.18.41')
     implementation 'software.amazon.awssdk:cloudwatch'
     implementation 'software.amazon.awssdk:sns'
     implementation 'software.amazon.awssdk:sqs'
     implementation 'software.amazon.awssdk:dynamodb'
 
-    implementation platform('software.amazon.awssdk:bom:2.18.41')
-
-    // TODO: These are to patch transient dependency vulnerabilities.
+    // TODO: Transient dependency patches.
     implementation 'ch.qos.logback:logback-core:1.2.13'
     implementation 'ch.qos.logback:logback-classic:1.2.13'
 
