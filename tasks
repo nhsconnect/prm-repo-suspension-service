@@ -242,12 +242,6 @@ case "${command}" in
   run_localstack_local)
       docker-compose -f docker-compose.localstack-local.yaml up -d
       ;;
-  _dep)
-      gradle dependencyCheckAnalyze
-      ;;
-  dep)
-      dojo "./tasks _dep"
-      ;;
   _tf)
       _assume_environment_role $NHS_ENVIRONMENT
       tf_init
