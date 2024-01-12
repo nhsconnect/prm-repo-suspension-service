@@ -51,7 +51,7 @@ dependencies {
     implementation 'software.amazon.awssdk:dynamodb'
 
     // TODO: Transient dependency patches.
-    implementation 'ch.qos.logback:logback-core:1.2.13'
+    implementation 'ch.qos.logback:logback-core:1.4.14'
     implementation 'ch.qos.logback:logback-classic:1.2.13'
 
     // TODO: Once we upgrade amazon-sqs-java-messaging-lib to v2 we can remove aws-java-sdk-core and sqs.
