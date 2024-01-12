@@ -59,7 +59,7 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-core:1.12.368'
     implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.368'
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.google.guava:guava:33.0.0-jre'
+    implementation 'com.google.guava:guava:33.0.0-jre' // Explicit declaration to overide outdated/vulnerable dependency within WireMock
     implementation 'io.github.resilience4j:resilience4j-retry:1.7.1'
     implementation 'org.springframework:spring-jms:5.3.19'
     implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
