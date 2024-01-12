@@ -52,7 +52,7 @@ dependencies {
 
     // TODO: Transient dependency patches.
     implementation 'ch.qos.logback:logback-core:1.2.13'
-    implementation 'ch.qos.logback:logback-classic:1.2.13'
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
 
     // TODO: Once we upgrade amazon-sqs-java-messaging-lib to v2 we can remove aws-java-sdk-core and sqs.
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.2'
