@@ -12,8 +12,8 @@ public class TestLogAppender extends AppenderBase<ILoggingEvent> {
     ArrayList<ILoggingEvent> loggingEvents = new ArrayList<>();
 
     public static TestLogAppender addTestLogAppender() {
-        var testLogAppender = new TestLogAppender();
-        var logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        TestLogAppender testLogAppender = new TestLogAppender();
+        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.addAppender(testLogAppender);
 
         testLogAppender.start();

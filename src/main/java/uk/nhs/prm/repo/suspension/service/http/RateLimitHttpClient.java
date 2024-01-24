@@ -1,14 +1,13 @@
 package uk.nhs.prm.repo.suspension.service.http;
 
 import com.google.common.util.concurrent.RateLimiter;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 @RequiredArgsConstructor
