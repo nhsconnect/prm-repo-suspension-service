@@ -4,7 +4,7 @@ services:
     links:
       - localstack:localstack
   localstack:
-    image: localstack/localstack:2.3.2
+    image: localstack/localstack
     ports:
       - "4566:4566"
     environment:
