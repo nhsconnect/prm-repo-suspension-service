@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.18'
+    id 'org.springframework.boot' version '3.2.2'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'java'
     id 'jacoco'
@@ -9,7 +9,7 @@ plugins {
 
 group = 'uk.nhs.prm.repo'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = '21'
 
 configurations {
     compileOnly {
@@ -50,24 +50,24 @@ dependencies {
     implementation 'software.amazon.awssdk:sqs'
     implementation 'software.amazon.awssdk:dynamodb'
 
-    // TODO: Transient dependency patches.
-    implementation 'ch.qos.logback:logback-core:1.2.13'
-    implementation 'ch.qos.logback:logback-classic:1.2.13'
-
     // TODO: Once we upgrade amazon-sqs-java-messaging-lib to v2 we can remove aws-java-sdk-core and sqs.
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.2'
     implementation 'com.amazonaws:aws-java-sdk-core:1.12.368'
     implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.368'
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.google.guava:guava:33.0.0-jre' // Explicit declaration to overide outdated/vulnerable dependency within WireMock
+    implementation 'com.google.guava:guava:33.0.0-jre'
     implementation 'io.github.resilience4j:resilience4j-retry:1.7.1'
     implementation 'org.springframework:spring-jms:5.3.19'
     implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
     implementation 'org.apache.bcel:bcel:6.6.1'
+    // Explicit declaration to override outdated dependency on httpclient - outdated as of Spring Boot >3.0.0
+    // TODO We plan to replace the HTTP calls on this service with Lambda calls soon, this can be removed at this point
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3'
     implementation 'commons-fileupload:commons-fileupload:1.5'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
+
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.awaitility:awaitility:4.2.0'
@@ -75,8 +75,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-test-autoconfigure'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-aop'
-    testImplementation "org.mockito:mockito-core:3.+"
-    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.1'
+    testImplementation 'org.mockito:mockito-core:3.+'
+    testImplementation 'org.wiremock:wiremock-standalone:3.3.1'
 }
 
 test {

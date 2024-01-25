@@ -1,19 +1,22 @@
 package uk.nhs.prm.repo.suspension.service.config;
 
-import org.apache.http.HeaderElementIterator;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicHeaderElementIterator;
+import org.apache.hc.client5.http.ConnectionKeepAliveStrategy;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.TrustSelfSignedStrategy;
+import org.apache.hc.core5.http.HeaderElement;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.message.BasicHeaderElementIterator;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +26,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class HttpClientConfig {
@@ -61,14 +63,13 @@ public class HttpClientConfig {
                     + e.getMessage(), e);
         }
 
-        org.apache.http.config.Registry<
-                ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder
                 .<ConnectionSocketFactory> create().register("https", sslsf)
                 .register("http", new PlainConnectionSocketFactory())
                 .build();
 
-        PoolingHttpClientConnectionManager poolingConnectionManager = new PoolingHttpClientConnectionManager(
-                socketFactoryRegistry);
+        PoolingHttpClientConnectionManager poolingConnectionManager =
+                new PoolingHttpClientConnectionManager(socketFactoryRegistry);
         poolingConnectionManager.setMaxTotal(MAX_TOTAL_CONNECTIONS);
         return poolingConnectionManager;
     }
@@ -76,27 +77,28 @@ public class HttpClientConfig {
     @Bean
     public ConnectionKeepAliveStrategy connectionKeepAliveStrategy() {
         return (response, context) -> {
-            HeaderElementIterator it = new BasicHeaderElementIterator(
-                    response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+            BasicHeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
 
             while (it.hasNext()) {
-                org.apache.http.HeaderElement he = it.nextElement();
-                String param = he.getName();
-                String value = he.getValue();
+                HeaderElement headerElement = it.next();
+                String param = headerElement.getName();
+                String value = headerElement.getValue();
 
                 if (value != null && param.equalsIgnoreCase("timeout")) {
-                    return Long.parseLong(value) * 1000;
+                    return TimeValue.ofMilliseconds(Long.parseLong(value) * 1000);
                 }
             }
-            return DEFAULT_KEEP_ALIVE_TIME_MILLIS;
+            return TimeValue.ofMilliseconds(DEFAULT_KEEP_ALIVE_TIME_MILLIS);
         };
     }
 
     @Bean
     public CloseableHttpClient httpClient() {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(REQUEST_TIMEOUT)
-                .setConnectTimeout(CONNECT_TIMEOUT).setSocketTimeout(SOCKET_TIMEOUT).build();
+                .setConnectionRequestTimeout(Timeout.ofMilliseconds(REQUEST_TIMEOUT))
+                .setConnectTimeout(Timeout.ofMilliseconds(CONNECT_TIMEOUT))
+                .setResponseTimeout(Timeout.ofMilliseconds(SOCKET_TIMEOUT))
+                .build();
 
         return HttpClients.custom().setDefaultRequestConfig(requestConfig)
                 .setConnectionManager(poolingConnectionManager())
@@ -105,8 +107,7 @@ public class HttpClientConfig {
     }
 
     @Bean
-    public Runnable
-    idleConnectionMonitor(final PoolingHttpClientConnectionManager connectionManager) {
+    public Runnable idleConnectionMonitor(final PoolingHttpClientConnectionManager connectionManager) {
         return new Runnable() {
 
             @Override
@@ -116,9 +117,8 @@ public class HttpClientConfig {
                     if (connectionManager != null) {
                         LOGGER.trace(
                                 "run IdleConnectionMonitor - Closing expired and idle connections...");
-                        connectionManager.closeExpiredConnections();
-                        connectionManager.closeIdleConnections(CLOSE_IDLE_CONNECTION_WAIT_TIME_SECS,
-                                TimeUnit.SECONDS);
+                        connectionManager.closeExpired();
+                        connectionManager.closeIdle(TimeValue.ofSeconds(CLOSE_IDLE_CONNECTION_WAIT_TIME_SECS));
                     }
                     else {
                         LOGGER.trace(
