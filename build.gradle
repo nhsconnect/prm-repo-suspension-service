@@ -62,7 +62,7 @@ dependencies {
     implementation 'org.apache.bcel:bcel:6.6.1'
     // Explicit declaration to override outdated dependency on httpclient - outdated as of Spring Boot >3.0.0
     // TODO We plan to replace the HTTP calls on this service with Lambda calls soon, this can be removed at this point
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
     implementation 'commons-fileupload:commons-fileupload:1.5'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
 
