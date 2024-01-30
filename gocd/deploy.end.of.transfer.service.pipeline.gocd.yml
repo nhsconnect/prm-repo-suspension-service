@@ -1,6 +1,6 @@
 format_version: 4
 common:
-  plan_job: &plan_job
+  destroy_job: &destroy_job
     resources:
       - docker
     artifacts:
@@ -12,27 +12,40 @@ common:
           command: /bin/bash
           arguments:
             - -c
-            - ./tasks tf_plan create
-  deploy_job: &deploy_job
-    resources:
-      - docker
-    tasks:
-      - fetch:
-          stage: plan
-          job: plan
-          source: terraform/end-of-transfer-service.tfplan
-          destination: terraform/
-          is_file: yes
-      - exec:
-          command: /bin/bash
-          arguments:
-            - -c
-            - ./tasks tf_apply
-      - exec:
-          command: /bin/bash
-          arguments:
-            - -c
-            - ./tasks wait_ecs
+            - ./tasks tf_plan destroy # Will create a plan of what will be destroyed
+#  plan_job: &plan_job
+#    resources:
+#      - docker
+#    artifacts:
+#      - build:
+#          source: terraform/end-of-transfer-service.tfplan
+#          destination: terraform/
+#    tasks:
+#      - exec:
+#          command: /bin/bash
+#          arguments:
+#            - -c
+#            - ./tasks tf_plan create
+#  deploy_job: &deploy_job
+#    resources:
+#      - docker
+#    tasks:
+#      - fetch:
+#          stage: plan
+#          job: plan
+#          source: terraform/end-of-transfer-service.tfplan
+#          destination: terraform/
+#          is_file: yes
+#      - exec:
+#          command: /bin/bash
+#          arguments:
+#            - -c
+#            - ./tasks tf_apply
+#      - exec:
+#          command: /bin/bash
+#          arguments:
+#            - -c
+#            - ./tasks wait_ecs
   common_stages: &common_stages
     - promote_docker_image:
         resources:
@@ -44,14 +57,21 @@ common:
               arguments:
                 - -c
                 - ./tasks promote_docker_image
-    - plan:
+    - destroy:
+        approval:
+          type: manual
+          allow_only_on_success: true
         clean_workspace: true
         jobs:
-          plan: *plan_job
-    - deploy:
-        clean_workspace: true
-        jobs:
-          deploy: *deploy_job
+          plan: *destroy_job
+#    - plan:
+#        clean_workspace: true
+#        jobs:
+#          plan: *plan_job
+#    - deploy:
+#        clean_workspace: true
+#        jobs:
+#          deploy: *deploy_job
   prod_stages: &prod_stages
     - promote_docker_image:
         resources:
@@ -63,17 +83,13 @@ common:
               arguments:
                 - -c
                 - ./tasks promote_docker_image
-    - plan:
-        clean_workspace: true
-        jobs:
-          plan: *plan_job
-    - deploy:
+    - destroy:
         approval:
           type: manual
           allow_only_on_success: true
         clean_workspace: true
         jobs:
-          deploy: *deploy_job
+          deploy: *destroy_job
 pipelines:
   end-of-transfer-service.dev:
     group: repository
