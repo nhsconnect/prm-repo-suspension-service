@@ -118,7 +118,7 @@ pipelines:
         stage: deploy_test
       dev_env:
         pipeline: end-of-transfer-service.dev
-        stage: deploy
+        stage: destroy
 #      e2e:
 #        pipeline: repo-e2e-tests.dev
 #        stage: test
@@ -141,7 +141,7 @@ pipelines:
         stage: deploy_pre_prod
       test_env:
         pipeline: end-of-transfer-service.test
-        stage: deploy
+        stage: destroy
 #      e2e:
 #        pipeline: repo-e2e-tests.test
 #        stage: test
@@ -164,7 +164,7 @@ pipelines:
         stage: deploy_perf
       test_env:
         pipeline: end-of-transfer-service.test
-        stage: deploy
+        stage: destroy
 #      e2e:
 #        pipeline: repo-e2e-tests.test
 #        stage: test
@@ -187,7 +187,7 @@ pipelines:
         stage: deploy_prod
       pre-prod_env:
         pipeline: end-of-transfer-service.pre-prod
-        stage: deploy
+        stage: destroy
     environment_variables:
       NHS_ENVIRONMENT: prod
       NHS_SERVICE: end-of-transfer-service
