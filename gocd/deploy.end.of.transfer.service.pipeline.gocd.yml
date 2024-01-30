@@ -3,10 +3,6 @@ common:
   destroy_job: &destroy_job
     resources:
       - docker
-    artifacts:
-      - build:
-          source: terraform/end-of-transfer-service.tfplan
-          destination: terraform/
     tasks:
       - exec:
           command: /bin/bash
@@ -63,7 +59,7 @@ common:
           allow_only_on_success: true
         clean_workspace: true
         jobs:
-          plan: *destroy_job
+          destroy: *destroy_job
 #    - plan:
 #        clean_workspace: true
 #        jobs:
