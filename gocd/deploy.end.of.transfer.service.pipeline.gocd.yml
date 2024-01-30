@@ -13,7 +13,6 @@ common:
           arguments:
             - -c
             - ./tasks tf_plan destroy # Will create a plan of what will be destroyed
-            - terraform destroy
 #  plan_job: &plan_job
 #    resources:
 #      - docker
