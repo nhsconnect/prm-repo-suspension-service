@@ -1,10 +1,12 @@
-import json
 import logging
-import os
+import boto3
+import json
 import uuid
+import os
+import re
+
 from datetime import datetime, timezone
 
-import boto3
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -23,7 +25,7 @@ def lambda_handler(event, context):
         previous_ods_code = event["previous_ods_code"]
     except KeyError as e:
         return {"statusCode": 400, "error": "missing param 'previous_ods_code'"}
-        
+
     file_to_ingest = os.environ["INGEST_FILE_NAME"]  # this env var is set as "Patient-List-Test" in terraform
 
     ingestion_bucket_name = os.environ["S3_BUCKET_NAME"]
@@ -58,27 +60,43 @@ def lambda_handler(event, context):
 
 
 def get_nhs_number_list_from_s3(filename: str, bucket_name: str) -> list:
-    local_file_path = f"/tmp/{filename}"
-    s3_client.download_file(
-        bucket_name, filename, local_file_path
+    response = s3_client.get_object(
+        Bucket=bucket_name,
+        Key=filename
     )
-    with open(local_file_path, "r") as f:
-        nhs_number_list = f.read()
-    os.remove(local_file_path)
-    return nhs_number_list.split(',')
+
+    file_contents = response["Body"].readlines()
+
+    if len(file_contents) > 1:
+        raise InvalidFileFormatException(
+            "All NHS numbers must be contained on a single line, seperated by commas."
+        )
+
+    nhs_numbers_str = file_contents[0].decode('utf-8')
+
+    only_nums_and_commas_bool = bool(re.compile(r'[0-9,]').match(nhs_numbers_str))
+
+    if not only_nums_and_commas_bool:
+        raise ValueError('File should only contain numbers and commas on a single line.')
+
+    nhs_number_list = nhs_numbers_str.split(',')
+    all_length_10_bool = all(len(x) == 10 for x in nhs_number_list)
+
+    if not all_length_10_bool:
+        raise ValueError('All NHS numbers must be 10 digits long (or the string starts/end with a comma).')
+
+    return nhs_number_list
 
 
 def new_uuid() -> str:
     return str(uuid.uuid4())
 
 
-def get_timestamp():
+def get_timestamp() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
-def build_suspension_message(
-        nhs_number: str, previous_ods_code: str, nems_message_id: str
-) -> str:
+def build_suspension_message(nhs_number: str, previous_ods_code: str, nems_message_id: str) -> str:
     return json.dumps({
         "nhsNumber": nhs_number,
         "lastUpdated": get_timestamp(),
@@ -90,6 +108,15 @@ def build_suspension_message(
 def send_message_with_trace_id(message_body: str, queue_url: str, trace_id: str):
     return sqs_client.send_message(
         QueueUrl=queue_url,
-        MessageAttributes={"traceId": {"DataType": "String", "StringValue": trace_id}},
+        MessageAttributes={
+            "traceId": {
+                "DataType": "String",
+                "StringValue": trace_id
+            }
+        },
         MessageBody=message_body,
     )
+
+
+class InvalidFileFormatException(Exception):
+    pass
