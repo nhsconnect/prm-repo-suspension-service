@@ -65,25 +65,29 @@ def get_nhs_number_list_from_s3(filename: str, bucket_name: str) -> list:
         Key=filename
     )
 
-    file_contents = response["Body"].readlines()
+    file_lines = response["Body"].readlines()
 
-    if len(file_contents) > 1:
+    if len(file_lines) > 1:
         raise InvalidFileFormatException(
-            "All NHS numbers must be contained on a single line, seperated by commas."
+            'All NHS numbers must be contained on a single line, seperated by commas.'
         )
 
-    nhs_numbers_str = file_contents[0].decode('utf-8')
+    nhs_numbers_str = file_lines[0].decode('utf-8')
 
-    only_nums_and_commas_bool = bool(re.compile(r'[0-9,]').match(nhs_numbers_str))
+    only_nums_and_commas_bool = bool(re.match('^[0-9,]+$', nhs_numbers_str))
 
     if not only_nums_and_commas_bool:
-        raise ValueError('File should only contain numbers and commas on a single line.')
+        raise InvalidFileFormatException(
+            'File should only contain numbers and commas on a single line.'
+        )
 
     nhs_number_list = nhs_numbers_str.split(',')
     all_length_10_bool = all(len(x) == 10 for x in nhs_number_list)
 
     if not all_length_10_bool:
-        raise ValueError('All NHS numbers must be 10 digits long (or the string starts/end with a comma).')
+        raise InvalidNhsNumberException(
+            'All NHS numbers must be 10 digits long and there must be no trailing commas.'
+        )
 
     return nhs_number_list
 
@@ -119,4 +123,8 @@ def send_message_with_trace_id(message_body: str, queue_url: str, trace_id: str)
 
 
 class InvalidFileFormatException(Exception):
+    pass
+
+
+class InvalidNhsNumberException(Exception):
     pass
