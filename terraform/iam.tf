@@ -132,11 +132,20 @@ resource "aws_iam_role_policy_attachment" "suspension_service_sns" {
 
 data "aws_iam_policy_document" "sns_policy_doc" {
   statement {
-    actions   = [
-      "sns:Publish",
-      "sns:GetTopicAttributes"
-    ]
+    actions   = ["sns:GetTopicAttributes"]
     resources = local.sns_arns
+  }
+
+  statement {
+    actions = ["sns:Publish"]
+    effect = "Deny"
+    resources = local.sns_arns
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
   }
 }
 
