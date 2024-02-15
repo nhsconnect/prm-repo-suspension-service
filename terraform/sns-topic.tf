@@ -98,3 +98,65 @@ data "aws_sns_topic" "alarm_notifications" {
   name = "${var.environment}-alarm-notifications-sns-topic"
 }
 
+resource "aws_sns_topic_policy" "deny_http" {
+  for_each = toset(local.sns_arns)
+
+  arn = each.value
+
+  policy = <<EOF
+{
+  "Version": "2008-10-17",
+  "Id": "__default_policy_ID",
+  "Statement": [
+    {
+      "Sid": "__default_statement_ID",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": [
+        "SNS:GetTopicAttributes",
+        "SNS:SetTopicAttributes",
+        "SNS:AddPermission",
+        "SNS:RemovePermission",
+        "SNS:DeleteTopic",
+        "SNS:Subscribe",
+        "SNS:ListSubscriptionsByTopic",
+        "SNS:Publish",
+        "SNS:Receive"
+      ],
+      "Resource": "${each.value}",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceOwner": "${data.aws_caller_identity.current.account_id}"
+        }
+      }
+    },
+    {
+      "Sid": "DenyHTTPSubscription",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "sns:Subscribe",
+      "Resource": "${each.value}",
+      "Condition": {
+        "StringEquals": {
+          "sns:Protocol": "http"
+        }
+      }
+    },
+    {
+      "Sid": "DenyHTTPPublish",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "SNS:Publish",
+      "Resource": "${each.value}",
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    }
+  ]
+}
+EOF
+}
