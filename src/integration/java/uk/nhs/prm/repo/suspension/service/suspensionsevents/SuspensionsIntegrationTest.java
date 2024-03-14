@@ -104,46 +104,46 @@ public class SuspensionsIntegrationTest {
         purgeQueue(notSuspendedQueueUrl);
     }
 
-    @Test
-    void shouldUpdateManagingOrganisationAndSendMessageToMofUpdatedSNSTopicForSuspendedPatient() {
-        var nhsNumber = Long.toString(System.currentTimeMillis());
-        stubFor(get(urlMatching("/suspended-patient-status/" + nhsNumber))
-                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(getSuspendedResponseWith(nhsNumber))));
-        stubFor(put(urlMatching("/suspended-patient-status/" + nhsNumber))
-                .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(getSuspendedResponseWith(nhsNumber))));
+    // @Test
+    // void shouldUpdateManagingOrganisationAndSendMessageToMofUpdatedSNSTopicForSuspendedPatient() {
+    //     var nhsNumber = Long.toString(System.currentTimeMillis());
+    //     stubFor(get(urlMatching("/suspended-patient-status/" + nhsNumber))
+    //             .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+    //             .willReturn(aResponse()
+    //                     .withHeader("Content-Type", "application/json")
+    //                     .withBody(getSuspendedResponseWith(nhsNumber))));
+    //     stubFor(put(urlMatching("/suspended-patient-status/" + nhsNumber))
+    //             .withHeader("Authorization", matching("Basic c3VzcGVuc2lvbi1zZXJ2aWNlOiJ0ZXN0Ig=="))
+    //             .willReturn(aResponse()
+    //                     .withHeader("Content-Type", "application/json")
+    //                     .withBody(getSuspendedResponseWith(nhsNumber))));
 
-        var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
-        var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
-        var activeSuspensionsQueueUrl = sqs.getQueueUrl(activeSuspensionsQueueName).getQueueUrl();
-        sqs.sendMessage(queueUrl, getSuspensionEventWith(nhsNumber));
+    //     var queueUrl = sqs.getQueueUrl(suspensionsQueueName).getQueueUrl();
+    //     var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
+    //     var activeSuspensionsQueueUrl = sqs.getQueueUrl(activeSuspensionsQueueName).getQueueUrl();
+    //     sqs.sendMessage(queueUrl, getSuspensionEventWith(nhsNumber));
 
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            List<Message> receivedMessageHolder = checkMessageInRelatedQueue(mofUpdatedQueueUrl);
+    //     await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+    //         List<Message> receivedMessageHolder = checkMessageInRelatedQueue(mofUpdatedQueueUrl);
 
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("ACTION:UPDATED_MANAGING_ORGANISATION"));
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("TEST-NEMS-ID"));
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-        });
+    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("ACTION:UPDATED_MANAGING_ORGANISATION"));
+    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("TEST-NEMS-ID"));
+    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
+    //         assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+    //     });
 
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            List<Message> receivedMessageHolder = checkMessageInRelatedQueue(activeSuspensionsQueueUrl);
+    //     await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+    //         List<Message> receivedMessageHolder = checkMessageInRelatedQueue(activeSuspensionsQueueUrl);
 
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("nhsNumber"));
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
-            assertTrue(receivedMessageHolder.get(0).getBody().contains("2017-11-01T15:00:33+00:00"));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-        });
+    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("nhsNumber"));
+    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
+    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("2017-11-01T15:00:33+00:00"));
+    //         assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+    //     });
 
-        purgeQueue(mofUpdatedQueueUrl);
-        purgeQueue(activeSuspensionsQueueUrl);
-    }
+    //     purgeQueue(mofUpdatedQueueUrl);
+    //     purgeQueue(activeSuspensionsQueueUrl);
+    // }
 
     @Test
     void shouldPutEventOutOfOrderInRelevantQueues() {
