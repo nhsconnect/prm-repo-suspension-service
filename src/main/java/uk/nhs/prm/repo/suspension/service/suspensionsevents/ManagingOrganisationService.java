@@ -33,7 +33,8 @@ public class ManagingOrganisationService {
             if (toggleConfig.isCanUpdateManagingOrganisationToRepo() && isSafeToProcess(suspensionEvent)) {
                 transferToRepository(patientStatus, suspensionEvent);
             } else {
-                updateMofToPreviousGp(patientStatus, suspensionEvent);
+//                updateMofToPreviousGp(patientStatus, suspensionEvent);
+                log.info("Suspension event found from non-safe listed ODS code. Ignoring as this is not intended for ORC.");
             }
         } catch (InvalidPdsRequestException invalidPdsRequestException) {
             messagePublisherBroker.invalidMessage(suspensionMessage, suspensionEvent.getNemsMessageId());
@@ -50,20 +51,24 @@ public class ManagingOrganisationService {
         return true;
     }
 
-    private void updateMofToPreviousGp(PdsAdaptorSuspensionStatusResponse patientStatus, SuspensionEvent suspensionEvent) {
-        if (mofIsCurrentlySetAsIntended(patientStatus.getManagingOrganisation(), suspensionEvent.previousOdsCode())) {
-            log.info("Managing Organisation field is already set to previous GP");
-            messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId(), false);
-            messagePublisherBroker.activeSuspensionMessage(suspensionEvent);
-        }
-        else {
-            var updateMofResponse = pdsService.updateMof(patientStatus.getNhsNumber(), suspensionEvent.previousOdsCode(), patientStatus.getRecordETag());
-            log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
-            var isSuperseded = nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), patientStatus.getNhsNumber());
-            messagePublisherBroker.mofUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), isSuperseded);
-            messagePublisherBroker.activeSuspensionMessage(suspensionEvent);
-        }
-    }
+    // TODO
+    //  Commented out while testing as it is causing race conditions between dev & pre-prod
+    //  We need to establish if we are keeping this logic or removing it at a later date
+    //  If removing, remember to remove the commented out tests on ManagingOrganisationServiceTest.java
+//    private void updateMofToPreviousGp(PdsAdaptorSuspensionStatusResponse patientStatus, SuspensionEvent suspensionEvent) {
+//        if (mofIsCurrentlySetAsIntended(patientStatus.getManagingOrganisation(), suspensionEvent.previousOdsCode())) {
+//            log.info("Managing Organisation field is already set to previous GP");
+//            messagePublisherBroker.mofNotUpdatedMessage(suspensionEvent.nemsMessageId(), false);
+//            messagePublisherBroker.activeSuspensionMessage(suspensionEvent);
+//        }
+//        else {
+//            var updateMofResponse = pdsService.updateMof(patientStatus.getNhsNumber(), suspensionEvent.previousOdsCode(), patientStatus.getRecordETag());
+//            log.info("Managing Organisation field Updated to " + updateMofResponse.getManagingOrganisation());
+//            var isSuperseded = nhsNumberIsSuperseded(suspensionEvent.nhsNumber(), patientStatus.getNhsNumber());
+//            messagePublisherBroker.mofUpdatedMessage(suspensionEvent.nemsMessageId(), suspensionEvent.previousOdsCode(), isSuperseded);
+//            messagePublisherBroker.activeSuspensionMessage(suspensionEvent);
+//        }
+//    }
 
     private void transferToRepository(PdsAdaptorSuspensionStatusResponse pdsResponse, SuspensionEvent suspensionEvent) {
         if (mofIsCurrentlySetAsIntended(pdsResponse.getManagingOrganisation(), repoOdsCode)) {
