@@ -70,23 +70,23 @@ public class MOFUpdateBasedOnOdsCodeToggle {
         return wireMockServer;
     }
 
-    // @Test
-    // void shouldUpdateMofToPreviousGpAndSendMessageToMofUpdatedSNSTopicWhenOdsCodeNotInSafeList() {
-    //     var nhsNumber = Long.toString(System.currentTimeMillis());
-    //     stubForPdsAdaptor(nhsNumber, getSuspendedResponseWith(nhsNumber));
+     @Test
+     void shouldUpdateMofToPreviousGpAndSendMessageToMofUpdatedSNSTopicWhenOdsCodeNotInSafeList() {
+         var nhsNumber = Long.toString(System.currentTimeMillis());
+         stubForPdsAdaptor(nhsNumber, getSuspendedResponseWith(nhsNumber));
 
-    //     var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
-    //     sqs.sendMessage(suspensionQueueUrl, getSuspensionEventWith(nhsNumber, "B85612"));
+         var mofUpdatedQueueUrl = sqs.getQueueUrl(mofUpdatedQueueName).getQueueUrl();
+         sqs.sendMessage(suspensionQueueUrl, getSuspensionEventWith(nhsNumber, "B85612"));
 
-    //     await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-    //         List<Message> receivedMessageHolder = checkMessageInRelatedQueue(mofUpdatedQueueUrl);
+         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+             List<Message> receivedMessageHolder = checkMessageInRelatedQueue(mofUpdatedQueueUrl);
 
-    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("ACTION:UPDATED_MANAGING_ORGANISATION"));
-    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("TEST-NEMS-ID"));
-    //         assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
-    //         assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-    //     });
-    // }
+             assertTrue(receivedMessageHolder.get(0).getBody().contains("ACTION:UPDATED_MANAGING_ORGANISATION"));
+             assertTrue(receivedMessageHolder.get(0).getBody().contains("TEST-NEMS-ID"));
+             assertTrue(receivedMessageHolder.get(0).getBody().contains("B85612"));
+             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+         });
+     }
 
     @Test
     void shouldSetMOFAsRepoOdsCodeWhenOdsCodeIsInSafeList(){
