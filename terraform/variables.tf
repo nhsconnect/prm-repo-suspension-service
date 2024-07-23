@@ -23,7 +23,7 @@ variable "task_memory" {
 }
 
 variable "log_level" {
-  type = string
+  type    = string
   default = "debug"
 }
 
@@ -49,16 +49,16 @@ variable "enable_scale_action" {
 
 variable "can_update_managing_organisation_to_repo" {
   description = "Toggle to allow updating managing organisation to repo ODS code"
-  default = false
+  default     = false
 }
 
 variable "is_end_of_transfer_service" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "image_name" {
-  type = string
+  type    = string
   default = "suspension-service"
 }
 

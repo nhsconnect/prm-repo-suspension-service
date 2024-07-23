@@ -1,8 +1,8 @@
 locals {
-  task_role_arn         = aws_iam_role.component-ecs-role.arn
-  task_execution_role   = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.environment}-${var.component_name}-EcsTaskRole"
-  task_ecr_url          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
-  task_log_group        = "/nhs/deductions/${var.environment}-${data.aws_caller_identity.current.account_id}/${var.component_name}"
+  task_role_arn       = aws_iam_role.component-ecs-role.arn
+  task_execution_role = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.environment}-${var.component_name}-EcsTaskRole"
+  task_ecr_url        = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
+  task_log_group      = "/nhs/deductions/${var.environment}-${data.aws_caller_identity.current.account_id}/${var.component_name}"
   environment_variables = [
     { name = "COMPONENT_NAME", value = var.component_name },
     { name = "METRIC_NAMESPACE", value = var.metric_namespace },
@@ -29,11 +29,11 @@ locals {
     { name = "CAN_UPDATE_MANAGING_ORGANISATION_TO_REPO", value = tostring(var.can_update_managing_organisation_to_repo) },
     { name = "DYNAMODB_TABLE_NAME", value = aws_dynamodb_table.suspensions.name },
     {
-      name = "PDS_ADAPTOR_URL",
+      name  = "PDS_ADAPTOR_URL",
       value = "https://pds-adaptor.${data.aws_ssm_parameter.environment_domain_name.value}"
     },
     { name = "REPO_ODS_CODE", value = data.aws_ssm_parameter.repo_ods_code.value },
-    { name = "SAFE_LISTED_ODS_CODES", value = data.aws_ssm_parameter.safe_listed_ods_codes.value},
+    { name = "SAFE_LISTED_ODS_CODES", value = data.aws_ssm_parameter.safe_listed_ods_codes.value },
     { name = "REPO_PROCESS_ONLY_SAFE_LISTED_ODS_CODES", value = tostring(var.repo_process_only_safe_listed_ods_codes) }
   ]
 }

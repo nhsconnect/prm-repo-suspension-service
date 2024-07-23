@@ -53,15 +53,15 @@ resource "aws_cloudwatch_metric_alarm" "not_suspended_sns_topic_error_log_alarm"
   period              = "60"
   metric_name         = local.sns_topic_error_logs_metric_name
   namespace           = local.sns_topic_namespace
-  dimensions          = {
+  dimensions = {
     TopicName = local.not_suspended_sns_topic_name
   }
-  statistic           = "Sum"
-  alarm_description   = "This alarm monitors errors logs in ${local.not_suspended_sns_topic_name}"
-  treat_missing_data  = "notBreaching"
-  actions_enabled     = "true"
-  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
-  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+  statistic          = "Sum"
+  alarm_description  = "This alarm monitors errors logs in ${local.not_suspended_sns_topic_name}"
+  treat_missing_data = "notBreaching"
+  actions_enabled    = "true"
+  alarm_actions      = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions         = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
@@ -74,11 +74,11 @@ resource "aws_cloudwatch_metric_alarm" "suspension_out_of_order_audit" {
   alarm_description   = "This alarm triggers when messages on the out of order audit queue is not polled by splunk in last 15 mins"
   statistic           = "Maximum"
   period              = "900"
-  dimensions          = {
+  dimensions = {
     QueueName = aws_sqs_queue.event_out_of_order_audit.name
   }
-  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
-  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+  alarm_actions = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions    = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
@@ -91,11 +91,11 @@ resource "aws_cloudwatch_metric_alarm" "suspension_not_suspended_audit" {
   alarm_description   = "This alarm triggers when messages on the not suspended audit queue is not polled by splunk in last 15 mins"
   statistic           = "Maximum"
   period              = "900"
-  dimensions          = {
+  dimensions = {
     QueueName = aws_sqs_queue.not_suspended_audit.name
   }
-  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
-  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+  alarm_actions = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions    = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_mof_not_updated_audit" {
@@ -108,11 +108,11 @@ resource "aws_cloudwatch_metric_alarm" "suspension_mof_not_updated_audit" {
   alarm_description   = "This alarm triggers when messages on the MOF not updated audit queue is not polled by splunk in last 15 mins"
   statistic           = "Maximum"
   period              = "900"
-  dimensions          = {
+  dimensions = {
     QueueName = aws_sqs_queue.mof_not_updated_audit.name
   }
-  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
-  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+  alarm_actions = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions    = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_mof_updated_audit" {
@@ -125,11 +125,11 @@ resource "aws_cloudwatch_metric_alarm" "suspension_mof_updated_audit" {
   alarm_description   = "This alarm triggers when messages on the MOF updated audit queue is not polled by splunk in last 15 mins"
   statistic           = "Maximum"
   period              = "900"
-  dimensions          = {
+  dimensions = {
     QueueName = aws_sqs_queue.mof_updated_audit.name
   }
-  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
-  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+  alarm_actions = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions    = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit" {
@@ -142,11 +142,11 @@ resource "aws_cloudwatch_metric_alarm" "suspension_deceased_patient_audit" {
   alarm_description   = "This alarm triggers when messages on the deceased patient audit queue is not polled by splunk in last 15 mins"
   statistic           = "Maximum"
   period              = "900"
-  dimensions          = {
+  dimensions = {
     QueueName = aws_sqs_queue.deceased_patient_audit.name
   }
-  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
-  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+  alarm_actions = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions    = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "suspension_invalid_suspension_dlq_audit" {
@@ -159,9 +159,9 @@ resource "aws_cloudwatch_metric_alarm" "suspension_invalid_suspension_dlq_audit"
   alarm_description   = "This alarm triggers when messages on the invalid suspensions dlq audit queue is not polled by splunk in last 15 mins"
   statistic           = "Maximum"
   period              = "900"
-  dimensions          = {
+  dimensions = {
     QueueName = aws_sqs_queue.invalid_suspension_audit.name
   }
-  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
-  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+  alarm_actions = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions    = [data.aws_sns_topic.alarm_notifications.arn]
 }
