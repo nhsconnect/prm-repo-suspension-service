@@ -2,7 +2,7 @@ resource "aws_dynamodb_table" "suspensions" {
   name         = "${var.environment}-${var.component_name}-dynamodb"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "nhs_number"
-  #  deletion_protection_enabled = true
+  deletion_protection_enabled = true
 
   server_side_encryption {
     enabled     = true
