@@ -9,15 +9,12 @@ locals {
 }
 
 resource "aws_lambda_function" "lambda" {
-  # If the file is not in the current working directory you will need to include a
-  # path.module in the filename.
   filename         = data.archive_file.lambda.output_path
   function_name    = "${var.environment}_${local.ingestion_lambda_name}"
   role             = aws_iam_role.lambda_execution_role.arn
   handler          = "${local.ingestion_lambda_name}.lambda_handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
-  # Remark: better to use python3.11 . For now we only have 3.8 as we are use a very old (3.44) terraform provider version
-  runtime     = "python3.8"
+  runtime     = "python3.12"
   timeout     = 30
   memory_size = 128
 

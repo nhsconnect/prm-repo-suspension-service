@@ -1,6 +1,6 @@
 locals {
-  account_id                 = data.aws_caller_identity.current.account_id
-  sns_base_arns              = [
+  account_id = data.aws_caller_identity.current.account_id
+  sns_base_arns = [
     aws_sns_topic.not_suspended.arn,
     aws_sns_topic.mof_updated.arn,
     aws_sns_topic.mof_not_updated.arn,
@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "ecs-assume-role-policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "ecs-tasks.amazonaws.com"
       ]
@@ -99,7 +99,7 @@ resource "aws_iam_policy" "suspensions_processor_sqs" {
 
 data "aws_iam_policy_document" "sqs_suspensions_ecs_task" {
   statement {
-    actions   = [
+    actions = [
       "sqs:GetQueue*",
       "sqs:ChangeMessageVisibility",
       "sqs:DeleteMessage",
@@ -132,7 +132,7 @@ resource "aws_iam_role_policy_attachment" "suspension_service_sns" {
 
 data "aws_iam_policy_document" "sns_policy_doc" {
   statement {
-    actions   = [
+    actions = [
       "sns:Publish",
       "sns:GetTopicAttributes"
     ]
@@ -152,7 +152,7 @@ resource "aws_iam_policy" "suspensions_kms" {
 
 data "aws_iam_policy_document" "kms_policy_doc" {
   statement {
-    actions   = [
+    actions = [
       "kms:*"
     ]
     resources = [
@@ -203,7 +203,7 @@ resource "aws_iam_role" "sns_failure_feedback_role" {
 
 data "aws_iam_policy_document" "sns_failure_feedback_policy" {
   statement {
-    actions   = [
+    actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
@@ -231,7 +231,7 @@ data "aws_iam_policy_document" "sns_service_assume_role_policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "sns.amazonaws.com"
       ]
@@ -488,7 +488,7 @@ data "aws_iam_policy_document" "event_out_of_order_policy_doc" {
 
 data "aws_iam_policy_document" "dynamodb-table-access" {
   statement {
-    actions   = [
+    actions = [
       "dynamodb:GetItem",
       "dynamodb:PutItem"
     ]

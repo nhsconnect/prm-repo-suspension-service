@@ -1,6 +1,6 @@
 resource "aws_kms_key" "not_suspended" {
-  description = "Custom KMS Key to enable server side encryption for SNS and SQS"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for SNS and SQS"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
@@ -61,8 +61,8 @@ data "aws_iam_policy_document" "kms_key_policy_doc" {
 }
 
 resource "aws_kms_key" "mof_updated" {
-  description = "Custom KMS Key to enable server side encryption for SNS and SQS"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for SNS and SQS"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
@@ -78,8 +78,8 @@ resource "aws_kms_alias" "mof_updated_encryption" {
 }
 
 resource "aws_kms_key" "mof_not_updated" {
-  description = "Custom KMS Key to enable server side encryption for mof not updated topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for mof not updated topic"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
@@ -95,8 +95,8 @@ resource "aws_kms_alias" "mof_not_updated_encryption" {
 }
 
 resource "aws_kms_key" "invalid_suspension" {
-  description = "Custom KMS Key to enable server side encryption for invalid suspension topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for invalid suspension topic"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
@@ -112,8 +112,8 @@ resource "aws_kms_alias" "invalid_suspension_encryption" {
 }
 
 resource "aws_kms_key" "invalid_suspension_audit" {
-  description = "Custom KMS Key to enable server side encryption for invalid suspension audit topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for invalid suspension audit topic"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
@@ -129,8 +129,8 @@ resource "aws_kms_alias" "invalid_suspension_audit_encryption" {
 }
 
 resource "aws_kms_key" "event_out_of_order" {
-  description = "Custom KMS Key to enable server side encryption for event out of order topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for event out of order topic"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
@@ -146,8 +146,8 @@ resource "aws_kms_alias" "event_out_of_order_encryption" {
 }
 
 resource "aws_kms_key" "suspension_dynamodb_kms_key" {
-  description = "Custom KMS Key to enable server side encryption for Suspension DB"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for Suspension DB"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
@@ -163,8 +163,8 @@ resource "aws_kms_alias" "suspension_dynamodb_encryption" {
 }
 
 resource "aws_kms_key" "deceased_patient" {
-  description = "Custom KMS Key to enable server side encryption for deceased patient topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for deceased patient topic"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
@@ -180,8 +180,8 @@ resource "aws_kms_alias" "deceased_patient_encryption" {
 }
 
 resource "aws_kms_key" "active_suspensions" {
-  description = "Custom KMS Key to enable server side encryption for active-suspensions topic"
-  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  description         = "Custom KMS Key to enable server side encryption for active-suspensions topic"
+  policy              = data.aws_iam_policy_document.kms_key_policy_doc.json
   enable_key_rotation = true
 
   tags = {
