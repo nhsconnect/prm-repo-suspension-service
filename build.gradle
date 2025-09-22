@@ -58,7 +58,7 @@ dependencies {
     implementation 'com.google.guava:guava:33.0.0-jre'
     implementation 'io.github.resilience4j:resilience4j-retry:1.7.1'
     implementation 'org.springframework:spring-jms:5.3.19'
-    implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
+    implementation 'com.github.spotbugs:spotbugs-annotations:4.9.6'
     implementation 'org.apache.bcel:bcel:6.6.1'
     // Explicit declaration to override outdated dependency on httpclient - outdated as of Spring Boot >3.0.0
     // TODO We plan to replace the HTTP calls on this service with Lambda calls soon, this can be removed at this point
