@@ -64,7 +64,7 @@ dependencies {
     // TODO We plan to replace the HTTP calls on this service with Lambda calls soon, this can be removed at this point
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3'
     implementation 'commons-fileupload:commons-fileupload:1.5'
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
+    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
 
