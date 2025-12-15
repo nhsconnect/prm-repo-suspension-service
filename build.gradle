@@ -44,7 +44,7 @@ dependencies {
     implementation('io.netty:netty-transport-native-epoll') { version { strictly '4.1.104.Final' } }
     implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.104.Final' } }
 
-    implementation platform('software.amazon.awssdk:bom:2.18.41')
+    implementation platform('software.amazon.awssdk:bom:2.40.8')
     implementation 'software.amazon.awssdk:cloudwatch'
     implementation 'software.amazon.awssdk:sns'
     implementation 'software.amazon.awssdk:sqs'
